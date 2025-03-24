@@ -43,9 +43,7 @@ class SystemUserController extends Controller
 
     public function show($id)
     {
-
         try {
-
             $System_users = System_users::find($id)
                 ->get();
             return response()->json(['success' => true, 'user' =>  $System_users]);
