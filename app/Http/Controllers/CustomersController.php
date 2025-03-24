@@ -201,7 +201,8 @@ class CustomersController extends Controller
             $customer->delete();
             return response()->json([
                 'success' => true,
-                'customers' =>  $customer
+                'customers' =>  $customer,
+                'meesage'=> 'Customer information deleted'
             ],200);
         } catch (ValidationException $ve) {
             return response()->json([

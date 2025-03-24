@@ -57,5 +57,9 @@ Route::prefix('system-users')->group(function () {
     Route::delete('/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
 });
 
-
-
+//  MGA KULANG
+//  mag deduct ug stocks gikan sa orders
+//  mag add ug stocks sa daily inventory pag naay new items
+//  revert sa stocks kung mag delete ug orders
+//  
+//
