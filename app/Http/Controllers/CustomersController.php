@@ -47,8 +47,7 @@ class CustomersController extends Controller
     {
 
         try {
-
-            $customers = Customers::find($id)
+            $customers = Customers::where('id',$id)
                 ->get();
             return response()->json(['success' => true, 'customers' =>  $customers]);
         } catch (ValidationException $ve) {
@@ -77,9 +76,7 @@ class CustomersController extends Controller
 
     public function store(Request $request)
     {
-
         try {
-
             $validationInput = $request->validate(
                 [
                     'firstname' => 'required|string|max:255',
@@ -134,7 +131,7 @@ class CustomersController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $customer = Customers::find($id);
+            $customer = Customers::where('id',$id);
             if (!$customer) {
                 return response()->json(['success' => false, 'message' => 'Client not found'], 404);
             }
@@ -194,7 +191,7 @@ class CustomersController extends Controller
 
     public function destroy($id) {
         try {
-            $customer = Customers::find($id);
+            $customer = Customers::where('id',$id);
             if (!$customer) {
                 return response()->json(['success' => false, 'message' => 'Client not found'], 404);
             }

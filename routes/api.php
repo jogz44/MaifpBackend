@@ -61,5 +61,5 @@ Route::prefix('system-users')->group(function () {
 //  mag deduct ug stocks gikan sa orders
 //  mag add ug stocks sa daily inventory pag naay new items
 //  revert sa stocks kung mag delete ug orders
-//  
+//
 //
