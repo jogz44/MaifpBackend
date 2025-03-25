@@ -218,14 +218,14 @@ class ItemsController extends Controller
 
     public function destroy($id) {
         try {
-            $item = Items::find($id);
+            $item = Items::where('id',$id)->get();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'item not found'], 404);
             }
             $item->delete();
             return response()->json([
                 'success' => true,
-                'items' =>  $item
+                'message' => 'item deleted successfully'
             ],200);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -257,5 +257,5 @@ class ItemsController extends Controller
                     ->get();
     }
 
- 
+
 }

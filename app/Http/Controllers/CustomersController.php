@@ -30,7 +30,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'errors' => $qe->getMessage()
             ], 500);
             //throw $th;
         } catch (\Throwable $th) {
@@ -38,7 +38,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'errors' => $th->getMessage()
             ], 500);
         }
     }
@@ -61,7 +61,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'errors' => $qe->getMessage()
             ], 500);
             //throw $th;
         } catch (\Throwable $th) {
@@ -69,7 +69,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'errors' => $th->getMessage()
             ], 500);
         }
     }
@@ -116,7 +116,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'errors' => $qe->getMessage()
             ], 500);
             //throw $th;
         } catch (\Throwable $th) {
@@ -124,7 +124,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'errors' => $th->getMessage()
             ], 500);
         }
     }
@@ -175,7 +175,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'errors' => $qe->getMessage()
             ], 500);
             //throw $th;
         } catch (\Throwable $th) {
@@ -183,7 +183,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'errors' => $th->getMessage()
             ], 500);
         }
 
@@ -199,7 +199,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => true,
                 'customers' =>  $customer,
-                'meesage'=> 'Customer information deleted'
+                'message'=> 'Customer information deleted'
             ],200);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -212,7 +212,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'errors' => $qe->getMessage()
             ], 500);
             //throw $th;
         } catch (\Throwable $th) {
@@ -220,7 +220,7 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'errors' => $th->getMessage()
             ], 500);
         }
     }
