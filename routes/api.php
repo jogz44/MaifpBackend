@@ -7,7 +7,7 @@ use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\SystemUserController;
 
 
-
+// DONE
 Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
     Route::get('/{id}', [CustomersController::class, 'show']);                              // Fetch a single customer by ID
