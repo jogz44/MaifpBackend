@@ -17,7 +17,9 @@ class ItemsController extends Controller
 
             $Items = Items::orderBy('id', 'desc')
                 ->get();
-            return response()->json(['success' => true, 'items' =>  $Items]);
+            return response()->json(
+                ['success' => true,
+                 'items' =>  $Items],200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -47,11 +49,12 @@ class ItemsController extends Controller
 
         try {
 
-            $item = Items::find($id);
+            $item = Items::where($id)
+                        ->get();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'Item not found'], 404);
             }
-            return response()->json(['success' => true, 'items' =>  $item]);
+            return response()->json(['success' => true, 'item' =>  $item],200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -91,6 +94,7 @@ class ItemsController extends Controller
                 'category' => 'nullable|string|max:50',
                 'unit' => 'required|string|max:50',
                 'quantity' => 'required|numeric|min:1',
+                'price' =>'nullable|numeric',
                 'expiration_date' => 'required|date|after:today',
                 'user_id' => 'required|exists:tbl_system_users,id',
                 ]
@@ -99,8 +103,8 @@ class ItemsController extends Controller
             $Items = Items::create($validationInput);
             return response()->json([
                 'success' => true,
-                'items' =>  $Items
-            ]);
+                'item' =>  $Items
+            ],201);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -127,7 +131,7 @@ class ItemsController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $item = Items::find($id);
+            $item = Items::where($id)->get();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'item not found'], 404);
             }
@@ -141,6 +145,7 @@ class ItemsController extends Controller
                     'dosage' => 'required|string|max:50',
                     'category' => 'nullable|string|max:50',
                     'unit' => 'required|string|max:50',
+                    'price' =>'nullable|numeric',
                     'quantity' => 'required|numeric|min:1',
                     'expiration_date' => 'required|date|after:today',
                     'user_id' => 'required|exists:tbl_system_users,id',
@@ -150,7 +155,7 @@ class ItemsController extends Controller
             $item->update($validationInput);
             return response()->json([
                 'success' => true,
-                'items' =>  $item
+                'item' =>  $item
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -253,8 +258,38 @@ class ItemsController extends Controller
 
     public function getExpiringStock()
     {
-        return Items::where('expiration_date', '<', now()->addDays(30))
-                    ->get();
+
+        try {
+
+            $items = Items::where('expiration_date', '<', now()->addDays(30))
+            ->get();
+
+            if (!$items) {
+                return response()->json(['success' => false, 'message' => 'no expiring item found'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'There are Items Expiring in a month from now',
+                'items' => $items
+            ],200);
+
+        }catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+
     }
 
 

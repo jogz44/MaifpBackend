@@ -20,6 +20,7 @@ return new class extends Migration
         $table->string('dosage_form');
         $table->string('category');
         $table->string('unit')->required();
+        $table->double('price');
         $table->double('quantity')->required();
         $table->date('expiration_date')->required();
         // $table->double('unit_price')->required();

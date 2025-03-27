@@ -20,6 +20,7 @@ class items extends Model
         'dosage',
         'category',
         'unit',
+        'price',
         'quantity',
         'expiration_date',
         'user_id',
