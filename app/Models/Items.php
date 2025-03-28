@@ -22,6 +22,7 @@ class items extends Model
         'unit',
         'price',
         'quantity',
+        'price',
         'expiration_date',
         'user_id',
     ];

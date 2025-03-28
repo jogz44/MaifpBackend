@@ -22,6 +22,7 @@ return new class extends Migration
         $table->string('unit')->required();
         $table->double('price');
         $table->double('quantity')->required();
+        $table->double('price')->required();
         $table->date('expiration_date')->required();
         // $table->double('unit_price')->required();
         $table->bigInteger('user_id')->required();
