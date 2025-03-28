@@ -47,7 +47,7 @@ class ItemsController extends Controller
 
         try {
 
-            $item = Items::find($id);
+            $item = Items::where('id',$id)->get();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'Item not found'], 404);
             }
@@ -91,6 +91,7 @@ class ItemsController extends Controller
                 'category' => 'nullable|string|max:50',
                 'unit' => 'required|string|max:50',
                 'quantity' => 'required|numeric|min:1',
+                'price' => 'nullable|numeric',
                 'expiration_date' => 'required|date|after:today',
                 'user_id' => 'required|exists:tbl_system_users,id',
                 ]
@@ -99,7 +100,8 @@ class ItemsController extends Controller
             $Items = Items::create($validationInput);
             return response()->json([
                 'success' => true,
-                'items' =>  $Items
+                'item' =>  $Items,
+                'message'=> 'Item registration Successful'
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -142,6 +144,7 @@ class ItemsController extends Controller
                     'category' => 'nullable|string|max:50',
                     'unit' => 'required|string|max:50',
                     'quantity' => 'required|numeric|min:1',
+                    'price' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
                     'user_id' => 'required|exists:tbl_system_users,id',
                 ]
@@ -150,7 +153,8 @@ class ItemsController extends Controller
             $item->update($validationInput);
             return response()->json([
                 'success' => true,
-                'items' =>  $item
+                'item' =>  $item,
+                'message'=> 'Item updating Successful'
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -180,17 +184,19 @@ class ItemsController extends Controller
 
     public function destroyItemsByPO($po_number) {
         try {
-            $item = Items::where('po_no',$po_number)
+            $items = Items::where('po_no',$po_number)
                             ->get();
-            if (!$item) {
-                return response()->json(['success' => false, 'message' => 'item not found'], 404);
+            if ($items->isEmpty()) //Used isEmpty() to check if the collection is empty.
+            {
+                return response()->json(['success' => false, 'message' => 'items not found'], 404);
             }
             // $item->delete();
-            Items::where('po_no',$po_number)->delete();
+            // Items::where('po_no',$po_number)->delete();
+            $items->each->delete();  //Removed the redundant query by using $items->each->delete() to delete the items directly
 
             return response()->json([
                 'success' => true,
-                'items' =>  $item
+                'message' => "Items under PO-number $po_number have been removed."
             ],200);
         } catch (ValidationException $ve) {
             return response()->json([

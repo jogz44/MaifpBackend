@@ -21,6 +21,7 @@ class items extends Model
         'category',
         'unit',
         'quantity',
+        'price',
         'expiration_date',
         'user_id',
     ];
