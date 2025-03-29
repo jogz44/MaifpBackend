@@ -131,7 +131,7 @@ class CustomersController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $customer = Customers::where('id',$id);
+            $customer = Customers::where('id',$id)->first();
             if (!$customer) {
                 return response()->json(['success' => false, 'message' => 'Client not found'], 404);
             }

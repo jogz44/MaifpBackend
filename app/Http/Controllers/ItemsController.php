@@ -166,7 +166,7 @@ class ItemsController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $item = Items::where($id)->get();
+            $item = Items::where('id',$id)->first();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'item not found'], 404);
             }
@@ -189,6 +189,7 @@ class ItemsController extends Controller
             );
 
             $item->update($validationInput);
+
             return response()->json([
                 'success' => true,
                 'item' =>  $item,
@@ -262,11 +263,7 @@ class ItemsController extends Controller
 
     public function destroy($id) {
         try {
-            $item = Items::where('id',$id)->get();
-            if (!$item) {
-                return response()->json(['success' => false, 'message' => 'item not found'], 404);
-            }
-            $item->delete();
+            Items::where('id',$id)->delete();
             return response()->json([
                 'success' => true,
                 'message' => 'item deleted successfully'
