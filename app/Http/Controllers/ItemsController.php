@@ -53,7 +53,7 @@ class ItemsController extends Controller
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'Item not found'], 404);
             }
-            return response()->json(['success' => true, 'item' =>  $item],200);
+            return response()->json(['success' => true, 'items' =>  $item]);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -77,6 +77,41 @@ class ItemsController extends Controller
             ], 500);
         }
     }
+
+    public function showItemsByPO($po_number)
+    {
+
+        try {
+
+            $items = Items::where('po_no',$po_number)->get();
+            if (!$items) {
+                return response()->json(['success' => false, 'message' => 'Items not found'], 404);
+            }
+            return response()->json(['success' => true, 'items' =>  $items]);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function store(Request $request)
     {
@@ -262,23 +297,24 @@ class ItemsController extends Controller
 
     public function getExpiringStock()
     {
+        try{
+            $monthFromNow = now()->addDays(30)->toDateString();
 
-        try {
-
-            $items = Items::where('expiration_date', '<', now()->addDays(30))
-            ->get();
-
-            if (!$items) {
-                return response()->json(['success' => false, 'message' => 'no expiring item found'], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'There are Items Expiring in a month from now',
-                'items' => $items
+            $expiredItems = Items::where('expiration_date', '<',$monthFromNow)->get();
+            return response()->json(['messege'=> 'success',
+             'items' => $expiredItems,
+             'month'=> $monthFromNow,
+            'count' => $expiredItems->count(),
+            // 'sql' => Items::where('expiration_date', '<', $monthFromNow)->toSql(),
             ],200);
-
-        }catch (QueryException $qe) {
+        }catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
@@ -293,6 +329,7 @@ class ItemsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
+
 
     }
 

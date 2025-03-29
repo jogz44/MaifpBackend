@@ -40,7 +40,8 @@ Route::prefix('orders')->group(function(){
 Route::prefix('items')->group(function () {
     Route::get('/', [ItemsController::class, 'index']);                      // Get all items
     Route::get('/{id}', [ItemsController::class, 'show']);                  // Get single item by ID
-    Route::get('/expiring-items',[ItemsController::class,'getExpiringStock']);   // Get all expiring item
+    Route::get('/po/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
+    Route::get('/list/expiring',[ItemsController::class,'getExpiringStock']); // Get all expiring item
     Route::post('/new', [ItemsController::class, 'store']);                  // Create a new item
     Route::put('/{id}', [ItemsController::class, 'update']);             // Update an item
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
