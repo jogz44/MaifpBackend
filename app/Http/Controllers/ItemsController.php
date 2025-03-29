@@ -76,6 +76,41 @@ class ItemsController extends Controller
         }
     }
 
+    public function showItemsByPO($po_number)
+    {
+
+        try {
+
+            $items = Items::where('po_no',$po_number)->get();
+            if (!$items) {
+                return response()->json(['success' => false, 'message' => 'Items not found'], 404);
+            }
+            return response()->json(['success' => true, 'items' =>  $items]);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function store(Request $request)
     {
 
@@ -259,8 +294,40 @@ class ItemsController extends Controller
 
     public function getExpiringStock()
     {
-        return Items::where('expiration_date', '<', now()->addDays(30))
-                    ->get();
+        try{
+            $monthFromNow = now()->addDays(30)->toDateString();
+
+            $expiredItems = Items::where('expiration_date', '<',$monthFromNow)->get();
+            return response()->json(['messege'=> 'success',
+             'items' => $expiredItems,
+             'month'=> $monthFromNow,
+            'count' => $expiredItems->count(),
+            // 'sql' => Items::where('expiration_date', '<', $monthFromNow)->toSql(),
+            ],200);
+        }catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+
+
     }
 
 
