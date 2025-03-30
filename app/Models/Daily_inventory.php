@@ -18,6 +18,8 @@ class daily_inventory extends Model
         'Closing_quantity',
         'quantity_out',
         'transaction_date',
+        'remarks',
+        'status',
         'user_id',
     ];
 }

@@ -20,6 +20,8 @@ return new class extends Migration
             $table -> double('quantity_out');
             $table -> date('transaction_date');
             $table -> bigInteger('user_id');
+            $table -> string('remarks');
+            $table -> string('status');
             $table -> timestamps();
 
         });
