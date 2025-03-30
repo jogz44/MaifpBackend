@@ -22,4 +22,6 @@ class daily_inventory extends Model
         'status',
         'user_id',
     ];
+
+    
 }
