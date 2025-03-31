@@ -32,7 +32,7 @@ Route::prefix('orders')->group(function(){
     Route::get('/', [DailyTransactionsController::class,'index']);                      // Get all orders
     Route::get('/{id}', [DailyTransactionsController::class,'show']);                  // Get a specific orders
     Route::get('/transaction/new/{customer_id}',[DailyTransactionsController::class,'newTransactionID']);
-    Route::post('/', [DailyTransactionsController::class,'store']);                   // Create a new orders
+    Route::post('/new', [DailyTransactionsController::class,'store']);                   // Create a new orders
     Route::put('/{id}', [DailyTransactionsController::class,'update']);              // Update a orders
     Route::delete('/{id}', [DailyTransactionsController::class,'destroy']);                       // Delete a orders
 });
