@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
@@ -18,8 +19,12 @@ class ItemsController extends Controller
             $Items = Items::orderBy('id', 'desc')
                 ->get();
             return response()->json(
-                ['success' => true,
-                 'items' =>  $Items],200);
+                [
+                    'success' => true,
+                    'items' =>  $Items
+                ],
+                200
+            );
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -49,7 +54,7 @@ class ItemsController extends Controller
 
         try {
 
-            $item = Items::where('id',$id)->get();
+            $item = Items::where('id', $id)->get();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'Item not found'], 404);
             }
@@ -83,7 +88,7 @@ class ItemsController extends Controller
 
         try {
 
-            $items = Items::where('po_no',$po_number)->get();
+            $items = Items::where('po_no', $po_number)->get();
             if (!$items) {
                 return response()->json(['success' => false, 'message' => 'Items not found'], 404);
             }
@@ -120,17 +125,17 @@ class ItemsController extends Controller
 
             $validationInput = $request->validate(
                 [
-                'po_no' => 'required|string|max:50',
-                'brand_name' => 'required|string|max:100',
-                'generic_name' => 'required|string|max:100',
-                'dosage_form' => 'nullable|string|max:50',
-                'dosage' => 'required|string|max:50',
-                'category' => 'nullable|string|max:50',
-                'unit' => 'required|string|max:50',
-                'quantity' => 'required|numeric|min:1',
-                'price' => 'nullable|numeric',
-                'expiration_date' => 'required|date|after:today',
-                'user_id' => 'required|exists:tbl_system_users,id',
+                    'po_no' => 'required|string|max:50',
+                    'brand_name' => 'required|string|max:100',
+                    'generic_name' => 'required|string|max:100',
+                    'dosage_form' => 'nullable|string|max:50',
+                    'dosage' => 'required|string|max:50',
+                    'category' => 'nullable|string|max:50',
+                    'unit' => 'required|string|max:50',
+                    'quantity' => 'required|numeric|min:1',
+                    'price' => 'nullable|numeric',
+                    'expiration_date' => 'required|date|after:today',
+                    'user_id' => 'required|exists:tbl_system_users,id',
                 ]
             );
 
@@ -138,7 +143,7 @@ class ItemsController extends Controller
             return response()->json([
                 'success' => true,
                 'item' =>  $Items,
-                'message'=> 'Item registration Successful'
+                'message' => 'Item registration Successful'
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -164,9 +169,10 @@ class ItemsController extends Controller
         }
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
-            $item = Items::where('id',$id)->first();
+            $item = Items::where('id', $id)->first();
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'item not found'], 404);
             }
@@ -180,7 +186,7 @@ class ItemsController extends Controller
                     'dosage' => 'required|string|max:50',
                     'category' => 'nullable|string|max:50',
                     'unit' => 'required|string|max:50',
-                    'price' =>'nullable|numeric',
+                    'price' => 'nullable|numeric',
                     'quantity' => 'required|numeric|min:1',
                     'price' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
@@ -193,7 +199,7 @@ class ItemsController extends Controller
             return response()->json([
                 'success' => true,
                 'item' =>  $item,
-                'message'=> 'Item updating Successful'
+                'message' => 'Item updating Successful'
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -217,14 +223,14 @@ class ItemsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
-
     }
 
 
-    public function destroyItemsByPO($po_number) {
+    public function destroyItemsByPO($po_number)
+    {
         try {
-            $items = Items::where('po_no',$po_number)
-                            ->get();
+            $items = Items::where('po_no', $po_number)
+                ->get();
             if ($items->isEmpty()) //Used isEmpty() to check if the collection is empty.
             {
                 return response()->json(['success' => false, 'message' => 'items not found'], 404);
@@ -236,7 +242,7 @@ class ItemsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Items under PO-number $po_number have been removed."
-            ],200);
+            ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -261,13 +267,14 @@ class ItemsController extends Controller
         }
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         try {
-            Items::where('id',$id)->delete();
+            Items::where('id', $id)->delete();
             return response()->json([
                 'success' => true,
                 'message' => 'item deleted successfully'
-            ],200);
+            ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -294,17 +301,18 @@ class ItemsController extends Controller
 
     public function getExpiringStock()
     {
-        try{
+        try {
             $monthFromNow = now()->addDays(30)->toDateString();
 
-            $expiredItems = Items::where('expiration_date', '<',$monthFromNow)->get();
-            return response()->json(['messege'=> 'success',
-             'items' => $expiredItems,
-             'month'=> $monthFromNow,
-            'count' => $expiredItems->count(),
-            // 'sql' => Items::where('expiration_date', '<', $monthFromNow)->toSql(),
-            ],200);
-        }catch (ValidationException $ve) {
+            $expiredItems = Items::where('expiration_date', '<', $monthFromNow)->get();
+            return response()->json([
+                'messege' => 'success',
+                'items' => $expiredItems,
+                'month' => $monthFromNow,
+                'count' => $expiredItems->count(),
+                // 'sql' => Items::where('expiration_date', '<', $monthFromNow)->toSql(),
+            ], 200);
+        } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -326,9 +334,25 @@ class ItemsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
-
-
     }
 
+    public function getJoinedItemswitInventory()
+    {
+        $data = DB::table('tbl_items')
+            ->join('tbl_daily_inventory', 'tbl_items.id', '=', 'tbl_daily_inventory.stock_id') // Joining on the common column
+            ->select(
+                'tbl_items.po_no',
+                'tbl_items.brand_name',
+                'tbl_items.generic_name',
+                'tbl_items.dosage',
+                'tbl_items.dosage_form',
+                'tbl_items.unit',
+                'tbl_items.quantity',
+                'tbl_daily_inventory.Closing_quantity',
+                'tbl_items.expiration_date',
+            ) // Selecting specific columns
+            ->get();
 
+        return $data;
+    }
 }

@@ -5,16 +5,37 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
-use App\Models\Daily_transactions as transactions;
+use App\Models\Daily_transactions as Transactions;
 
 class DailyTransactionsController extends Controller
 {
     //
+
+    public function newTransactionID($id)
+    {
+        $dateNow = now()->format('Ymd');  // Get date as YYYYMMDD
+        $customerId = $id;
+
+        // Get the highest transaction_number for this customer
+        $lastTransaction = Transactions::where('customer_id', $id)
+            ->max('transaction_id');  // Get the highest transaction_number
+
+        // Extract the last numeric part and increment
+        $nextTransactionNumber = $lastTransaction ? (intval($lastTransaction) + 1) : 1;
+
+        // Ensure numbering is 6-digit padded (e.g., 000001)
+        $transactionNumber = str_pad($nextTransactionNumber, 6, '0', STR_PAD_LEFT);
+
+        return $dateNow . '-' . $customerId . '-' . $transactionNumber;
+    }
+
+
+
     public function index()
     {
         try {
 
-            $transactions = transactions::orderBy('id', 'desc')
+            $transactions = Transactions::orderBy('id', 'desc')
                 ->get();
             return response()->json(['success' => true, 'transactions' =>  $transactions]);
         } catch (ValidationException $ve) {
@@ -46,7 +67,7 @@ class DailyTransactionsController extends Controller
 
         try {
 
-            $transactions = transactions::find($id)
+            $transactions = Transactions::where('id',$id)
                 ->get();
             return response()->json(['success' => true, 'transactions' =>  $transactions]);
         } catch (ValidationException $ve) {
@@ -89,7 +110,7 @@ class DailyTransactionsController extends Controller
                 ]
             );
 
-            $transactions = transactions::create($validationInput);
+            $transactions = Transactions::create($validationInput);
             return response()->json([
                 'success' => true,
                 'customers' =>  $transactions
@@ -120,7 +141,7 @@ class DailyTransactionsController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $transactions = transactions::find($id);
+            $transactions = Transactions::find($id);
             if (!$transactions) {
                 return response()->json(['success' => false, 'message' => 'transaction not found'], 404);
             }
@@ -168,7 +189,7 @@ class DailyTransactionsController extends Controller
 
     public function destroy($id) {
         try {
-            $transactions = transactions::find($id);
+            $transactions = Transactions::find($id);
             if (!$transactions) {
                 return response()->json(['success' => false, 'message' => 'transaction not found'], 404);
             }

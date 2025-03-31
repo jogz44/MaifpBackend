@@ -31,6 +31,7 @@ Route::prefix('daily')->group(function () {
 Route::prefix('orders')->group(function(){
     Route::get('/', [DailyTransactionsController::class,'index']);                      // Get all orders
     Route::get('/{id}', [DailyTransactionsController::class,'show']);                  // Get a specific orders
+    Route::get('/transaction/new/{customer_id}',[DailyTransactionsController::class,'newTransactionID']);
     Route::post('/', [DailyTransactionsController::class,'store']);                   // Create a new orders
     Route::put('/{id}', [DailyTransactionsController::class,'update']);              // Update a orders
     Route::delete('/{id}', [DailyTransactionsController::class,'destroy']);                       // Delete a orders
@@ -47,7 +48,10 @@ Route::prefix('items')->group(function () {
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number
 
+    Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
+
 });
+
 
 
 Route::prefix('system-users')->group(function () {
