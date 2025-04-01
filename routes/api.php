@@ -22,7 +22,10 @@ Route::prefix('daily')->group(function () {
     Route::get('/{id}', [DailyInventoryController::class, 'show']);                                       // Get a specific transaction
     Route::get('/lowquantity', [DailyInventoryController::class, 'getLowQuantityStocks']);                  //Get low quantity stocks
     Route::get('/today/{transaction_date}', [DailyInventoryController::class, 'showTodayInventory']);    // Get transactions by date
+    Route::get('/inventory/lastest', [DailyInventoryController::class, 'showLatest']);
     Route::post('/', [DailyInventoryController::class, 'store']);                                        // Create a new transaction
+    Route::post('/inventory/open-latest', [DailyInventoryController::class, 'regenerateInventory']);            // regenerate inventory for the day || generate OPENNING ITEM LIST
+    Route::post('/inventory/close-latest', [DailyInventoryController::class, 'closeInventory']);           // CLOSE ITEMS FOR THE DAY
     Route::put('/{id}', [DailyInventoryController::class, 'update']);                                  // Update an existing transaction
     Route::delete('/{id}', [DailyInventoryController::class, 'destroy']);                                           // Delete a transaction
 });
@@ -35,7 +38,7 @@ Route::prefix('orders')->group(function(){
     Route::post('/new', [DailyTransactionsController::class,'store']);                   // Create a new orders
     Route::put('/{id}', [DailyTransactionsController::class,'update']);              // Update a orders
 
-    Route::get('/transaction/{transaction_id}',[DailyTransactionsController::class,'showLatestOrder']);
+    Route::get('/transaction/{transaction_id}',[DailyTransactionsController::class,'showLatestOrder']); //show order of customer
     Route::delete('/order/{id}', [DailyTransactionsController::class,'destroy']);                       // Delete a orders
 });
 

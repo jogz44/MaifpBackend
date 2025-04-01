@@ -135,7 +135,7 @@ class DailyTransactionsController extends Controller
                     ->select(
                         'tbl_daily_transactions.quantity',
                         'tbl_daily_transactions.customer_id',
-                        'tbl_daily_transactions.id as transaction_id',
+                        'tbl_daily_transactions.id as table_id_transactions',
                         'tbl_items.brand_name',
                         'tbl_items.generic_name',
                         'tbl_items.dosage',
