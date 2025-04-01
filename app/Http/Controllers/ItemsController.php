@@ -338,20 +338,54 @@ class ItemsController extends Controller
 
     public function getJoinedItemswitInventory()
     {
-        $data = DB::table('tbl_items')
-            ->join('tbl_daily_inventory', 'tbl_items.id', '=', 'tbl_daily_inventory.stock_id') // Joining on the common column
-            ->select(
-                'tbl_items.po_no',
-                'tbl_items.brand_name',
-                'tbl_items.generic_name',
-                'tbl_items.dosage',
-                'tbl_items.dosage_form',
-                'tbl_items.unit',
-                'tbl_items.quantity',
-                'tbl_daily_inventory.Closing_quantity',
-                'tbl_items.expiration_date',
-            ) // Selecting specific columns
-            ->get();
+        // $data = DB::table('tbl_items')
+        //     ->join('tbl_daily_inventory', 'tbl_items.id', '=', 'tbl_daily_inventory.stock_id') // Joining on the common column
+        //     ->select(
+        //         'tbl_items.id as item_id',
+        //         'tbl_items.po_no',
+        //         'tbl_items.brand_name',
+        //         'tbl_items.generic_name',
+        //         'tbl_items.dosage',
+        //         'tbl_items.dosage_form',
+        //         'tbl_items.unit',
+        //         'tbl_items.quantity',
+        //         'tbl_daily_inventory.Closing_quantity',
+        //         'tbl_items.expiration_date',
+        //     ) // Selecting specific columns
+        //     ->get();
+
+
+        $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
+        ->select('inv1.stock_id', 'inv1.Closing_quantity', 'inv1.transaction_date')
+        ->whereRaw('inv1.transaction_date = (
+            SELECT MAX(inv2.transaction_date)
+            FROM tbl_daily_inventory as inv2
+            WHERE inv2.stock_id = inv1.stock_id
+        )');
+
+    $data = DB::table('tbl_items')
+        ->leftJoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
+            $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
+        })
+        ->select(
+            'tbl_items.id as item_id',
+            'tbl_items.po_no',
+            'tbl_items.brand_name',
+            'tbl_items.generic_name',
+            'tbl_items.dosage',
+            'tbl_items.dosage_form',
+            'tbl_items.unit',
+            'tbl_items.quantity as item_quantity',
+            'latest_inventory.Closing_quantity',
+            'tbl_items.expiration_date',
+            'latest_inventory.transaction_date as last_inventory_date'
+        )
+        ->get();
+
+
+
+
+
 
         return $data;
     }
