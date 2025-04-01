@@ -448,4 +448,6 @@ class DailyInventoryController extends Controller
             ], 500);
         }
     }
+
+    
 }

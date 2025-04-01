@@ -76,16 +76,16 @@ class DailyTransactionsController extends Controller
 
         try {
 
-            $transactions = Transactions::where('id',$id)
+            $transactions = Transactions::where('id', $id)
                 ->get();
             return response()->json(['success' => true, 'transactions' =>  $transactions]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transaction not found',
-                'error' => 'Record not found '. $e,
+                'error' => 'Record not found ' . $e,
             ], 404);
-        }catch (ValidationException $ve) {
+        } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -114,44 +114,44 @@ class DailyTransactionsController extends Controller
     {
         try {
 
-             // $data = DB::table('tbl_items')
-        //     ->join('tbl_daily_inventory', 'tbl_items.id', '=', 'tbl_daily_inventory.stock_id') // Joining on the common column
-        //     ->select(
-        //         'tbl_items.id as item_id',
-        //         'tbl_items.po_no',
-        //         'tbl_items.brand_name',
-        //         'tbl_items.generic_name',
-        //         'tbl_items.dosage',
-        //         'tbl_items.dosage_form',
-        //         'tbl_items.unit',
-        //         'tbl_items.quantity',
-        //         'tbl_daily_inventory.Closing_quantity',
-        //         'tbl_items.expiration_date',
-        //     ) // Selecting specific columns
-        //     ->get();
+            // $data = DB::table('tbl_items')
+            //     ->join('tbl_daily_inventory', 'tbl_items.id', '=', 'tbl_daily_inventory.stock_id') // Joining on the common column
+            //     ->select(
+            //         'tbl_items.id as item_id',
+            //         'tbl_items.po_no',
+            //         'tbl_items.brand_name',
+            //         'tbl_items.generic_name',
+            //         'tbl_items.dosage',
+            //         'tbl_items.dosage_form',
+            //         'tbl_items.unit',
+            //         'tbl_items.quantity',
+            //         'tbl_daily_inventory.Closing_quantity',
+            //         'tbl_items.expiration_date',
+            //     ) // Selecting specific columns
+            //     ->get();
 
-        $transactions = Transactions::where('transaction_id', $transactionID)
-                    ->join('tbl_items', 'tbl_daily_transactions.item_id', '=', 'tbl_items.id')
-                    ->select(
-                        'tbl_daily_transactions.quantity',
-                        'tbl_daily_transactions.customer_id',
-                        'tbl_daily_transactions.id as table_id_transactions',
-                        'tbl_items.brand_name',
-                        'tbl_items.generic_name',
-                        'tbl_items.dosage',
-                        'tbl_items.dosage_form',
-                        'tbl_items.unit',
-                        'tbl_items.id as item_id'
-                        )
-                    ->get();
+            $transactions = Transactions::where('transaction_id', $transactionID)
+                ->join('tbl_items', 'tbl_daily_transactions.item_id', '=', 'tbl_items.id')
+                ->select(
+                    'tbl_daily_transactions.quantity',
+                    'tbl_daily_transactions.customer_id',
+                    'tbl_daily_transactions.id as table_id_transactions',
+                    'tbl_items.brand_name',
+                    'tbl_items.generic_name',
+                    'tbl_items.dosage',
+                    'tbl_items.dosage_form',
+                    'tbl_items.unit',
+                    'tbl_items.id as item_id'
+                )
+                ->get();
             return response()->json(['success' => true, 'transactions' =>  $transactions]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transaction not found',
-                'error' => 'Record not found '. $e,
+                'error' => 'Record not found ' . $e,
             ], 404);
-        }catch (ValidationException $ve) {
+        } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -220,7 +220,8 @@ class DailyTransactionsController extends Controller
         }
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
             $transactions = Transactions::find($id);
             if (!$transactions) {
@@ -266,24 +267,24 @@ class DailyTransactionsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
-
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         try {
             $transactions = Transactions::where('id', $id)->firstOrFail();
             $transactions->delete();
             return response()->json([
                 'success' => true,
                 'message' => 'transaction deleted.',
-            ],200);
+            ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transaction not found',
                 'error' => 'Record not found : ' . $e,
             ], 404);
-        }catch (ValidationException $ve) {
+        } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -306,5 +307,102 @@ class DailyTransactionsController extends Controller
             ], 500);
         }
     }
+
+    public function getTransactionID($userid)
+    {
+        try {
+            $transactions = Transactions::where('customer_id', $userid)
+                ->distinct()
+                ->pluck('transaction_id');
+
+            return response()->json($transactions, 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction not found',
+                'error' => 'Record not found : ' . $e,
+            ], 404);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCustomersWithLatestTransactions()
+    {
+        try {
+            // Subquery to fetch the latest transaction for each customer
+            $latestTransactionQuery = DB::table('tbl_daily_transactions as t1')
+                ->select(
+                    't1.customer_id',
+                    't1.transaction_id',
+                    't1.transaction_date',
+                    DB::raw('ROW_NUMBER() OVER (
+                        PARTITION BY t1.customer_id
+                        ORDER BY t1.transaction_date DESC, t1.transaction_id DESC
+                    ) AS rn') // Break ties by transaction_id if dates are identical
+                );
+
+            // Join with customers table and filter for the latest transaction (rn = 1)
+            $customersWithLatestTransactions = DB::table('tbl_customers')
+                ->joinSub($latestTransactionQuery, 'latest_transactions', function ($join) {
+                    $join->on('tbl_customers.id', '=', 'latest_transactions.customer_id');
+                })
+                ->select(
+                    'tbl_customers.id as customer_id',
+                    'tbl_customers.firstname',
+                    'tbl_customers.lastname',
+                    'tbl_customers.middlename',
+                    'tbl_customers.ext',
+                    'tbl_customers.birthdate',
+                    'tbl_customers.age',
+                    'tbl_customers.contact_number',
+                    'tbl_customers.barangay',
+                    'latest_transactions.transaction_id',
+                    'latest_transactions.transaction_date'
+                )
+                ->where('latest_transactions.rn', 1) // Select only the latest transaction
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customersWithLatestTransactions,
+                'message' => 'Customers with latest transactions retrieved successfully',
+            ], 200);
+
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error occurred',
+                'error' => $qe->getMessage(),
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+
 
 }

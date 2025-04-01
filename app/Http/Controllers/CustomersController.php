@@ -49,7 +49,7 @@ class CustomersController extends Controller
         try {
             $customers = Customers::where('id',$id)
                 ->get();
-            return response()->json(['success' => true, 'customers' =>  $customers]);
+            return response()->json(['success' => true, 'customer' =>  $customers]);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
