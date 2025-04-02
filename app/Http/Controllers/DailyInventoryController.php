@@ -150,16 +150,6 @@ class DailyInventoryController extends Controller
 
             $validationInput = $request->validate(
                 [
-                    // 'po_no' => 'required|string|max:50',
-                    // 'brand_name' => 'required|string|max:100',
-                    // 'generic_name' => 'required|string|max:100',
-                    // 'dosage_form' => 'nullable|string|max:50',
-                    // 'dosage' => 'required|string|max:50',
-                    // 'category' => 'nullable|string|max:50',
-                    // 'unit' => 'required|string|max:50',
-                    // 'quantity' => 'required|numeric|min:1',
-                    // 'expiration_date' => 'required|date|after:today',
-                    // 'user_id' => 'required|exists:users,id',
                     'stock_id' => 'required|exists:tbl_items,id',
                     'Openning_quantity' => 'required|numeric|min:1',
                     'Closing_quantity' => 'nullable|numeric',
@@ -449,5 +439,5 @@ class DailyInventoryController extends Controller
         }
     }
 
-    
+
 }
