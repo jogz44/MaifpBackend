@@ -24,6 +24,8 @@ class items extends Model
         'unit',
         'price',
         'quantity',
+        'box_quantity',
+        'quantity_per_box',
         'price',
         'expiration_date',
         'user_id',
