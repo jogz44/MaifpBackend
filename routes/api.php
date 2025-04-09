@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\SystemUserController;
 
@@ -68,9 +69,13 @@ Route::prefix('system-users')->group(function () {
     Route::delete('/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
 });
 
-//  MGA KULANG
-//  mag deduct ug stocks gikan sa orders
-//  mag add ug stocks sa daily inventory pag naay new items
-//  revert sa stocks kung mag delete ug orders
-//
-//
+
+Route::prefix('indicators')->group(function () {
+    Route::post('/open', [IndicatorLibraryController::class, 'store']);          // Create a new indicators OPEN/CLOSE for today
+    Route::put('/close', [IndicatorLibraryController::class, 'update']);        // Update an existing indicator
+    Route::get('/current', [IndicatorLibraryController::class, 'getCurrentStatus']); //Get Indicator for Today
+    //OPEN Indicator for Today
+    //CLOSE Indicator for Today
+});
+
+
