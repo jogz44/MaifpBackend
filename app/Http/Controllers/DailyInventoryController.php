@@ -311,6 +311,41 @@ class DailyInventoryController extends Controller
         }
     }
 
+    public function QuantityOutOfStocks()
+    {
+        try {
+            $lowStocks =  Inventory::where('Openning_quantity', '=', 0)
+                ->orWhere('Closing_quantity', '=', 0)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'stocks' => $lowStocks
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function regenerateInventory()
     {
         try {
