@@ -29,6 +29,8 @@ Route::prefix('daily')->group(function () {
     Route::post('/inventory/close-latest', [DailyInventoryController::class, 'closeInventory']);           // CLOSE ITEMS FOR THE DAY
     Route::put('/{id}', [DailyInventoryController::class, 'update']);                                  // Update an existing transaction
     Route::delete('/{id}', [DailyInventoryController::class, 'destroy']);                                           // Delete a transaction
+
+    Route::get('/mode/test', [DailyInventoryController::class, 'testQuery']);
 });
 
 
