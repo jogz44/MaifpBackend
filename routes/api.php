@@ -58,6 +58,7 @@ Route::prefix('items')->group(function () {
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number
 
     Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
+    Route::get('/generate/tempno', [ItemsController::class, 'TemporaryID']);
 
 });
 

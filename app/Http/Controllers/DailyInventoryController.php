@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use App\Models\Daily_inventory as Inventory;
-use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Stmt\TryCatch;
+use Illuminate\Validation\ValidationException;
 
 class DailyInventoryController extends Controller
 {
@@ -350,38 +350,6 @@ class DailyInventoryController extends Controller
     public function regenerateInventory()
     {
         try {
-            // $subQuery = DB::table('tbl_daily_inventory')
-            //     ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
-            //     ->where('status', 'CLOSE')          // Only consider OPEN status in subquery
-            //     ->groupBy('stock_id');
-
-            // $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
-            //     ->joinSub($subQuery, 'latest', function ($join) {
-            //         $join->on('inv1.stock_id', '=', 'latest.stock_id')
-            //             ->on('inv1.transaction_date', '=', 'latest.max_date');
-            //     })
-            //     ->where('inv1.status', 'CLOSE')     // Filter main query for OPEN status as well
-            //     ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.transaction_date', 'inv1.status');
-
-            // $latestData = $latestInventoryQuery->get();
-
-            // // Insert new records with updated quantities
-            // $insertData = $latestData->map(function ($item) {
-            //     return [
-            //         'stock_id' => $item->stock_id,
-            //         'Openning_quantity' => $item->Closing_quantity,
-            //         'Closing_quantity' => $item->Closing_quantity, // Will be calculated later
-            //         'quantity_out' => 0,
-            //         'transaction_date' => now(), // Use current date
-            //         'remarks' => 'Auto-generated from previous closing',
-            //         'status' => 'OPEN',
-            //         'user_id' => 1, // Default user ID
-            //         'created_at' => now(),
-            //         'updated_at' => now()
-            //     ];
-            // })->toArray();
-
-            // DB::table('tbl_daily_inventory')->insert($insertData);
 
             // Check if there is already an OPEN status
             $hasOpenStatus = DB::table('tbl_daily_inventory')
@@ -392,9 +360,25 @@ class DailyInventoryController extends Controller
             if ($hasOpenStatus) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Regeneration aborted: OPEN status already exists.',
+                    'message' => 'Regeneration aborted: Stocks already open for today.',
                 ], 409); // HTTP 409 Conflict
             }
+
+            // Check if there is a CLOSE status for the current date
+            $currentDate = Carbon::today()->toDateString();
+            $hasClosingStatusToday = DB::table('tbl_daily_inventory')
+                ->where('status', 'CLOSE')
+                ->whereDate('transaction_date', $currentDate)
+                ->exists();
+
+            // If CLOSE status exists for today, abort the operation
+            if ($hasClosingStatusToday) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Regeneration aborted: Stocks already closed for today.',
+                ], 409); // HTTP 409 Conflict
+            }
+
 
             $subQuery = DB::table('tbl_daily_inventory')
                 ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
@@ -461,7 +445,7 @@ class DailyInventoryController extends Controller
 
             $subQuery = DB::table('tbl_daily_inventory')
                 ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
-                ->where('status', 'OPEN')          // Only consider close status in subquery
+                ->where('status', 'OPEN')          // Only consider open status in subquery
                 ->groupBy('stock_id');
 
             $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')

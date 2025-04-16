@@ -6,11 +6,23 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 use App\Models\Items;
 
 
 class ItemsController extends Controller
 {
+
+
+    public function TemporaryID()
+    {
+        $dateNow = now()->format('Ymd');  // Get date as YYYYMMDD
+        $string_id = (string) Str::uuid();
+        $temporary_id = 'TEMP' .'-'. $dateNow .'-'. $string_id ;
+        return response()->json($temporary_id);
+    }
+
+
     //
     public function index()
     {
