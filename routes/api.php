@@ -21,7 +21,7 @@ Route::prefix('customers')->group(function () {
 Route::prefix('daily')->group(function () {
     Route::get('/', [DailyInventoryController::class, 'index']);                                           // Get all transactions
     Route::get('/{id}', [DailyInventoryController::class, 'show']);                                       // Get a specific transaction
-    Route::get('/lowquantity', [DailyInventoryController::class, 'getLowQuantityStocks']);                  //Get low quantity stocks
+    Route::get('/inventory/lowquantity', [DailyInventoryController::class, 'getLowQuantityStocks']);                  //Get low quantity stocks
     Route::get('/today/{transaction_date}', [DailyInventoryController::class, 'showTodayInventory']);    // Get transactions by date
     Route::get('/inventory/lastest', [DailyInventoryController::class, 'showLatest']);
     Route::post('/', [DailyInventoryController::class, 'store']);                                        // Create a new transaction
@@ -51,7 +51,7 @@ Route::prefix('items')->group(function () {
     Route::get('/', [ItemsController::class, 'index']);                      // Get all items
     Route::get('/{id}', [ItemsController::class, 'show']);                  // Get single item by ID
     Route::get('/po/show/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
-    Route::get('/list/expiring',[ItemsController::class,'getExpiringStock']); // Get all expiring item
+    Route::get('/expire/list',[ItemsController::class,'getExpiringStock']); // Get all expiring item
     Route::post('/new', [ItemsController::class, 'store']);                  // Create a new item
     Route::put('/{id}', [ItemsController::class, 'update']);             // Update an item
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID

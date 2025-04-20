@@ -280,13 +280,42 @@ class DailyInventoryController extends Controller
     public function getLowQuantityStocks()
     {
         try {
-            $lowStocks =  Inventory::where('Openning_quantity', '<', 20)
-                ->orWhere('Closing_quantity', '<', 20)
+
+
+            $today = Carbon::today()->toDateString(); // '2025-04-20'
+
+            $zeroStocksToday = DB::table('tbl_daily_inventory')
+                ->whereDate('transaction_date', '<=', $today)
+                ->where(function ($query) {
+                    $query->where('Closing_quantity', '=', 0)
+                          ->orWhere('Openning_quantity', '=', 0);
+                });
+
+                $data = DB::table('tbl_items')
+                ->JoinSub($zeroStocksToday, 'latest_inventory', function ($join) {
+                    $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
+                })
+                ->select(
+                    'latest_inventory.id as inventory_id',
+                    'tbl_items.id as item_id',
+                    'tbl_items.po_no',
+                    'tbl_items.brand_name',
+                    'tbl_items.generic_name',
+                    'tbl_items.dosage',
+                    'tbl_items.dosage_form',
+                    'tbl_items.unit',
+                    'tbl_items.quantity as item_quantity',
+                    'latest_inventory.Openning_quantity',
+                    'latest_inventory.Closing_quantity',
+                    'tbl_items.expiration_date',
+                    'latest_inventory.transaction_date as last_inventory_date',
+                )
                 ->get();
+
 
             return response()->json([
                 'success' => true,
-                'stocks' => $lowStocks
+                'stocks' => $data
             ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -311,6 +340,9 @@ class DailyInventoryController extends Controller
             ], 500);
         }
     }
+
+
+    
 
     public function QuantityOutOfStocks()
     {

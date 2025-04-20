@@ -318,15 +318,28 @@ class ItemsController extends Controller
     public function getExpiringStock()
     {
         try {
+            $today = now()->toDateString();
             $monthFromNow = now()->addDays(30)->toDateString();
 
-            $expiredItems = Items::where('expiration_date', '<', $monthFromNow)->get();
+
+
+            $expiredItems = DB::table('tbl_items')
+                ->select([
+                    'po_no', 'brand_name', 'generic_name', 'dosage', 'dosage_form',
+                    'category', 'expiration_date'
+                ])
+                // ->whereDate('expiration_date', '>=', $today)
+                ->whereDate('expiration_date', '<=', $monthFromNow)
+                ->orderBy('expiration_date', 'asc')
+                ->get();
+
+
+
             return response()->json([
-                'messege' => 'success',
+                'message' => 'success',
                 'items' => $expiredItems,
                 'month' => $monthFromNow,
                 'count' => $expiredItems->count(),
-                // 'sql' => Items::where('expiration_date', '<', $monthFromNow)->toSql(),
             ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -334,16 +347,13 @@ class ItemsController extends Controller
                 'message' => 'Validation error',
                 'errors' => $ve->errors()
             ], 422);
-            //throw $th;
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-            //throw $th;
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -351,6 +361,7 @@ class ItemsController extends Controller
             ], 500);
         }
     }
+
 
     public function getJoinedItemswitInventory()
     {
@@ -403,4 +414,6 @@ class ItemsController extends Controller
         ->get();
         return $data;
     }
+
+
 }
