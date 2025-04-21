@@ -281,36 +281,52 @@ class DailyInventoryController extends Controller
     {
         try {
 
+            $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
+            ->select(
+                'inv1.id',
+                'inv1.stock_id',
+                'inv1.Openning_quantity',
+                'inv1.Closing_quantity',
+                'inv1.quantity_out',
+                'inv1.transaction_date',
+                'inv1.remarks',
+                'inv1.status',
+                'inv1.user_id'
+            )
+            ->whereRaw('inv1.transaction_date = (
+                SELECT MAX(inv2.transaction_date)
+                FROM tbl_daily_inventory as inv2
+                WHERE inv2.stock_id = inv1.stock_id
+            )')
+            ->where(function ($query) {
+                $query->where('inv1.Openning_quantity', '=', 0)
+                      ->orWhere('inv1.Closing_quantity', '=', 0);
+            });
 
-            $today = Carbon::today()->toDateString(); // '2025-04-20'
+        // Join with tbl_items to get item info
+        $data = DB::table('tbl_items as i')
+            ->joinSub($latestInventoryQuery, 'latest_inv', function ($join) {
+                $join->on('i.id', '=', 'latest_inv.stock_id');
+            })
+            ->select(
+                'latest_inv.id as inventory_id',
+                'i.id as item_id',
+                'i.po_no',
+                'i.brand_name',
+                'i.generic_name',
+                'i.dosage',
+                'i.dosage_form',
+                'i.unit',
+                'i.quantity as item_quantity',
+                'latest_inv.Openning_quantity',
+                'latest_inv.Closing_quantity',
+                'i.expiration_date',
+                'latest_inv.transaction_date as last_inventory_date',
+                'latest_inv.status',
+                'latest_inv.remarks'
+            )
+            ->get();
 
-            $zeroStocksToday = DB::table('tbl_daily_inventory')
-                ->whereDate('transaction_date', '<=', $today)
-                ->where(function ($query) {
-                    $query->where('Closing_quantity', '=', 0)
-                          ->orWhere('Openning_quantity', '=', 0);
-                });
-
-                $data = DB::table('tbl_items')
-                ->JoinSub($zeroStocksToday, 'latest_inventory', function ($join) {
-                    $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
-                })
-                ->select(
-                    'latest_inventory.id as inventory_id',
-                    'tbl_items.id as item_id',
-                    'tbl_items.po_no',
-                    'tbl_items.brand_name',
-                    'tbl_items.generic_name',
-                    'tbl_items.dosage',
-                    'tbl_items.dosage_form',
-                    'tbl_items.unit',
-                    'tbl_items.quantity as item_quantity',
-                    'latest_inventory.Openning_quantity',
-                    'latest_inventory.Closing_quantity',
-                    'tbl_items.expiration_date',
-                    'latest_inventory.transaction_date as last_inventory_date',
-                )
-                ->get();
 
 
             return response()->json([
@@ -342,7 +358,7 @@ class DailyInventoryController extends Controller
     }
 
 
-    
+
 
     public function QuantityOutOfStocks()
     {
