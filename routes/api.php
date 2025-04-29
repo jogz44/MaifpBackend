@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\DailyTransactionsController;
@@ -8,6 +9,9 @@ use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\SystemUserController;
 
 
+Route::post('/user/login', [SystemUserController::class, 'login_User']);
+
+Route::middleware('auth:sanctum')->group(function () {
 // DONE
 Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
@@ -47,7 +51,7 @@ Route::prefix('orders')->group(function(){
 });
 
 
-Route::prefix('items')->group(function () {
+    Route::prefix('items')->group(function () {
     Route::get('/', [ItemsController::class, 'index']);                      // Get all items
     Route::get('/{id}', [ItemsController::class, 'show']);                  // Get single item by ID
     Route::get('/po/show/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
@@ -64,12 +68,13 @@ Route::prefix('items')->group(function () {
 
 
 
-Route::prefix('system-users')->group(function () {
-    Route::get('/', [SystemUserController::class, 'index']);              // Get all users
-    Route::get('/{id}', [SystemUserController::class, 'show']);          // Get a specific user
-    Route::post('/', [SystemUserController::class, 'store']);           // Create a new user
-    Route::put('/{id}', [SystemUserController::class, 'update']);      // Update an existing user
-    Route::delete('/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
+Route::prefix('system')->group(function () {
+    Route::get('/users', [SystemUserController::class, 'index']);              // Get all users
+    Route::get('/user/profile/{id}', [SystemUserController::class, 'show']);          // Get a specific user
+    Route::post('/user/new', [SystemUserController::class, 'store']);           // Create a new user
+    Route::put('/user/profile-update/{id}', [SystemUserController::class, 'update']);      // Update an existing user
+    Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
+
 });
 
 
@@ -81,4 +86,5 @@ Route::prefix('indicators')->group(function () {
     //CLOSE Indicator for Today
 });
 
+});
 

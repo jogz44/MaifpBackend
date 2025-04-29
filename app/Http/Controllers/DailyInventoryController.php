@@ -204,7 +204,7 @@ class DailyInventoryController extends Controller
                     'stock_id' => 'required|exists:tbl_items,id',
                     'Openning_quantity' => 'required|numeric|min:1',
                     'Closing_quantity' => 'required|numeric|min:1',
-                    'quantity_out' => 'required|numeric|min:1',
+                    'quantity_out' => 'required|numeric',
                     'transaction_date' => 'required|date',
                     'user_id' => 'required|exists:tbl_system_users,id',
                     'remarks'   => 'nullable|string|max:250',

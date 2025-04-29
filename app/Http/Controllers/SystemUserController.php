@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
-use App\Models\System_users;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use App\Models\User;
 
 class SystemUserController extends Controller
 {
@@ -14,7 +17,7 @@ class SystemUserController extends Controller
     {
         try {
 
-            $System_users = System_users::orderBy('id', 'desc')
+            $System_users = User::orderBy('id', 'desc')
                 ->get();
             return response()->json(['success' => true, 'users' =>  $System_users]);
         } catch (ValidationException $ve) {
@@ -44,7 +47,7 @@ class SystemUserController extends Controller
     public function show($id)
     {
         try {
-            $System_users = System_users::find($id)
+            $System_users = User::where('id',$id)
                 ->get();
             return response()->json(['success' => true, 'user' =>  $System_users]);
         } catch (ValidationException $ve) {
@@ -73,28 +76,23 @@ class SystemUserController extends Controller
 
     public function store(Request $request)
     {
-
         try {
+            $validationInput = $request->validate([
+                'first_name' => 'required|string|max:100',
+                'last_name' => 'required|string|max:100',
+                'middle_name' => 'nullable|string|max:100',
+                'position' => 'required|string|max:100',
+                'office' => 'required|string|max:100',
+                'username' => 'required|string|max:100|unique:users,username',
+                'password' => 'required|string|max:16',
+            ]);
 
-            $validationInput = $request->validate(
-                [
-                'po_no' => 'required|string|max:50',
-                'brand_name' => 'required|string|max:100',
-                'generic_name' => 'required|string|max:100',
-                'dosage_form' => 'nullable|string|max:50',
-                'dosage' => 'required|string|max:50',
-                'category' => 'nullable|string|max:50',
-                'unit' => 'required|string|max:50',
-                'quantity' => 'required|numeric|min:1',
-                'expiration_date' => 'required|date|after:today',
-                'user_id' => 'required|exists:users,id',
-                ]
-            );
+            // No need to hash password manually here
+            $System_users = User::create($validationInput);
 
-            $System_users = System_users::create($validationInput);
             return response()->json([
                 'success' => true,
-                'users' =>  $System_users
+                'user' => $System_users
             ]);
         } catch (ValidationException $ve) {
             return response()->json([
@@ -102,16 +100,13 @@ class SystemUserController extends Controller
                 'message' => 'Validation error',
                 'errors' => $ve->errors()
             ], 422);
-            //throw $th;
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-            //throw $th;
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -120,25 +115,23 @@ class SystemUserController extends Controller
         }
     }
 
+
     public function update(Request $request, $id) {
         try {
-            $user = System_users::find($id);
+            $user = User::find($id);
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'user not found'], 404);
             }
 
             $validationInput = $request->validate(
                 [
-                    'po_no' => 'required|string|max:50',
-                    'brand_name' => 'required|string|max:100',
-                    'generic_name' => 'required|string|max:100',
-                    'dosage_form' => 'nullable|string|max:50',
-                    'dosage' => 'required|string|max:50',
-                    'category' => 'nullable|string|max:50',
-                    'unit' => 'required|string|max:50',
-                    'quantity' => 'required|numeric|min:1',
-                    'expiration_date' => 'required|date|after:today',
-                    'user_id' => 'required|exists:users,id',
+                    'first_name' => 'required|string|max:100',
+                    'last_name' => 'required|string|max:100',
+                    'middle_name' => 'nullable|string|max:100',
+                    'position' => 'required|string|max:100',
+                    'office' => 'required|string|max:100',
+                    'username' => 'required|string|max:100|unique:users,username',
+                    'password' => 'required|string|max:16',
                 ]
             );
 
@@ -173,11 +166,9 @@ class SystemUserController extends Controller
     }
 
 
-
-
     public function destroy($id) {
         try {
-            $user = System_users::find($id);
+            $user = User::find($id);
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'user not found'], 404);
             }
@@ -208,5 +199,26 @@ class SystemUserController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
+    }
+
+
+
+    //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------
+
+    public function login_User(Request $request){
+        if(!Auth::attempt($request->only('username', 'password')))
+        {
+                return response()->json(['login_status'=> false, 'mssage'=> 'Login Failed: Invalid Credentials'],401);
+        }
+
+                $user =  Auth::user();
+                $token = $user->createToken('CICTMO2025-CHO-INVENTORY-SYSTEM')->plainTextToken;
+                $cookie = cookie('auth_token', $token, 60*24,null,null,true,true,false,'None');
+                return response()->json([
+                        'Login_Status' => true,
+                        'message'=> 'login successfully',
+                        'token' => $token
+
+                ])->withCookie($cookie);
     }
 }
