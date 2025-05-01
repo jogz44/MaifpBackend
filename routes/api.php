@@ -11,7 +11,7 @@ use App\Http\Controllers\SystemUserController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
 // DONE
 Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
@@ -44,7 +44,7 @@ Route::prefix('orders')->group(function(){
     Route::get('/transaction/new/{customer_id}',[DailyTransactionsController::class,'newTransactionID']);
     Route::post('/new', [DailyTransactionsController::class,'store']);                   // Create a new orders
     Route::put('/{id}', [DailyTransactionsController::class,'update']);              // Update a orders
-    Route::get('/transaction/latest',[DailyTransactionsController::class,'getCustomersWithLatestTransactions']);
+    Route::get('/transaction/latest',[DailyTransactionsController::class,'getCustomersWithTransactionsToday']);
     Route::get('/transaction/{transaction_id}',[DailyTransactionsController::class,'showLatestOrder']); //show order of customer
     Route::get('/transaction/unique/{customer_id}',[DailyTransactionsController::class,'getTransactionID']); //show unique transaction numbers  of customer
     Route::delete('/order/{id}', [DailyTransactionsController::class,'destroy']);                       // Delete a orders
@@ -86,5 +86,5 @@ Route::prefix('indicators')->group(function () {
     //CLOSE Indicator for Today
 });
 
-});
+// });
 

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\Daily_transactions as Transactions;
 use App\Models\items;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 
 class DailyTransactionsController extends Controller
 {
@@ -387,7 +387,6 @@ class DailyTransactionsController extends Controller
                 'data' => $customersWithLatestTransactions,
                 'message' => 'Customers with latest transactions retrieved successfully',
             ], 200);
-
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
@@ -403,6 +402,64 @@ class DailyTransactionsController extends Controller
         }
     }
 
+    public function getCustomersWithTransactionsToday()
+    {
 
 
+        try {
+            $today = Carbon::today()->toDateString(); // e.g. '2025-05-02'
+
+            // Subquery to fetch the latest transaction for each customer **on the current day**
+            $latestTransactionQuery = DB::table('tbl_daily_transactions as t1')
+                ->select(
+                    't1.customer_id',
+                    't1.transaction_id',
+                    't1.transaction_date',
+                    DB::raw('ROW_NUMBER() OVER (
+                    PARTITION BY t1.customer_id
+                    ORDER BY t1.transaction_date DESC, t1.transaction_id DESC
+                ) AS rn')
+                )
+                ->whereDate('t1.transaction_date', $today); // Filter transactions for today
+
+            // Join with customers table and filter for the latest transaction (rn = 1)
+            $customersWithLatestTransactions = DB::table('tbl_customers')
+                ->joinSub($latestTransactionQuery, 'latest_transactions', function ($join) {
+                    $join->on('tbl_customers.id', '=', 'latest_transactions.customer_id');
+                })
+                ->select(
+                    'tbl_customers.id as customer_id',
+                    'tbl_customers.firstname',
+                    'tbl_customers.lastname',
+                    'tbl_customers.middlename',
+                    'tbl_customers.ext',
+                    'tbl_customers.birthdate',
+                    'tbl_customers.age',
+                    'tbl_customers.contact_number',
+                    'tbl_customers.barangay',
+                    'latest_transactions.transaction_id',
+                    'latest_transactions.transaction_date'
+                )
+                ->where('latest_transactions.rn', 1) // Select only the latest transaction per customer
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customersWithLatestTransactions,
+                'message' => 'Customers with latest transactions for today retrieved successfully',
+            ], 200);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error occurred',
+                'error' => $qe->getMessage(),
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
 }

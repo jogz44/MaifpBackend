@@ -365,7 +365,7 @@ class ItemsController extends Controller
 
     public function getJoinedItemswitInventory()
     {
-     
+
         $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
         ->select('inv1.id','inv1.stock_id', 'inv1.Closing_quantity','inv1.Openning_quantity', 'inv1.transaction_date')
         ->whereRaw('inv1.transaction_date = (
@@ -395,6 +395,8 @@ class ItemsController extends Controller
             'latest_inventory.transaction_date as last_inventory_date',
 
         )
+        ->orderBy('tbl_items.brand_name')
+        ->orderBy('tbl_items.expiration_date', 'asc')
         ->get();
         return $data;
     }

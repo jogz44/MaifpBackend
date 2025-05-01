@@ -47,7 +47,7 @@ class daily_transactions extends Model
             ->first();
 
         if (!$inventory) {
-            // Log::warning("No inventory record found for stock_id: {$transaction->item_id}, transaction_date: {$transaction->transaction_date}");
+             Log::warning("No inventory record found for stock_id: {$transaction->item_id}, transaction_date: {$transaction->transaction_date}");
             return;
         }
 
