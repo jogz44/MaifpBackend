@@ -35,6 +35,7 @@ Route::prefix('daily')->group(function () {
     Route::delete('/{id}', [DailyInventoryController::class, 'destroy']);                                           // Delete a transaction
 
     Route::get('/mode/test', [DailyInventoryController::class, 'testQuery']);
+    Route::get('/inventoryOpen/today', [DailyInventoryController::class, 'OpenTransactionLookUp']);
 });
 
 
