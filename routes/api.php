@@ -6,6 +6,7 @@ use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\ItemsController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SystemUserController;
 
 
@@ -85,6 +86,11 @@ Route::prefix('indicators')->group(function () {
     Route::get('/current', [IndicatorLibraryController::class, 'getCurrentStatus']); //Get Indicator for Today
     //OPEN Indicator for Today
     //CLOSE Indicator for Today
+});
+
+
+Route::prefix('reports')->group(function () {
+    Route::get('/dispense/monthly', [ReportsController::class, 'Monthly_Dispense']);          // get monthly dispense report
 });
 
 // });
