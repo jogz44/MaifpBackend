@@ -25,18 +25,18 @@ return new class extends Migration
     MONTHNAME(di.transaction_date) AS month_name,
     MONTH(di.transaction_date) AS month_number,
     i.quantity,
-     (i.quantity - sum(di.quantity_out)) as balance,
-    SUM(di.quantity_out) AS total_dispensed
+    (i.quantity - sum(di.quantity_out)) as balance,
+    SUM(di.quantity_out) AS total_dispensed,
+    YEAR(di.transaction_date) AS Trans_year
 
         FROM
             tbl_daily_inventory di
         JOIN
             tbl_items i ON di.stock_id = i.id
         WHERE
-            YEAR(di.transaction_date) = YEAR(CURDATE()) and
             di.status = 'CLOSE'
         GROUP BY
-            i.po_no, di.stock_id, month_number, month_name, i.brand_name, i.generic_name, i.dosage, i.dosage_form,i.quantity
+            i.po_no, di.stock_id, month_number, month_name, Trans_year, i.brand_name, i.generic_name, i.dosage, i.dosage_form,i.quantity
         ORDER BY
         month_number
         ");

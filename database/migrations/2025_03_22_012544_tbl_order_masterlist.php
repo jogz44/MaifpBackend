@@ -18,6 +18,7 @@ return new class extends Migration
             $table -> bigInteger('item_id')->required();
             $table -> bigInteger('customer_id')->required();
             $table -> bigInteger('quantity')->required();
+            $table -> string('unit')->required();
             $table -> date('transaction_date')->required();
             $table -> bigInteger('user_id');
             $table -> timestamps();

@@ -16,9 +16,28 @@ class ItemsController extends Controller
 
     public function TemporaryID()
     {
-        $dateNow = now()->format('Ymd');  // Get date as YYYYMMDD
-        $string_id = (string) Str::uuid();
-        $temporary_id = 'TEMP' .'-'. $dateNow .'-'. $string_id ;
+        // $dateNow = now()->format('Ymd');  // Get date as YYYYMMDD
+        // $string_id = (string) Str::uuid();
+        // $temporary_id = 'TEMP' .'-'. $dateNow .'-'. $string_id ;
+        // return response()->json($temporary_id);
+
+        $dateNow = now()->format('Ymd'); // Current date as YYYYMMDD
+
+        // Find the latest PO number for today with 'TEMP' prefix
+        $latestItem = Items::where('po_no', 'like', "TEMP-$dateNow-%")
+            ->orderByDesc('po_no')
+            ->first();
+
+        if ($latestItem) {
+            // Extract the last incremental number and increment it
+            $lastNumber = (int) substr($latestItem->po_number, -6);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        $temporary_id = 'TEMP-' . $dateNow . '-' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+
         return response()->json($temporary_id);
     }
 
@@ -148,6 +167,7 @@ class ItemsController extends Controller
                     'box_quantity' => 'nullable|numeric',
                     'quantity_per_box' => 'nullable|numeric',
                     'price' => 'nullable|numeric',
+                    'price_per_pcs' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
                     'user_id' => 'required|exists:tbl_system_users,id',
                 ]
@@ -205,6 +225,7 @@ class ItemsController extends Controller
                     'box_quantity' => 'nullable|numeric',
                     'quantity_per_box' => 'nullable|numeric',
                     'price' => 'nullable|numeric',
+                    'price_per_pcs' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
                     'user_id' => 'required|exists:tbl_system_users,id',
                 ]

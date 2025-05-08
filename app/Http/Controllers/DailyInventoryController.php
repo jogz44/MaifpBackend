@@ -617,9 +617,9 @@ class DailyInventoryController extends Controller
                 ->get();
 
             if ($openInventories->isEmpty()) {
-                return response()->json(['status' => true,'message'=>'no OPEN status found for '. $today], 200);
+                return response()->json(['status' => true,'message'=>'Stocks is currently closed, Please Open stocks for today'. $today], 200);
             }else {
-                return response()->json(['status' => false,'message'=>'OPEN status found for today '. $today], 200);
+                return response()->json(['status' => false,'message'=>'Stocks is already open for today'. $today], 200);
             }
         } catch (ValidationException $ve) {
             return response()->json([
