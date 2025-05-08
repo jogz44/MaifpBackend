@@ -18,6 +18,7 @@ class daily_transactions extends Model
         'transaction_id',
         'customer_id',
         'quantity',
+        'unit',
         'transaction_date',
         'user_id',
     ];

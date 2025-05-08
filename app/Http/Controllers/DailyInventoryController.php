@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -562,6 +563,45 @@ class DailyInventoryController extends Controller
         }
     }
 
+    public function closeInventoryByDate( $Date)
+{
+    // Optional: Validate the dates format (YYYY-MM-DD)
+    $validator = Validator::make(
+        // ['stock_status' => $status, 'Date' => $Date],
+        // ['stock_status' => 'required|string', 'Date' => 'required|date']
+        [ 'Date' => $Date],
+        [ 'Date' => 'required|date']
+    );
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    return $this->getCloseInventory( $Date);
+}
+
+    public function getCloseInventory( $Date)
+    {
+        try {
+
+            $inventoryCloseList = DB::table('vw_inventory_close_list')
+                ->whereDate('transaction_date', $Date)
+                // ->where('stock_status', $status)
+                ->get();
+            return response()->json([
+                'success' => true,
+                'list' => $inventoryCloseList
+            ], 200);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['error' => 'Database query error', 'message' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'message' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function testQuery()
     {
@@ -617,9 +657,9 @@ class DailyInventoryController extends Controller
                 ->get();
 
             if ($openInventories->isEmpty()) {
-                return response()->json(['status' => true,'message'=>'Stocks is currently closed, Please Open stocks for today'. $today], 200);
-            }else {
-                return response()->json(['status' => false,'message'=>'Stocks is already open for today'. $today], 200);
+                return response()->json(['status' => true, 'message' => 'Stocks is currently closed, Please Open stocks for today' . $today], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => 'Stocks is already open for today' . $today], 200);
             }
         } catch (ValidationException $ve) {
             return response()->json([

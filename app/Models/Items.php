@@ -25,7 +25,6 @@ class items extends Model
         'price',
         'price_per_pcs',
         'quantity',
-        'unit_per_pcs',
         'box_quantity',
         'quantity_per_box',
         'price',

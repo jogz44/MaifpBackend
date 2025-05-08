@@ -23,7 +23,6 @@ return new class extends Migration
         $table->double('price');
         $table->double('price_per_pcs');
         $table->double('quantity')->required();
-        $table->string('unit_per_pcs')->required();
         $table->double('box_quantity');
         $table->double('quantity_per_box');
         $table->date('expiration_date')->required();
