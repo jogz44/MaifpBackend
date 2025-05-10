@@ -47,7 +47,7 @@ Route::prefix('orders')->group(function(){
     Route::get('/transaction/new/{customer_id}',[DailyTransactionsController::class,'newTransactionID']);
     Route::post('/new', [DailyTransactionsController::class,'store']);                   // Create a new orders
     Route::put('/{id}', [DailyTransactionsController::class,'update']);              // Update a orders
-    Route::get('/transaction/latest',[DailyTransactionsController::class,'getCustomersWithTransactionsToday']);
+    Route::get('/transaction/latest/{date}',[DailyTransactionsController::class,'getCustomersWithTransactionsToday']);
     Route::get('/transaction/{transaction_id}',[DailyTransactionsController::class,'showLatestOrder']); //show order of customer
     Route::get('/transaction/unique/{customer_id}',[DailyTransactionsController::class,'getTransactionID']); //show unique transaction numbers  of customer
     Route::delete('/order/{id}', [DailyTransactionsController::class,'destroy']);                       // Delete a orders

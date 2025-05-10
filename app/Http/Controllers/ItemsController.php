@@ -30,8 +30,9 @@ class ItemsController extends Controller
 
         if ($latestItem) {
             // Extract the last incremental number and increment it
-            $lastNumber = (int) substr($latestItem->po_number, -6);
-            $newNumber = $lastNumber + 1;
+            $lastNumber = (int) substr($latestItem->po_no, -6);
+            $lastNumber +=1;
+            $newNumber = $lastNumber;
         } else {
             $newNumber = 1;
         }

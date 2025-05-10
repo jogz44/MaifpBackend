@@ -404,12 +404,12 @@ class DailyTransactionsController extends Controller
         }
     }
 
-    public function getCustomersWithTransactionsToday()
+    public function getCustomersWithTransactionsToday( $today)
     {
 
 
         try {
-            $today = Carbon::today()->toDateString(); // e.g. '2025-05-02'
+            // $today = Carbon::today()->toDateString(); // e.g. '2025-05-02'
 
             // Subquery to fetch the latest transaction for each customer **on the current day**
             $latestTransactionQuery = DB::table('tbl_daily_transactions as t1')
