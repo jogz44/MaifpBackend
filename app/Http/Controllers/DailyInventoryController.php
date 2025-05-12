@@ -409,7 +409,7 @@ class DailyInventoryController extends Controller
             if ($hasOpenStatus) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Regeneration aborted: Stocks already open for today.',
+                    'message' => 'Regeneration aborted: Some stock entries are still open. Please verify if previous days stocks have been closed.',
                 ], 409); // HTTP 409 Conflict
             }
 
@@ -424,7 +424,7 @@ class DailyInventoryController extends Controller
             if ($hasClosingStatusToday) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Regeneration aborted: Stocks already closed for today.',
+                    'message' => 'Regeneration aborted:Stocks closed. Open today`s stocks to proceed.',
                 ], 409); // HTTP 409 Conflict
             }
 
@@ -657,9 +657,9 @@ class DailyInventoryController extends Controller
                 ->get();
 
             if ($openInventories->isEmpty()) {
-                return response()->json(['status' => true, 'message' => 'Stocks is currently closed, Please Open stocks for today' . $today], 200);
+                return response()->json(['status' => true, 'message' => 'Stocks closed. Open today’s stocks to proceed.' . $today], 200);
             } else {
-                return response()->json(['status' => false, 'message' => 'Stocks is already open for today' . $today], 200);
+                return response()->json(['status' => false, 'message' => 'Some stock entries are still open. Please verify if previous days stocks have been closed.'], 200);
             }
         } catch (ValidationException $ve) {
             return response()->json([
