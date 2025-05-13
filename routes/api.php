@@ -8,12 +8,11 @@ use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SystemUserController;
-
+use App\Http\Controllers\UnitController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
-// Route::middleware('auth:sanctum')->group(function () {
-// DONE
+
 Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
     Route::get('/{id}', [CustomersController::class, 'show']);                              // Fetch a single customer by ID
@@ -70,7 +69,6 @@ Route::prefix('orders')->group(function(){
 });
 
 
-
 Route::prefix('system')->group(function () {
     Route::get('/users', [SystemUserController::class, 'index']);              // Get all users
     Route::get('/user/profile/{id}', [SystemUserController::class, 'show']);          // Get a specific user
@@ -78,6 +76,11 @@ Route::prefix('system')->group(function () {
     Route::put('/user/profile-update/{id}', [SystemUserController::class, 'update']);      // Update an existing user
     Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
 
+    Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
+    Route::post('/library/units', [UnitController::class, 'store']); // Insert new unit
+    Route::get('/library/units/{id}', [UnitController::class, 'show']); // Get single unit by ID
+    Route::put('/library/units/{id}', [UnitController::class, 'update']); // Update a unit
+    Route::delete('/library/units/{id}', [UnitController::class, 'destroy']); // Delete a unit
 });
 
 
@@ -85,8 +88,7 @@ Route::prefix('indicators')->group(function () {
     Route::post('/open', [IndicatorLibraryController::class, 'store']);          // Create a new indicators OPEN/CLOSE for today
     Route::put('/close', [IndicatorLibraryController::class, 'update']);        // Update an existing indicator
     Route::get('/current', [IndicatorLibraryController::class, 'getCurrentStatus']); //Get Indicator for Today
-    //OPEN Indicator for Today
-    //CLOSE Indicator for Today
+
 });
 
 
@@ -96,5 +98,5 @@ Route::prefix('reports')->group(function () {
     Route::get('/dispense/yearly/{year}', [ReportsController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
 });
 
-// });
+
 

@@ -27,7 +27,6 @@ class items extends Model
         'quantity',
         'box_quantity',
         'quantity_per_box',
-        'price',
         'expiration_date',
         'user_id',
     ];
@@ -47,6 +46,24 @@ class items extends Model
                 'status' => 'OPEN',
                 'user_id' => $item->user_id
             ]);
+
+            $exists= Medicinelibrary::where('brand_name',$item->brand_name)
+              ->where('generic_name', $item->generic_name)
+                ->where('dosage_form', $item->dosage_form)
+                ->where('dosage', $item->dosage)
+                ->exists();
+
+                if (!$exists) {
+
+                Medicinelibrary::create([
+                    'brand_name' => $item->brand_name,
+                    'generic_name' => $item->generic_name,
+                    'dosage_form' => $item->dosage_form,
+                    'dosage' => $item->dosage,
+                    'category' => $item->category,
+                    'user_id' => $item->user_id,
+                ]);
+            }
         });
 
 
