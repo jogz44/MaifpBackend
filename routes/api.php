@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\DosageTypeController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\ReportsController;
@@ -81,6 +82,12 @@ Route::prefix('system')->group(function () {
     Route::get('/library/units/{id}', [UnitController::class, 'show']); // Get single unit by ID
     Route::put('/library/units/{id}', [UnitController::class, 'update']); // Update a unit
     Route::delete('/library/units/{id}', [UnitController::class, 'destroy']); // Delete a unit
+
+    Route::get('/library/dosages', [DosageTypeController::class, 'getDosageTypes']); // Get all units
+    Route::post('/library/dosages', [DosageTypeController::class, 'store']); // Insert new unit
+    Route::get('/library/dosages/{id}', [DosageTypeController::class, 'show']); // Get single unit by ID
+    Route::put('/library/dosages/{id}', [DosageTypeController::class, 'update']); // Update a unit
+    Route::delete('/library/dosages/{id}', [DosageTypeController::class, 'destroy']); // Delete a unit
 });
 
 
