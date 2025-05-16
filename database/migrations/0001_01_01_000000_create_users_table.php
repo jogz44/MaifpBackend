@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('position');
             $table->string('office');
             $table->string('username')->unique();
+            $table->string('status');
             // $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

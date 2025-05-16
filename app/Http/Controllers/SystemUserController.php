@@ -85,6 +85,7 @@ class SystemUserController extends Controller
                 'last_name' => 'required|string|max:100',
                 'middle_name' => 'nullable|string|max:100',
                 'position' => 'required|string|max:100',
+                'status' => 'required|string|max:100',
                 'office' => 'required|string|max:100',
                 'username' => 'required|string|max:100|unique:users,username',
                 'password' => 'required|string|max:16',
@@ -180,6 +181,7 @@ class SystemUserController extends Controller
                 'last_name' => 'required|string|max:100',
                 'middle_name' => 'nullable|string|max:100',
                 'position' => 'required|string|max:100',
+                'status' => 'required|string|max:100',
                 'office' => 'required|string|max:100',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
                 'password' => 'nullable|string|min:8|max:16|confirmed',
@@ -191,7 +193,7 @@ class SystemUserController extends Controller
             } else {
                 unset($validated['password']);
             }
-           
+
 
             $user->update($validated);
 
@@ -257,6 +259,85 @@ class SystemUserController extends Controller
         }
     }
 
+    public function deactivateUser($id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $user->status = 'Inactive';
+            $user->save(); // use save() instead of update() here
+
+            return response()->json([
+                'success' => true,
+                'user' => $user
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function activateUser($id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $user->status = 'Active';
+            $user->save(); // use save() instead of update() here
+
+            return response()->json([
+                'success' => true,
+                'user' => $user
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 
 
     //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------

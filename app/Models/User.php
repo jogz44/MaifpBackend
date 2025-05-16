@@ -25,6 +25,7 @@ class User extends Authenticatable
         'middle_name',
         'position',
         'office',
+        'status',
         'username',
         'password',
     ];

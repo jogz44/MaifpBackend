@@ -76,6 +76,8 @@ Route::prefix('system')->group(function () {
     Route::post('/user/new', [SystemUserController::class, 'store']);           // Create a new user
     Route::put('/user/profile-update/{id}', [SystemUserController::class, 'update']);      // Update an existing user
     Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
+    Route::put('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
+    Route::put('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
 
     Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
     Route::post('/library/units', [UnitController::class, 'store']); // Insert new unit
