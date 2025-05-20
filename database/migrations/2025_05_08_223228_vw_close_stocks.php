@@ -30,7 +30,9 @@ return new class extends Migration
             items.quantity_per_box,
             items.expiration_date,
             inv.status as stock_status,
-            inv.transaction_date
+            inv.transaction_date,
+            inv.quantity_out,
+            (items.quantity - inv.Openning_quantity) AS quantity_difference
         FROM tbl_daily_inventory inv
         JOIN tbl_items items ON inv.stock_id = items.id
         GROUP BY
@@ -50,7 +52,9 @@ return new class extends Migration
             stock_status,
             total_closing_quantity,
             total_openning_quantity,
-            inv.transaction_date;
+            inv.quantity_out,
+            inv.transaction_date,
+            quantity_difference;
         ");
 
     }
