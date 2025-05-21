@@ -1,15 +1,16 @@
 <?php
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\CustomersController;
-use App\Http\Controllers\DailyInventoryController;
-use App\Http\Controllers\DailyTransactionsController;
-use App\Http\Controllers\DosageTypeController;
-use App\Http\Controllers\IndicatorLibraryController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\CustomersController;
+use App\Http\Controllers\DosageTypeController;
 use App\Http\Controllers\SystemUserController;
-use App\Http\Controllers\UnitController;
+use App\Http\Controllers\DailyInventoryController;
+use App\Http\Controllers\UserCredentialsController;
+use App\Http\Controllers\IndicatorLibraryController;
+use App\Http\Controllers\DailyTransactionsController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -78,6 +79,11 @@ Route::prefix('system')->group(function () {
     Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
     Route::put('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
     Route::put('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
+
+    Route::get('/user/credentials', [UserCredentialsController::class, 'index']);
+    Route::get('/user/credentials/{id}', [UserCredentialsController::class, 'show']); // Get user credentials
+    Route::put('/user/credentials/{id}', [UserCredentialsController::class, 'update']); // update user credentials
+    Route::post('/user/credentials', [UserCredentialsController::class, 'store']); // store user credentials
 
     Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
     Route::post('/library/units', [UnitController::class, 'store']); // Insert new unit
