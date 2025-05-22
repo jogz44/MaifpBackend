@@ -13,7 +13,37 @@ use App\Models\Items;
 class ItemsController extends Controller
 {
 
+    public function itemList(){
+        try {
+            $items = DB::table('vw_item_info')->get();
+            if ($items->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No items found'
+                ], 404);
+            }
+            return response()->json([
+                'success' => true,
+                'items' => $items
+            ]);
 
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+
+    }
     public function TemporaryID()
     {
         // $dateNow = now()->format('Ymd');  // Get date as YYYYMMDD
