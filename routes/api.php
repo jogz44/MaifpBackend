@@ -84,6 +84,8 @@ Route::prefix('system')->group(function () {
     Route::get('/user/credentials/{id}', [UserCredentialsController::class, 'show']); // Get user credentials
     Route::put('/user/credentials/{id}', [UserCredentialsController::class, 'update']); // update user credentials
     Route::post('/user/credentials', [UserCredentialsController::class, 'store']); // store user credentials
+    Route::delete('/user/credentials/{id}', [UserCredentialsController::class, 'destroy']); // delete user credentials
+    Route::get('/user/credentials/user/{user_id}', [UserCredentialsController::class, 'showByUserId']); // Get user credentials by user ID
 
     Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
     Route::post('/library/units', [UnitController::class, 'store']); // Insert new unit
