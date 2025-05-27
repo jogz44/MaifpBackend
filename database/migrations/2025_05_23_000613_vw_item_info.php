@@ -15,7 +15,6 @@ return new class extends Migration
           DB::statement("
         CREATE OR REPLACE VIEW vw_item_info AS
         SELECT DISTINCT
-            id,
             brand_name,
             generic_name,
             dosage,
