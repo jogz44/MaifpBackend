@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
+use PhpParser\Node\Stmt\TryCatch;
 
 class DashboardController extends Controller
 {
@@ -133,41 +134,276 @@ class DashboardController extends Controller
         }
     }
 
-    public function dashboard_customers_ages(){
+    public function dashboard_customers_ages()
+    {
 
-             try {
-        // Validate the request parameters
-        $validatedData = request()->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-        ]);
+        try {
+            // Validate the request parameters
+            $validatedData = request()->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
 
-        $CustomerAges = DB::table('vw_recipient_dispense')
-            ->whereBetween('transaction_date', [$validatedData['start_date'], $validatedData['end_date']])
-            ->selectRaw('
+            $CustomerAges = DB::table('vw_recipient_dispense')
+                ->whereBetween('transaction_date', [$validatedData['start_date'], $validatedData['end_date']])
+                ->selectRaw('
                 COUNT(DISTINCT transaction_id) as total,
-                COUNT(CASE WHEN age BETWEEN 0 AND 17 THEN 1 END) AS age_0_17,
-                COUNT(CASE WHEN age BETWEEN 18 AND 59 THEN 1 END) AS age_18_59,
-                COUNT(CASE WHEN age >= 60 THEN 1 END) AS age_60_above
+                COUNT(DISTINCT CASE WHEN age BETWEEN 0 AND 17 THEN transaction_id END) AS age_0_17,
+                COUNT(DISTINCT CASE WHEN age BETWEEN 18 AND 59 THEN transaction_id END) AS age_18_59,
+                COUNT(DISTINCT CASE WHEN age >= 60 THEN transaction_id END) AS age_60_above
             ')
-            ->first();
+                ->first();
 
-        if (!$CustomerAges) {
-            return response()->json(['message' => 'No served customers found for the specified date range'], 404);
+            if (!$CustomerAges) {
+                return response()->json(['message' => 'No served customers found for the specified date range'], 404);
+            }
+
+            return response()->json([
+                'total' => $CustomerAges->total,
+                'children' => $CustomerAges->age_0_17,
+                'adults' => $CustomerAges->age_18_59,
+                'seniors' => $CustomerAges->age_60_above,
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Server error', 'message' => $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'total' => $CustomerAges->total,
-            'children' => $CustomerAges->age_0_17,
-            'adults' => $CustomerAges->age_18_59,
-            'seniors' => $CustomerAges->age_60_above,
-        ]);
-    } catch (ValidationException $e) {
-        return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
-    } catch (Exception $e) {
-        return response()->json(['error' => 'Server error', 'message' => $e->getMessage()], 500);
     }
 
+
+    public function dashboard_customers_barangay()
+    {
+        try {
+            //code...
+
+            $validatedData = request()->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
+
+            if (!$validatedData) {
+                return response()->json(['error' => 'Invalid date range'], 400);
+            }
+
+            $customersByBarangay = DB::table('vw_recipient_dispense')
+                ->select('barangay', DB::raw('COUNT(DISTINCT transaction_id) as count'))
+                ->whereBetween('transaction_date', [$validatedData['start_date'], $validatedData['end_date']])
+                ->groupBy('barangay')
+                ->get();
+
+            if ($customersByBarangay->isEmpty()) {
+                return response()->json(['message' => 'No served customers found for the specified date range'], 404);
+            }
+
+            return response()->json(['success' => true, 'barangay' => $customersByBarangay], 200);
+        } catch (Throwable $th) {
+            return response()->json(['error' => 'Server failed', 'message' => $th], 500);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Server error', 'message' => $e->getMessage()], 500);
+        }
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    public function dashboard_medicines_expired()
+    {
+        try {
+            $today = now()->toDateString();
+            $monthFromNow = now()->addDays(30)->toDateString();
+
+            $expiringItems = DB::table('vw_dailyinventoryinfo')
+                ->whereDate('expiration_date', '<=', $monthFromNow)
+                ->where('Openning_quantity', '<>', 0)
+                ->where('Closing_quantity', '<>', 0)
+                ->where('status', '=', 'OPEN')
+                ->count();
+
+            $expiredItems = DB::table('vw_dailyinventoryinfo')
+                ->whereDate('expiration_date', '<', $today)
+                ->where('Openning_quantity', '<>', 0)
+                ->where('Closing_quantity', '<>', 0)
+                ->where('status', '=', 'OPEN')
+                ->count();
+
+            return response()->json([
+                'expiring' => $expiringItems,
+                'expired' => $expiredItems
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function dashboard_medicines_instock()
+    {
+        try {
+            $today = now()->toDateString();
+            $monthFromNow = now()->addDays(30)->toDateString();
+
+
+
+            $expiredItems = DB::table('vw_dailyinventoryinfo')
+                ->whereDate('expiration_date', '>', $monthFromNow)
+                ->where('Openning_quantity', '<>', 0)
+                ->where('Closing_quantity', '<>', 0)
+                ->where('status', '=', 'OPEN')
+                ->count();
+
+            return response()->json([
+
+                'instock' => $expiredItems
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function dashboard_medicines_outOfStock()
+    {
+        try {
+            $today = now()->toDateString();
+            $monthFromNow = now()->addDays(30)->toDateString();
+
+
+
+            $countOutOfStockItems = DB::table('vw_dailyinventoryinfo')
+                ->whereDate('expiration_date', '>', $monthFromNow)
+                ->where(function ($query) {
+                    $query->where('Openning_quantity', 0)
+                        ->orWhere('Closing_quantity', 0);
+                })
+                ->where('status', 'OPEN')
+                ->count();
+
+            return response()->json([
+                'noStock' => $countOutOfStockItems
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function dashboard_medicines_countTemp()
+    {
+        try {
+            $today = now()->toDateString();
+            $monthFromNow = now()->addDays(30)->toDateString();
+
+
+            $countTempPOno = DB::table('vw_dailyinventoryinfo')
+                ->where('status', 'OPEN')
+                ->where('po_no', 'like', 'TEMP-%')
+                ->distinct()
+                ->count('po_no');
+
+            return response()->json([
+                'count' => $countTempPOno
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function dashboard_medicines_TopTen()
+    {
+        try {
+            $topQuantities = DB::table('vw_dailyinventoryinfo')
+                ->select('stock_id','brand_name', 'generic_name' ,DB::raw('SUM(quantity_out) as total_quantity_out'))
+                ->where('status', 'CLOSE')
+                ->groupBy('stock_id')
+                ->orderByDesc('total_quantity_out')
+                ->limit(10)
+                ->get();
+
+            return response()->json([
+                'top_ten_medicines' => $topQuantities
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 }
