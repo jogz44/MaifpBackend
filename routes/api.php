@@ -11,6 +11,7 @@ use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\DashboardController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -114,6 +115,21 @@ Route::prefix('reports')->group(function () {
     Route::get('/dispense/monthly', [ReportsController::class, 'Monthly_Dispense']);          // get dispense report
     Route::get('/dispense/recipient', [ReportsController::class, 'Recipients_Report']);          // get dispense recipient report
     Route::get('/dispense/yearly/{year}', [ReportsController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
+});
+
+Route::prefix('dashboard')->group(function () {
+    Route::get('/medicines/activeStocks', [ReportsController::class, 'Monthly_Dispense']);          // get dispense report
+    Route::get('/medicines/expiredStocks', [ReportsController::class, 'Recipients_Report']);          // get dispense recipient report
+    Route::get('/medicines/noStocks', [ReportsController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
+    Route::get('/medicines/temporary', [ReportsController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
+    Route::get('/medicines/ten', [ReportsController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
+
+    Route::get('/customers/registered', [DashboardController::class, 'dashboard_registered_customers']);           // get dispense yearly report
+    Route::get('/customers/served', [DashboardController::class, 'dashboard_served_customers']);           // get dispense yearly report
+    Route::get('/customers/perbrgy', [DashboardController::class, 'Monthly_Dispense_By_Year']);           // get dispense yearly report
+    Route::get('/customers/age', [DashboardController::class, 'dashboard_customers_ages']);           // get dispense yearly report
+    Route::get('/customers/gender', [DashboardController::class, 'dashboard_customers_genders']);           // get dispense yearly report
+
 });
 
 
