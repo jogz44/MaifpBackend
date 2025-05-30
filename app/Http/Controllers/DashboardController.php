@@ -40,11 +40,11 @@ class DashboardController extends Controller
     private function getRegisteredCustomers($start_date, $end_date)
     {
         try {
-            $customers = DB::table('TBL_CUSTOMERS')
+            $customers = DB::table('tbl_customers')
                 ->select(
                     DB::raw('COUNT(*) as registered_Customers')
                 )
-                ->whereBetween('created_at', [$start_date, $end_date])
+                 ->whereBetween('created_at', [$start_date, $end_date])
                 ->first();
             if (!$customers) {
                 return response()->json(['message' => 'No customers found for the specified date range'], 404);
@@ -344,6 +344,7 @@ class DashboardController extends Controller
 
             $countTempPOno = DB::table('vw_dailyinventoryinfo')
                 ->where('status', 'OPEN')
+                ->whereDate('transaction_date',  $today)
                 ->where('po_no', 'like', 'TEMP-%')
                 ->distinct()
                 ->count('po_no');
