@@ -11,6 +11,8 @@ use App\Models\items;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use function PHPUnit\Framework\isEmpty;
+
 class DailyTransactionsController extends Controller
 {
     //
@@ -463,5 +465,66 @@ class DailyTransactionsController extends Controller
                 'error' => $th->getMessage(),
             ], 500);
         }
+    }
+
+    public function Customer_Transaction_List($id){
+
+        try {
+
+            $list_level = DB::table('vw_patients_overall_transactions')
+                            ->where('customer_id','=', $id)
+                            ->get();
+
+                            if($list_level -> isEmpty()){
+                                return response()->json('No list Available...',400);
+                            }
+
+                            return response()->json([ 'success' => true,
+                                                             'result' => $list_level],200);
+
+        }  catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error occurred',
+                'error' => $qe->getMessage(),
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+
+    }
+
+    public function Customer_Transaction_List_Breakdown($id, $transaction_id){
+
+        try {
+            $list_breakdown = DB::table('vw_patient_transactions_list')
+                            ->where('customer_id','=', $id)
+                            ->where('transaction_id','=', $transaction_id)
+                            ->get();
+
+                            if($list_breakdown -> isEmpty()){
+                                return response()->json('No list Available...',400);
+                            }
+
+                            return response()->json([ 'success' => true,
+                                                             'result' => $list_breakdown],200);
+        }  catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error occurred',
+                'error' => $qe->getMessage(),
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+
     }
 }

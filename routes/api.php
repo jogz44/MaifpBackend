@@ -21,7 +21,9 @@ Route::prefix('customers')->group(function () {
     Route::get('/{id}', [CustomersController::class, 'show']);                              // Fetch a single customer by ID
     Route::post('/', [CustomersController::class, 'store']);                                // Create a new customer
     Route::put('/{id}', [CustomersController::class, 'update']);                            // Update an existing customer by ID
-    Route::delete('/{id}', [CustomersController::class, 'destroy']);                                      // Delete a customer by ID
+    Route::delete('/{id}', [CustomersController::class, 'destroy']);
+    Route::get('/transactions/{id}',[DailyTransactionsController::class,'Customer_Transaction_List']);
+    Route::get('/transactions/{id}/list/{trans_id}',[DailyTransactionsController::class,'Customer_Transaction_List_Breakdown']);
 });
 
 
@@ -80,6 +82,7 @@ Route::prefix('system')->group(function () {
     Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
     Route::put('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
     Route::put('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
+
 
     Route::get('/user/credentials', [UserCredentialsController::class, 'index']);
     Route::get('/user/credentials/{id}', [UserCredentialsController::class, 'show']); // Get user credentials
