@@ -46,20 +46,45 @@ class UserCredentialsController extends Controller
     public function store(Request $request)
     {
         try {
-            //code...
-            $data = $request->validate([
-                'userid' => 'required|exists:users,id',
-                'module' => 'required|string',
-                'view' => 'boolean',
-                'add' => 'boolean',
-                'edit' => 'boolean',
-                'delete' => 'boolean',
-                'export' => 'boolean',
-            ]);
+            $credentials = $request->all();
 
-            $credential = UserCredentials::create($data);
+            if (!is_array($credentials)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid payload format. Expected array.'
+                ], 400);
+            }
 
-            return response()->json(['success' => true, 'credential' => $credential, 'message' => 'User credential created successfully.'], 201);
+            $saved = [];
+
+            foreach ($credentials as $item) {
+                $data = validator($item, [
+                    'userid' => 'required|exists:users,id',
+                    'module' => 'required|string',
+                    'view' => 'nullable|boolean',
+                    'add' => 'nullable|boolean',
+                    'edit' => 'nullable|boolean',
+                    'delete' => 'nullable|boolean',
+                    'export' => 'nullable|boolean',
+                ])->validate();
+
+                $saved[] = UserCredentials::updateOrCreate(
+                    ['userid' => $data['userid'], 'module' => $data['module']], // search attributes
+                    [ // fields to update or create
+                        'view' => $data['view'] ?? false,
+                        'add' => $data['add'] ?? false,
+                        'edit' => $data['edit'] ?? false,
+                        'delete' => $data['delete'] ?? false,
+                        'export' => $data['export'] ?? false,
+                    ]
+                );
+            }
+
+            //dd($saved);
+
+            // $credential = UserCredentials::create($data);
+
+            return response()->json(['success' => true, 'credential' => $saved, 'message' => 'User credential created successfully.'], 201);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -113,7 +138,7 @@ class UserCredentialsController extends Controller
     public function showByUserId($userId)
     {
         try {
-            $credentials = UserCredentials::where('user_id', $userId)->get();
+            $credentials = UserCredentials::where('userid', $userId)->get();
             if ($credentials->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'No user credentials found for this user.'], 404);
             }
@@ -143,8 +168,8 @@ class UserCredentialsController extends Controller
     {
         try {
             $credentials = UserCredentials::where('userid', $userId)
-            ->where('module', $module)
-            ->get();
+                ->where('module', $module)
+                ->get();
             if ($credentials->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'No user credentials found for this user.'], 404);
             }

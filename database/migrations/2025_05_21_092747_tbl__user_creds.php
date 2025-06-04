@@ -23,6 +23,10 @@ return new class extends Migration
             $table->boolean('delete')->default(false);
             $table->boolean('export')->default(false);
             $table->timestamps();
+
+             $table->unique(['userid', 'module']);
+
+             $table->foreign('userid')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
