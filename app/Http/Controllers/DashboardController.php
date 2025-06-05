@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
-use PhpParser\Node\Stmt\TryCatch;
+use Carbon\Carbon;
+
 
 class DashboardController extends Controller
 {
@@ -44,7 +45,7 @@ class DashboardController extends Controller
                 ->select(
                     DB::raw('COUNT(*) as registered_Customers')
                 )
-                 ->whereBetween('created_at', [$start_date, $end_date])
+                ->whereBetween('created_at', [$start_date, $end_date])
                 ->first();
             if (!$customers) {
                 return response()->json(['message' => 'No customers found for the specified date range'], 404);
@@ -377,7 +378,7 @@ class DashboardController extends Controller
     {
         try {
             $topQuantities = DB::table('vw_dailyinventoryinfo')
-                ->select('stock_id','brand_name', 'generic_name' ,DB::raw('SUM(quantity_out) as total_quantity_out'))
+                ->select('stock_id', 'brand_name', 'generic_name', DB::raw('SUM(quantity_out) as total_quantity_out'))
                 ->where('status', 'CLOSE')
                 ->groupBy('stock_id')
                 ->orderByDesc('total_quantity_out')
@@ -387,6 +388,54 @@ class DashboardController extends Controller
             return response()->json([
                 'top_ten_medicines' => $topQuantities
             ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function Dash_low_Quantity()
+    {
+        try {
+            $low_stocks = DB::table('tbl_items as i')
+                ->join('tbl_daily_inventory as dt', 'i.id', '=', 'dt.stock_id')
+                ->select([
+                    'i.id',
+                    'i.po_no',
+                    'i.brand_name',
+                    'i.generic_name',
+                    'i.dosage',
+                    'i.dosage_form',
+                    'i.expiration_date',
+                    'i.quantity',
+                    'dt.Openning_quantity',
+                    'dt.Closing_quantity',
+                    'dt.transaction_date'
+                ])
+                ->whereDate('dt.transaction_date', '>=',  Carbon::today())
+                ->where(function ($query) {
+                    $query->where('dt.Openning_quantity', '=', 0)
+                        ->orWhere('dt.Closing_quantity', '=', 0);
+                })
+                ->distinct('i.id')
+                ->get();
+
+            return response()->json(['success' => true, 'result' => $low_stocks, 'count' => $low_stocks->count()], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
