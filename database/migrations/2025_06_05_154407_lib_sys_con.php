@@ -18,6 +18,7 @@ return new class extends Migration
             $table-> string('low_color');
             $table-> string('empty_color');
             $table-> integer('low_count');
+             $table-> integer('days_toExpire');
             $table->timestamps();
 
         });
