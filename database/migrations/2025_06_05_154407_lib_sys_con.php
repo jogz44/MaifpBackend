@@ -14,11 +14,11 @@ return new class extends Migration
         //
         Schema::create('lib_SysConf', function (Blueprint $table){
             $table-> id();
-            $table-> string('normal_color');
-            $table-> string('low_color');
-            $table-> string('empty_color');
-            $table-> integer('low_count');
-             $table-> integer('days_toExpire');
+            $table-> string('normal_color')->nullable();
+            $table-> string('low_color')->nullable();
+            $table-> string('empty_color')->nullable();
+            $table-> integer('low_count')->nullable();
+             $table-> integer('days_toExpire')->nullable();
             $table->timestamps();
 
         });

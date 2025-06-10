@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\ConfigurationsController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\DashboardController;
+
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -103,6 +106,12 @@ Route::prefix('system')->group(function () {
     Route::get('/library/dosages/{id}', [DosageTypeController::class, 'show']); // Get single unit by ID
     Route::put('/library/dosages/{id}', [DosageTypeController::class, 'update']); // Update a unit
     Route::delete('/library/dosages/{id}', [DosageTypeController::class, 'destroy']); // Delete a unit
+
+    Route::get('/library/configuration/{id}', [ConfigurationsController::class, 'show']); // Get all config
+    Route::post('/library/configuration', [ConfigurationsController::class, 'store']); // Insert new config
+    Route::put('/library/configuration/{id}', [ConfigurationsController::class, 'update']); // Update config
+    Route::delete('/library/configuration/{id}', [ConfigurationsController::class, 'destroy']); // Delete config
+
 });
 
 
