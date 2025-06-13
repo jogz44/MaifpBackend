@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ConfigurationsController;
+
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
@@ -14,10 +14,14 @@ use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ConfigurationsController;
 
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
+Route::middleware('auth:sanctum')->group(function () {
+
+Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
 Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
@@ -89,7 +93,7 @@ Route::prefix('system')->group(function () {
 
     Route::get('/user/credentials', [UserCredentialsController::class, 'index']);
     Route::get('/user/{id}/credentials', [UserCredentialsController::class, 'showByUserId']); // Get user credentials
-    Route::put('/user/{id}/credentials/{id}', [UserCredentialsController::class, 'update']); // update user credentials
+    // Route::put('/user/{user_id}/credentials/{credential_id}', [UserCredentialsController::class, 'update']); // update user credentials
     Route::post('/user/credentials', [UserCredentialsController::class, 'store']); // store user credentials
     Route::delete('/user/credentials/{id}', [UserCredentialsController::class, 'destroy']); // delete user credentials
     // Route::get('/user/credentials/user/{user_id}', [UserCredentialsController::class, 'showByUserId']); // Get user credentials by user ID
@@ -107,10 +111,10 @@ Route::prefix('system')->group(function () {
     Route::put('/library/dosages/{id}', [DosageTypeController::class, 'update']); // Update a unit
     Route::delete('/library/dosages/{id}', [DosageTypeController::class, 'destroy']); // Delete a unit
 
-    Route::get('/library/configuration/{id}', [ConfigurationsController::class, 'show']); // Get all config
-    Route::post('/library/configuration', [ConfigurationsController::class, 'store']); // Insert new config
-    Route::put('/library/configuration/{id}', [ConfigurationsController::class, 'update']); // Update config
-    Route::delete('/library/configuration/{id}', [ConfigurationsController::class, 'destroy']); // Delete config
+    Route::get('/configuration/{id}', [ConfigurationsController::class, 'show']); // Get all config
+    Route::post('/configuration', [ConfigurationsController::class, 'store']); // Insert new config
+    Route::put('/configuration/{id}/config', [ConfigurationsController::class, 'updateConfig']); // Update config
+    Route::delete('/configuration/{id}', [ConfigurationsController::class, 'destroy']); // Delete config
 
 });
 
@@ -145,4 +149,4 @@ Route::prefix('dashboard')->group(function () {
 });
 
 
-
+});
