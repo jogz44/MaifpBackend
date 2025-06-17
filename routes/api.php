@@ -15,7 +15,7 @@ use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ConfigurationsController;
-
+use App\Http\Controllers\MedicinelibraryController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -97,6 +97,11 @@ Route::prefix('system')->group(function () {
     Route::post('/user/credentials', [UserCredentialsController::class, 'store']); // store user credentials
     Route::delete('/user/credentials/{id}', [UserCredentialsController::class, 'destroy']); // delete user credentials
     // Route::get('/user/credentials/user/{user_id}', [UserCredentialsController::class, 'showByUserId']); // Get user credentials by user ID
+
+
+    Route::get('/library/medlist', [MedicinelibraryController::class, 'index']); // Get all units
+    Route::post('/library/medlist/new', [MedicinelibraryController::class, 'store']); // Get all units
+
 
     Route::get('/library/items', [ItemsController::class, 'itemList']); // Get all units
     Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
