@@ -93,7 +93,7 @@ class MedicinelibraryController extends Controller
                 'medicines.*.generic_name' => 'required|string',
                 'medicines.*.dosage_form' => 'required|string',
                 'medicines.*.dosage' => 'required|string',
-                'medicines.*.category' => 'required|string',
+                'medicines.*.category' => 'nullable|string',
                 'medicines.*.user_id' => 'required|integer',
             ]);
 

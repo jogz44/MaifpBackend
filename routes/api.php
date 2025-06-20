@@ -100,7 +100,7 @@ Route::prefix('system')->group(function () {
 
 
     Route::get('/library/medlist', [MedicinelibraryController::class, 'index']); // Get all units
-    Route::post('/library/medlist/new', [MedicinelibraryController::class, 'store']); // Get all units
+    Route::post('/library/medlist/new', [MedicinelibraryController::class, 'batch_Store']); // Get all units
 
 
     Route::get('/library/items', [ItemsController::class, 'itemList']); // Get all units
