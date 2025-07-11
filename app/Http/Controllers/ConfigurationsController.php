@@ -29,7 +29,8 @@ class ConfigurationsController extends Controller
                     'empty_color' => 'nullable|string',
                 ]
             );
-            $config = Configurations::create($validationInput);
+            // $config = Configurations::create($validationInput);
+             $config = Configurations::updateOrCreate(['id' => 1], $validationInput);
 
             return response()->json([
                 'success' => true,
