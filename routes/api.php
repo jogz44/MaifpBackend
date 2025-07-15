@@ -37,7 +37,8 @@ Route::prefix('customers')->group(function () {
 Route::prefix('daily')->group(function () {
     Route::get('/', [DailyInventoryController::class, 'index']);                                           // Get all transactions
     Route::get('/{id}', [DailyInventoryController::class, 'show']);                                       // Get a specific transaction
-    Route::get('/inventory/lowquantity', [DailyInventoryController::class, 'getLowQuantityStocks']);                  //Get low quantity stocks
+    Route::get('/inventory/lowquantity/{threshold}', [DailyInventoryController::class, 'getLowQuantityStocks']);                  //Get low quantity stocks
+    Route::get('/inventory/emptyquantity', [DailyInventoryController::class, 'getEmptyQuantityStocks']);
     Route::get('/today/{transaction_date}', [DailyInventoryController::class, 'showTodayInventory']);    // Get transactions by date
     Route::get('/inventory/lastest', [DailyInventoryController::class, 'showLatest']);
     Route::post('/', [DailyInventoryController::class, 'store']);                                        // Create a new transaction
