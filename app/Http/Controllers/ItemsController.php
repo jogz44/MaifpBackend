@@ -200,7 +200,7 @@ class ItemsController extends Controller
                     'price' => 'nullable|numeric',
                     'price_per_pcs' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
-                    'user_id' => 'required|exists:tbl_system_users,id',
+                    'user_id' => 'required|exists:users,id',
                 ]
             );
 
@@ -258,7 +258,7 @@ class ItemsController extends Controller
                     'price' => 'nullable|numeric',
                     'price_per_pcs' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
-                    'user_id' => 'required|exists:tbl_system_users,id',
+                    'user_id' => 'required|exists:users,id',
                 ]
             );
 

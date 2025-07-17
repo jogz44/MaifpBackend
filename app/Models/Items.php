@@ -46,6 +46,7 @@ class items extends Model
                 'status' => 'OPEN',
                 'user_id' => $item->user_id
             ]);
+            
 
             $exists= Medicinelibrary::where('brand_name',$item->brand_name)
               ->where('generic_name', $item->generic_name)

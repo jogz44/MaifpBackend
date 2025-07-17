@@ -96,7 +96,7 @@ class CustomersController extends Controller
                     'category' => 'required|in:Child,Adult,Senior',
                     'is_pwd' => 'boolean',
                     'is_solo' => 'boolean',
-                    'user_id' => 'required|exists:tbl_system_users,id'
+                    'user_id' => 'required|exists:users,id'
                 ]
             );
 
@@ -155,7 +155,7 @@ class CustomersController extends Controller
                     'category' => 'required|in:Child,Adult,Senior',
                     'is_pwd' => 'boolean',
                     'is_solo' => 'boolean',
-                    'user_id' => 'required|exists:tbl_system_users,id'
+                    'user_id' => 'required|exists:users,id'
                 ]
             );
 
