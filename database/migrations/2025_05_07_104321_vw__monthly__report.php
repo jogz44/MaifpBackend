@@ -33,8 +33,7 @@ return new class extends Migration
             tbl_daily_inventory di
         JOIN
             tbl_items i ON di.stock_id = i.id
-        WHERE
-            di.status = 'CLOSE'
+      
         GROUP BY
             i.po_no, di.stock_id, month_number, month_name, Trans_year, i.brand_name, i.generic_name, i.dosage, i.dosage_form,i.quantity
         ORDER BY

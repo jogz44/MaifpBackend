@@ -336,16 +336,103 @@ class DashboardController extends Controller
         }
     }
 
+    public function getLowQuantityStocks($threshold)
+    {
+        try {
+
+            if (!is_numeric($threshold) || $threshold <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid threshold value. Must be a positive number.'
+                ], 422);
+            }
+
+            $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
+                ->select(
+                    'inv1.id',
+                    'inv1.stock_id',
+                    'inv1.Openning_quantity',
+                    'inv1.Closing_quantity',
+                    'inv1.quantity_out',
+                    'inv1.transaction_date',
+                    'inv1.remarks',
+                    'inv1.status',
+                    'inv1.user_id'
+                )
+                ->whereRaw('inv1.transaction_date = (
+                SELECT MAX(inv2.transaction_date)
+                FROM tbl_daily_inventory as inv2
+                WHERE inv2.stock_id = inv1.stock_id
+            )')
+                ->where(function ($query) use ($threshold) {     // Filter for low quantity stocks that are below the threshold
+                   $query->whereBetween('inv1.Openning_quantity', [1, $threshold])
+                        ->whereBetween('inv1.Closing_quantity', [1, $threshold]);
+                });
+
+            // Join with tbl_items to get item info
+            $data = DB::table('tbl_items as i')
+                ->joinSub($latestInventoryQuery, 'latest_inv', function ($join) {
+                    $join->on('i.id', '=', 'latest_inv.stock_id');
+                })
+                ->select(
+                    'latest_inv.id as inventory_id',
+                    'i.id as item_id',
+                    'i.po_no',
+                    'i.brand_name',
+                    'i.generic_name',
+                    'i.dosage',
+                    'i.dosage_form',
+                    'i.unit',
+                    'i.quantity as item_quantity',
+                    'latest_inv.Openning_quantity',
+                    'latest_inv.Closing_quantity',
+                    'i.expiration_date',
+                    'latest_inv.transaction_date as last_inventory_date',
+                    'latest_inv.status',
+                    'latest_inv.remarks'
+                )
+                ->get();
+
+
+
+            return response()->json([
+                'success' => true,
+                'stocks' => $data->count()
+            ], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function dashboard_medicines_countTemp()
     {
         try {
-            $today = now()->toDateString();
-            $monthFromNow = now()->addDays(30)->toDateString();
+            // $today = now()->toDateString();
+            // $monthFromNow = now()->addDays(30)->toDateString();
 
 
             $countTempPOno = DB::table('vw_dailyinventoryinfo')
-                ->where('status', 'OPEN')
-                ->whereDate('transaction_date',  $today)
+                // ->where('status', 'OPEN')
+                // ->whereDate('transaction_date',  $today)
                 ->where('po_no', 'like', 'TEMP-%')
                 ->distinct()
                 ->count('po_no');

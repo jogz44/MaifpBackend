@@ -143,6 +143,7 @@ Route::prefix('dashboard')->group(function () {
     Route::get('/medicines/activeStocks', [DashboardController::class, 'dashboard_medicines_instock']);          // get dispense report
     Route::get('/medicines/expiredStocks', [DashboardController::class, 'dashboard_medicines_expired']);          // get dispense recipient report
     Route::get('/medicines/noStocks', [DashboardController::class, 'dashboard_medicines_outOfStock']);           // get dispense yearly report
+    Route::get('/medicines/LowStocks/{threshold}', [DashboardController::class, 'getLowQuantityStocks']);           // get dispense yearly report
     Route::get('/medicines/temporary', [DashboardController::class, 'dashboard_medicines_countTemp']);           // get dispense yearly report
     Route::get('/medicines/ten', [DashboardController::class, 'dashboard_medicines_TopTen']);           // get dispense yearly report
 

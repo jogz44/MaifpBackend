@@ -387,8 +387,8 @@ class DailyInventoryController extends Controller
                 WHERE inv2.stock_id = inv1.stock_id
             )')
                 ->where(function ($query) use ($threshold) {     // Filter for low quantity stocks that are below the threshold
-                    $query->where('inv1.Openning_quantity', '<', $threshold)
-                        ->orWhere('inv1.Closing_quantity', '<', $threshold);
+                    $query->whereBetween('inv1.Openning_quantity', [1, $threshold])
+                        ->whereBetween('inv1.Closing_quantity', [1, $threshold]);
                 });
 
             // Join with tbl_items to get item info

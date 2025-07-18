@@ -190,7 +190,7 @@ class DailyTransactionsController extends Controller
                     'quantity' => 'required|numeric|min:1',
                     'unit' => 'nullable|string',
                     'transaction_date' => 'required|date',
-                    'user_id' => 'required|exists:tbl_system_users,id'
+                    'user_id' => 'required|exists:users,id'
                 ]
             );
 
@@ -240,7 +240,7 @@ class DailyTransactionsController extends Controller
                     'quantity' => 'required|numeric|min:1',
                     'unit' => 'nullable|string',
                     'transaction_date' => 'required|date',
-                    'user_id' => 'required|exists:tbl_system_users,id'
+                    'user_id' => 'required|exists:users,id'
                 ]
             );
 
