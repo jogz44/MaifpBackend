@@ -352,7 +352,6 @@ class ItemsController extends Controller
                     'quantity' => 'required|numeric|min:1',
                     'box_quantity' => 'nullable|numeric',
                     'quantity_per_box' => 'nullable|numeric',
-                    'price' => 'nullable|numeric',
                     'price_per_pcs' => 'nullable|numeric',
                     'expiration_date' => 'required|date|after:today',
                     'user_id' => 'required|exists:users,id',
