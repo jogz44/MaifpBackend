@@ -13,7 +13,8 @@ use App\Models\Items;
 class ItemsController extends Controller
 {
 
-    public function itemList(){
+    public function itemList()
+    {
         try {
             $items = DB::table('vw_item_info')->get();
             if ($items->isEmpty()) {
@@ -61,7 +62,7 @@ class ItemsController extends Controller
         if ($latestItem) {
             // Extract the last incremental number and increment it
             $lastNumber = (int) substr($latestItem->po_no, -6);
-            $lastNumber +=1;
+            $lastNumber += 1;
             $newNumber = $lastNumber;
         } else {
             $newNumber = 1;
@@ -83,7 +84,7 @@ class ItemsController extends Controller
             return response()->json(
                 [
                     'success' => true,
-                    'items' =>  $Items
+                    'items' => $Items
                 ],
                 200
             );
@@ -120,7 +121,103 @@ class ItemsController extends Controller
             if (!$item) {
                 return response()->json(['success' => false, 'message' => 'Item not found'], 404);
             }
-            return response()->json(['success' => true, 'items' =>  $item]);
+            return response()->json(['success' => true, 'items' => $item]);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function TempPOlist()
+    {
+        try {
+
+            $po_list = Items::where('po_no', 'like', 'TEMP-%')
+                ->select('po_no', DB::raw('MAX(created_at) as created_at'))
+                ->groupBy('po_no')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if (!$po_list) {
+                return response()->json(['success' => false, 'message' => 'No temporary P.O. created',], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'count' => $po_list->count(),
+                'list' => $po_list
+            ], 200);
+
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function UpdateTempPO($temp_po, Request $request )
+    {
+        try {
+
+           $request->validate([
+            'po_no' => 'required|string|unique:tbl_items,po_no'
+        ]);
+
+        // Find matching TEMP PO items
+        $items = Items::where('po_no', $temp_po)->get();
+
+        if ($items->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No items found with the specified PO number.'
+            ], 404);
+        }
+
+        // Update each item with the new PO number
+        foreach ($items as $item) {
+            $item->po_no = $request->po_no;
+            $item->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'PO number updated successfully.'], 201);
+
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -154,7 +251,7 @@ class ItemsController extends Controller
             if (!$items) {
                 return response()->json(['success' => false, 'message' => 'Items not found'], 404);
             }
-            return response()->json(['success' => true, 'items' =>  $items]);
+            return response()->json(['success' => true, 'items' => $items]);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -207,7 +304,7 @@ class ItemsController extends Controller
             $Items = Items::create($validationInput);
             return response()->json([
                 'success' => true,
-                'item' =>  $Items,
+                'item' => $Items,
                 'message' => 'Item registration Successful'
             ]);
         } catch (ValidationException $ve) {
@@ -266,7 +363,7 @@ class ItemsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'item' =>  $item,
+                'item' => $item,
                 'message' => 'Item updating Successful'
             ]);
         } catch (ValidationException $ve) {
@@ -377,8 +474,13 @@ class ItemsController extends Controller
 
             $expiredItems = DB::table('tbl_items')
                 ->select([
-                    'po_no', 'brand_name', 'generic_name', 'dosage', 'dosage_form',
-                    'category', 'expiration_date'
+                    'po_no',
+                    'brand_name',
+                    'generic_name',
+                    'dosage',
+                    'dosage_form',
+                    'category',
+                    'expiration_date'
                 ])
                 // ->whereDate('expiration_date', '>=', $today)
                 ->whereDate('expiration_date', '<=', $monthFromNow)
@@ -419,37 +521,37 @@ class ItemsController extends Controller
     {
 
         $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
-        ->select('inv1.id','inv1.stock_id', 'inv1.Closing_quantity','inv1.Openning_quantity', 'inv1.transaction_date')
-        ->whereRaw('inv1.transaction_date = (
+            ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.Openning_quantity', 'inv1.transaction_date')
+            ->whereRaw('inv1.transaction_date = (
             SELECT MAX(inv2.transaction_date)
             FROM tbl_daily_inventory as inv2
             WHERE inv2.stock_id = inv1.stock_id
         )')
-        ->where('inv1.status', 'OPEN'); // Filter by OPEN status;
+            ->where('inv1.status', 'OPEN'); // Filter by OPEN status;
 
-    $data = DB::table('tbl_items')
-        ->leftJoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
-            $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
-        })
-        ->select(
-            'latest_inventory.id as inventory_id',
-            'tbl_items.id as item_id',
-            'tbl_items.po_no',
-            'tbl_items.brand_name',
-            'tbl_items.generic_name',
-            'tbl_items.dosage',
-            'tbl_items.dosage_form',
-            'tbl_items.unit',
-            'tbl_items.quantity as item_quantity',
-            'latest_inventory.Openning_quantity',
-            'latest_inventory.Closing_quantity',
-            'tbl_items.expiration_date',
-            'latest_inventory.transaction_date as last_inventory_date',
+        $data = DB::table('tbl_items')
+            ->leftJoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
+                $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
+            })
+            ->select(
+                'latest_inventory.id as inventory_id',
+                'tbl_items.id as item_id',
+                'tbl_items.po_no',
+                'tbl_items.brand_name',
+                'tbl_items.generic_name',
+                'tbl_items.dosage',
+                'tbl_items.dosage_form',
+                'tbl_items.unit',
+                'tbl_items.quantity as item_quantity',
+                'latest_inventory.Openning_quantity',
+                'latest_inventory.Closing_quantity',
+                'tbl_items.expiration_date',
+                'latest_inventory.transaction_date as last_inventory_date',
 
-        )
-        ->orderBy('tbl_items.brand_name')
-        ->orderBy('tbl_items.expiration_date', 'asc')
-        ->get();
+            )
+            ->orderBy('tbl_items.brand_name')
+            ->orderBy('tbl_items.expiration_date', 'asc')
+            ->get();
         return $data;
     }
 

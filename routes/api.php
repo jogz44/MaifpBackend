@@ -66,7 +66,7 @@ Route::prefix('orders')->group(function(){
 });
 
 
-    Route::prefix('items')->group(function () {
+Route::prefix('items')->group(function () {
     Route::get('/', [ItemsController::class, 'index']);                      // Get all items
     Route::get('/{id}', [ItemsController::class, 'show']);                  // Get single item by ID
     Route::get('/po/show/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
@@ -75,10 +75,10 @@ Route::prefix('orders')->group(function(){
     Route::put('/{id}', [ItemsController::class, 'update']);             // Update an item
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number
-
     Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
     Route::get('/generate/tempno', [ItemsController::class, 'TemporaryID']);
-
+    Route::get('/temp/po',[ItemsController::class,'TempPOlist']); // Get all temporary items
+    Route::put('/temp/po/{tempno}', [ItemsController::class,'UpdateTempPO']); // Update temporary P.O.
 });
 
 
