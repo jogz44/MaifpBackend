@@ -190,33 +190,34 @@ class ItemsController extends Controller
         }
     }
 
-    public function UpdateTempPO($temp_po, Request $request )
+    public function UpdateTempPO($temp_po, Request $request)
     {
         try {
 
-           $request->validate([
-            'po_no' => 'required|string|unique:tbl_items,po_no'
-        ]);
+            $request->validate([
+                'po_no' => 'required|string|unique:tbl_items,po_no'
+            ]);
 
-        // Find matching TEMP PO items
-        $items = Items::where('po_no', $temp_po)->get();
+            // Find matching TEMP PO items
+            $items = Items::where('po_no', $temp_po)->get();
 
-        if ($items->isEmpty()) {
+            if ($items->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No items found with the specified PO number.'
+                ], 404);
+            }
+
+            // Update each item with the new PO number
+            foreach ($items as $item) {
+                $item->po_no = $request->po_no;
+                $item->save();
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => 'No items found with the specified PO number.'
-            ], 404);
-        }
-
-        // Update each item with the new PO number
-        foreach ($items as $item) {
-            $item->po_no = $request->po_no;
-            $item->save();
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'PO number updated successfully.'], 201);
+                'success' => true,
+                'message' => 'PO number updated successfully.'
+            ], 201);
 
         } catch (ValidationException $ve) {
             return response()->json([
@@ -276,6 +277,64 @@ class ItemsController extends Controller
         }
     }
 
+
+    public function batchstore(Request $request)
+    {
+        try {
+
+            $validated = $request->validate([
+                'medicines' => 'required|array',
+                'medicines.*.po_no' => 'nullable|string',
+                'medicines.*.brand_name' => 'nullable|string',
+                'medicines.*.generic_name' => 'nullable|string',
+                'medicines.*.dosage_form' => 'nullable|string',
+                'medicines.*.dosage' => 'nullable|string',
+                'medicines.*.category' => 'nullable|string',
+                'medicines.*.unit' => 'nullable|string',
+                'medicines.*.price' => 'nullable|numeric',
+                'medicines.*.price_per_pcs' => 'nullable|numeric',
+                'medicines.*.quantity' => 'nullable|integer',
+                'medicines.*.box_quantity' => 'nullable|integer',
+                'medicines.*.quantity_per_box' => 'nullable|integer',
+                'medicines.*.expiration_date' => 'nullable|date',
+                'medicines.*.user_id' => 'required|integer',
+            ]);
+
+            $inserted = [];
+
+            foreach ($validated['medicines'] as $medicine) {
+                $inserted[] = Item::create($medicine);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message'=>count( $inserted) + ' Items added successfully',
+                'items' => $inserted
+                // 'skipped' => $skipped
+            ]);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 
     public function store(Request $request)
     {
