@@ -42,7 +42,7 @@ Route::prefix('daily')->group(function () {
     Route::get('/today/{transaction_date}', [DailyInventoryController::class, 'showTodayInventory']);    // Get transactions by date
     Route::get('/inventory/lastest', [DailyInventoryController::class, 'showLatest']);
     Route::post('/', [DailyInventoryController::class, 'store']);                                        // Create a new transaction
-    Route::post('/inventory/open-latest', [DailyInventoryController::class, 'regenerateInventory']);            // regenerate inventory for the day || generate OPENNING ITEM LIST
+    Route::post('/inventory/open-latest/{id}', [DailyInventoryController::class, 'regenerateInventory']);            // regenerate inventory for the day || generate OPENNING ITEM LIST
     Route::post('/inventory/close-latest', [DailyInventoryController::class, 'closeInventory']);           // CLOSE ITEMS FOR THE DAY
     Route::get('/inventory/get-list/{date}', [DailyInventoryController::class, 'closeInventoryByDate']);           // CLOSE ITEMS FOR THE DAY
     Route::put('/{id}', [DailyInventoryController::class, 'update']);                                  // Update an existing transaction

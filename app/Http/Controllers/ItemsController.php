@@ -280,6 +280,7 @@ class ItemsController extends Controller
 
     public function batchstore(Request $request)
     {
+        DB::beginTransaction();
         try {
 
             $validated = $request->validate([
@@ -302,10 +303,11 @@ class ItemsController extends Controller
 
             $inserted = [];
 
+
             foreach ($validated['medicines'] as $medicine) {
                 $inserted[] = Items::create($medicine);
             }
-
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'message'=> count( $inserted) . ' Items added successfully',
@@ -313,6 +315,7 @@ class ItemsController extends Controller
                 // 'skipped' => $skipped
             ]);
         } catch (ValidationException $ve) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -320,6 +323,7 @@ class ItemsController extends Controller
             ], 422);
             //throw $th;
         } catch (QueryException $qe) {
+                  DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
@@ -328,6 +332,7 @@ class ItemsController extends Controller
             //throw $th;
         } catch (\Throwable $th) {
             //throw $th;
+                  DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',

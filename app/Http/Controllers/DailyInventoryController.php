@@ -159,7 +159,7 @@ class DailyInventoryController extends Controller
                     'transaction_date' => 'required|date',
                     'remarks'   => 'nullable|string|max:250',
                     'status'   => 'nullable|string|max:250',
-                    'user_id' => 'required|exists:tbl_system_users,id',
+                    'user_id' => 'required|exists:users,id',
                 ]
             );
 
@@ -192,6 +192,10 @@ class DailyInventoryController extends Controller
         }
     }
 
+    // public function update_openningQuantity(Request $request, $id){
+
+    // }
+
     public function update(Request $request, $id)
     {
         try {
@@ -207,7 +211,7 @@ class DailyInventoryController extends Controller
                     'Closing_quantity' => 'required|numeric|min:1',
                     'quantity_out' => 'required|numeric',
                     'transaction_date' => 'required|date',
-                    'user_id' => 'required|exists:tbl_system_users,id',
+                    'user_id' => 'required|exists:users,id',
                     'remarks'   => 'nullable|string|max:250',
                     'status'   => 'nullable|string|max:250',
                 ]
@@ -483,7 +487,7 @@ class DailyInventoryController extends Controller
         }
     }
 
-    public function regenerateInventory()
+    public function regenerateInventory($userID)
     {
         try {
 
@@ -532,16 +536,18 @@ class DailyInventoryController extends Controller
 
             $latestData = $latestInventoryQuery->get();
 
-            $insertData = $latestData->map(function ($item) {
+            $user_ID = $userID;
+
+            $insertData = $latestData->map(function ($item) use ($user_ID) {
                 return [
                     'stock_id' => $item->stock_id,
                     'Openning_quantity' => $item->Closing_quantity,
                     'Closing_quantity' => $item->Closing_quantity,
                     'quantity_out' => 0,
-                    'transaction_date' => \Carbon\Carbon::today(),
+                    'transaction_date' => Carbon::today(),
                     'remarks' => 'Auto-generated from previous closing',
                     'status' => 'OPEN',
-                    'user_id' => 1,
+                    'user_id' => $user_ID,
                     'created_at' => now(),
                     'updated_at' => now()
                 ];
@@ -682,7 +688,7 @@ class DailyInventoryController extends Controller
                 'success' => true,
                 'list' => $inventoryCloseList
             ], 200);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return response()->json(['error' => 'Database query error', 'message' => $e->getMessage()], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'message' => $e->getMessage()], 500);
