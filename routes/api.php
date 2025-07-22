@@ -72,6 +72,7 @@ Route::prefix('items')->group(function () {
     Route::get('/po/show/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
     Route::get('/expire/list',[ItemsController::class,'getExpiringStock']); // Get all expiring item
     Route::post('/new', [ItemsController::class, 'store']);                  // Create a new item
+    Route::post('/batch/new', [ItemsController::class, 'batchstore']);
     Route::put('/{id}', [ItemsController::class, 'update']);             // Update an item
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number

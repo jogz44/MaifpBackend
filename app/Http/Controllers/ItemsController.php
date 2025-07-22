@@ -303,12 +303,12 @@ class ItemsController extends Controller
             $inserted = [];
 
             foreach ($validated['medicines'] as $medicine) {
-                $inserted[] = Item::create($medicine);
+                $inserted[] = Items::create($medicine);
             }
 
             return response()->json([
                 'success' => true,
-                'message'=>count( $inserted) + ' Items added successfully',
+                'message'=> count( $inserted) . ' Items added successfully',
                 'items' => $inserted
                 // 'skipped' => $skipped
             ]);
