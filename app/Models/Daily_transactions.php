@@ -31,11 +31,24 @@ class daily_transactions extends Model
         static::created(function ($transaction) {
             Log::info('Transaction Created: ', $transaction->toArray());
             self::updateInventory($transaction, 'deduct');
+
+            AuditTrail::create([
+                'action' => 'Created',
+                'table_name' => 'daily_transactions',
+                'user_id' => $transaction->user_id,
+                'changes' =>'created' .' : Transaction ID: '.  $transaction->id . ' - item ID: ' . $transaction->item_id . ' - Quantity: ' . $transaction->quantity . ' - Unit: ' . $transaction->unit . ' - Date: ' . $transaction->transaction_date,
+            ]);
         });
 
         static::deleted(function ($transaction) {
             Log::info('Transaction Deleted: ', $transaction->toArray());
             self::updateInventory($transaction, 'revert');
+             AuditTrail::create([
+                'action' => 'Deleted',
+                'table_name' => 'daily_transactions',
+                'user_id' => $transaction->user_id,
+                'changes' => 'Deleted' .' : Transaction ID: '.  $transaction->id . ' - item ID: ' . $transaction->item_id . ' - Quantity: ' . $transaction->quantity . ' - Unit: ' . $transaction->unit . ' - Date: ' . $transaction->transaction_date,
+            ]);
         });
     }
 
@@ -58,6 +71,12 @@ class daily_transactions extends Model
                 $inventory->quantity_out += $transaction->quantity;
                 $inventory->save();
                 // Log::info("Inventory updated: Closing_quantity = {$inventory->Closing_quantity}, quantity_out = {$inventory->quantity_out}");
+                AuditTrail::create([
+                    'action' => 'Updated',
+                    'table_name' => 'daily_inventory',
+                    'user_id' => $transaction->user_id,
+                    'changes' => "Inventory updated: Closing_quantity = {$inventory->Closing_quantity}, quantity_out = {$inventory->quantity_out}" . ' By User ID: ' . $transaction->user_id . ' for transaction ID: ' . $transaction->id,
+                ]);
             } else {
                 Log::error("Not enough stock! Closing_quantity: {$inventory->Closing_quantity}, Required: {$transaction->quantity}");
                 // throw new \Exception("Not enough stock to complete the transaction.");
@@ -66,6 +85,14 @@ class daily_transactions extends Model
             $inventory->Closing_quantity += $transaction->quantity;
             $inventory->quantity_out -= $transaction->quantity;
             $inventory->save();
+
+            AuditTrail::create([
+                'action' => 'Reverted',
+                'table_name' => 'daily_inventory',
+                'user_id' => $transaction->user_id,
+                'changes' => "Inventory reverted: Closing_quantity = {$inventory->Closing_quantity}, quantity_out = {$inventory->quantity_out}" . ' By User ID: ' . $transaction->user_id . ' for transaction ID: ' . $transaction->id,
+            ]);
+
             Log::info("Inventory reverted: Closing_quantity = {$inventory->Closing_quantity}, quantity_out = {$inventory->quantity_out}");
         }
     }

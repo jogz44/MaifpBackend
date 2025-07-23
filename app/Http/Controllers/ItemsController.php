@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Str;
+use Carbon\Carbon;
 use App\Models\Items;
+use App\Models\AuditTrail;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 
 class ItemsController extends Controller
@@ -27,7 +29,6 @@ class ItemsController extends Controller
                 'success' => true,
                 'items' => $items
             ]);
-
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
@@ -43,7 +44,6 @@ class ItemsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
-
     }
     public function TemporaryID()
     {
@@ -114,7 +114,7 @@ class ItemsController extends Controller
 
     public function show($id)
     {
-
+       
         try {
 
             $item = Items::where('id', $id)->get();
@@ -165,7 +165,6 @@ class ItemsController extends Controller
                 'count' => $po_list->count(),
                 'list' => $po_list
             ], 200);
-
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -219,6 +218,12 @@ class ItemsController extends Controller
                 'message' => 'PO number updated successfully.'
             ], 201);
 
+            AuditTrail::create([
+                'action' => 'Updated',
+                'table_name' => 'items',
+                'user_id' => $request->user_id,
+                'changes' => 'Updated PO number: ' . $temp_po . ' to ' . $request->po_no
+            ]);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -310,7 +315,7 @@ class ItemsController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message'=> count( $inserted) . ' Items added successfully',
+                'message' => count($inserted) . ' Items added successfully',
                 'items' => $inserted
                 // 'skipped' => $skipped
             ]);
@@ -323,7 +328,7 @@ class ItemsController extends Controller
             ], 422);
             //throw $th;
         } catch (QueryException $qe) {
-                  DB::rollBack();
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
@@ -332,7 +337,7 @@ class ItemsController extends Controller
             //throw $th;
         } catch (\Throwable $th) {
             //throw $th;
-                  DB::rollBack();
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -579,8 +584,7 @@ class ItemsController extends Controller
         }
     }
 
-
-    public function getJoinedItemswitInventory()
+     public function getJoinedItemswitInventory()
     {
 
         $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
@@ -618,5 +622,55 @@ class ItemsController extends Controller
         return $data;
     }
 
+    public function getJoinedItemswitInventoryfiltered()
+    {
 
+        $today = Carbon::now()->toDateString(); // Get today's date
+        $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
+            ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.Openning_quantity', 'inv1.transaction_date')
+            ->whereRaw('inv1.transaction_date = (
+            SELECT MAX(inv2.transaction_date)
+            FROM tbl_daily_inventory as inv2
+            WHERE inv2.stock_id = inv1.stock_id
+        )')
+            ->where('inv1.status', 'OPEN') // Filter by OPEN status;
+            ->where('inv1.Closing_quantity', '>', 0); // 👈 Exclude zero Closing_quantity
+
+        $data = DB::table('tbl_items')
+            ->leftJoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
+                $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
+            })
+            ->whereDate('tbl_items.expiration_date', '>=', $today)
+            ->select(
+                'latest_inventory.id as inventory_id',
+                'tbl_items.id as item_id',
+                'tbl_items.po_no',
+                'tbl_items.brand_name',
+                'tbl_items.generic_name',
+                'tbl_items.dosage',
+                'tbl_items.dosage_form',
+                'tbl_items.unit',
+                'tbl_items.quantity as item_quantity',
+                'latest_inventory.Openning_quantity',
+                'latest_inventory.Closing_quantity',
+                'tbl_items.expiration_date',
+                'latest_inventory.transaction_date as last_inventory_date',
+
+            )
+            ->orderBy('tbl_items.generic_name')
+            ->orderBy('tbl_items.expiration_date', 'asc')
+            ->get();
+
+        //  return $data;
+
+        // Group by generic_name and keep only the item with the earliest expiration
+        $filtered = $data
+            ->groupBy('generic_name')
+            ->map(function ($itemsPerGeneric) {
+                return $itemsPerGeneric->sortBy('expiration_date')->first();
+            })
+            ->values();
+
+        return $filtered;
+    }
 }

@@ -4,18 +4,19 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\CustomersController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DosageTypeController;
 use App\Http\Controllers\SystemUserController;
+use App\Http\Controllers\ConfigurationsController;
 use App\Http\Controllers\DailyInventoryController;
+use App\Http\Controllers\MedicinelibraryController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ConfigurationsController;
-use App\Http\Controllers\MedicinelibraryController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -43,7 +44,7 @@ Route::prefix('daily')->group(function () {
     Route::get('/inventory/lastest', [DailyInventoryController::class, 'showLatest']);
     Route::post('/', [DailyInventoryController::class, 'store']);                                        // Create a new transaction
     Route::post('/inventory/open-latest/{id}', [DailyInventoryController::class, 'regenerateInventory']);            // regenerate inventory for the day || generate OPENNING ITEM LIST
-    Route::post('/inventory/close-latest', [DailyInventoryController::class, 'closeInventory']);           // CLOSE ITEMS FOR THE DAY
+    Route::post('/inventory/close-latest/{id}', [DailyInventoryController::class, 'closeInventory']);           // CLOSE ITEMS FOR THE DAY
     Route::get('/inventory/get-list/{date}', [DailyInventoryController::class, 'closeInventoryByDate']);           // CLOSE ITEMS FOR THE DAY
     Route::put('/{id}', [DailyInventoryController::class, 'update']);                                  // Update an existing transaction
     Route::delete('/{id}', [DailyInventoryController::class, 'destroy']);                                           // Delete a transaction
@@ -76,7 +77,8 @@ Route::prefix('items')->group(function () {
     Route::put('/{id}', [ItemsController::class, 'update']);             // Update an item
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number
-    Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
+    Route::get('/stock/filteredlist', [ItemsController::class, 'getJoinedItemswitInventoryfiltered']);
+     Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
     Route::get('/generate/tempno', [ItemsController::class, 'TemporaryID']);
     Route::get('/temp/po',[ItemsController::class,'TempPOlist']); // Get all temporary items
     Route::put('/temp/po/{tempno}', [ItemsController::class,'UpdateTempPO']); // Update temporary P.O.
@@ -156,5 +158,12 @@ Route::prefix('dashboard')->group(function () {
 
 });
 
+Route::prefix('logs')->group(function () {
+    Route::get('/audit/logs', [AuditController::class, 'index']); // Get all audit logs
+    Route::post('/audit/logs', [AuditController::class, 'store']); // Store a new audit log
+    Route::get('/audit/logs/{id}', [AuditController::class, 'show']); // Show a specific audit log
+    Route::put('/audit/logs/{id}', [AuditController::class, 'update']); // Update a specific audit log
+    Route::delete('/audit/logs/{id}', [AuditController::class, 'destroy']); // Delete a specific audit log
+});
 
 });

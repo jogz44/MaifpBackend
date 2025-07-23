@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\User;
+use App\Models\AuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -98,6 +99,9 @@ class SystemUserController extends Controller
                 'success' => true,
                 'user' => $System_users
             ]);
+
+
+
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -201,6 +205,14 @@ class SystemUserController extends Controller
                 'success' => true,
                 'user' => $user
             ]);
+
+            AuditTrail::create([
+                'action' => 'Updated User',
+                'table_name' => 'users',
+                'user_id' => $user->id,
+                'changes' => 'Updated user information',
+            ]);
+
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,

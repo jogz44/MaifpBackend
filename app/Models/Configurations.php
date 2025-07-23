@@ -20,4 +20,6 @@ class Configurations extends Model
         "days_toExpire"
     ];
 
+  
+
 }

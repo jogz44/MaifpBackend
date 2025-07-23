@@ -46,7 +46,13 @@ class items extends Model
                 'status' => 'OPEN',
                 'user_id' => $item->user_id
             ]);
-            
+
+            AuditTrail::create([
+                'action' => 'Created',
+                'table_name' => 'items',
+                'user_id' => $item->user_id,
+                'changes' => 'Created item: ' . $item->brand_name . ' - ' . $item->generic_name . ' - form ' . $item->dosage_form . ' - Dosage ' . $item->dosage . ' -  Quantity: ' . $item->quantity .' - Expiration Date: ' . $item->expiration_date,
+            ]);
 
             $exists= Medicinelibrary::where('brand_name',$item->brand_name)
               ->where('generic_name', $item->generic_name)
@@ -63,6 +69,13 @@ class items extends Model
                     'dosage' => $item->dosage,
                     'category' => $item->category,
                     'user_id' => $item->user_id,
+                ]);
+
+                AuditTrail::create([
+                    'action' => 'Added to Library',
+                    'table_name' => 'medicinelibrary',
+                    'user_id' => $item->user_id,
+                    'changes' => 'Added to library: ' . $item->brand_name . ' - ' . $item->generic_name . ' - form ' . $item->dosage_form . ' - Dosage ' . $item->dosage,
                 ]);
             }
         });

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\AuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Daily_inventory as Inventory;
 use Illuminate\Validation\ValidationException;
 
@@ -560,6 +561,13 @@ class DailyInventoryController extends Controller
                 'message' => 'New inventory records generated successfully',
                 'count' => count($insertData),
             ], 201);
+
+            AuditTrail::create([
+                'action' => 'Regenerated Inventory',
+                'table_name' => 'tbl_daily_inventory',
+                'user_id' => $user_ID,
+                'changes' => 'Regenerated inventory by user ID: ' . $user_ID
+            ]);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -581,10 +589,10 @@ class DailyInventoryController extends Controller
         }
     }
 
-    public function closeInventory()
+    public function closeInventory($id)
     {
         try {
-
+            $user_ID = $id; // Assuming the user is authenticate
             $subQuery = DB::table('tbl_daily_inventory')
                 ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
                 ->where('status', 'OPEN')          // Only consider open status in subquery
@@ -629,6 +637,14 @@ class DailyInventoryController extends Controller
                         ]);
                 }
             });
+
+            AuditTrail::create([
+                'action' => 'Closed Inventory',
+                'table_name' => 'tbl_daily_inventory',
+                'user_id' => $user_ID, // Assuming the user is authenticated
+                'changes' => 'Closed inventory records by user ID: ' . $user_ID
+            ]);
+
 
             return response()->json([
                 'success' => true,
