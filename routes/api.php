@@ -78,7 +78,7 @@ Route::prefix('items')->group(function () {
     Route::delete('/{id}', [ItemsController::class, 'destroy']);                      // Delete an item by ID
     Route::delete('/po/remove/{po_number}', [ItemsController::class, 'destroyItemsByPO']);  // Delete items by PO number
     Route::get('/stock/filteredlist', [ItemsController::class, 'getJoinedItemswitInventoryfiltered']);
-     Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
+    Route::get('/stock/list', [ItemsController::class, 'getJoinedItemswitInventory']);
     Route::get('/generate/tempno', [ItemsController::class, 'TemporaryID']);
     Route::get('/temp/po',[ItemsController::class,'TempPOlist']); // Get all temporary items
     Route::put('/temp/po/{tempno}', [ItemsController::class,'UpdateTempPO']); // Update temporary P.O.
@@ -102,12 +102,10 @@ Route::prefix('system')->group(function () {
     Route::delete('/user/credentials/{id}', [UserCredentialsController::class, 'destroy']); // delete user credentials
     // Route::get('/user/credentials/user/{user_id}', [UserCredentialsController::class, 'showByUserId']); // Get user credentials by user ID
 
-
     Route::get('/library/medlist', [MedicinelibraryController::class, 'index']); // Get all units
     Route::post('/library/medlist/new', [MedicinelibraryController::class, 'batch_Store']); // Get all units
-
-
     Route::get('/library/items', [ItemsController::class, 'itemList']); // Get all units
+
     Route::get('/library/units', [UnitController::class, 'getUnits']); // Get all units
     Route::post('/library/units', [UnitController::class, 'store']); // Insert new unit
     Route::get('/library/units/{id}', [UnitController::class, 'show']); // Get single unit by ID
@@ -118,7 +116,9 @@ Route::prefix('system')->group(function () {
     Route::post('/library/dosages', [DosageTypeController::class, 'store']); // Insert new unit
     Route::get('/library/dosages/{id}', [DosageTypeController::class, 'show']); // Get single unit by ID
     Route::put('/library/dosages/{id}', [DosageTypeController::class, 'update']); // Update a unit
-    Route::delete('/library/dosages/{id}', [DosageTypeController::class, 'destroy']); // Delete a unit
+    Route::post('/library/dosages/remove', [DosageTypeController::class, 'removeDosageType']);
+    // Route::delete('/library/dosages/{id}', [DosageTypeController::class, 'destroy']);  Delete a unit
+
 
     Route::get('/configuration/{id}', [ConfigurationsController::class, 'show']); // Get all config
     Route::post('/configuration', [ConfigurationsController::class, 'store']); // Insert new config
