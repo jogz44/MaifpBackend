@@ -33,7 +33,7 @@ class DashboardController extends Controller
             return $this->getRegisteredCustomers($validatedData['start_date'], $validatedData['end_date']);
         } catch (ValidationException $e) {
             return response()->json(['error' => 'Validation error', 'messages' => $e->errors()], 422);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return response()->json(['error' => 'Unexpected error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -88,7 +88,7 @@ class DashboardController extends Controller
             return response()->json($servedCustomers);
         } catch (ValidationException $e) {
             return response()->json(['error' => 'Validation error', 'messages' => $e->errors()], 422);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return response()->json(['error' => 'Unexpected error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -130,7 +130,7 @@ class DashboardController extends Controller
             // return response()->json($servedCustomers);
         } catch (ValidationException $e) {
             return response()->json(['error' => 'Validation error', 'messages' => $e->errors()], 422);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return response()->json(['error' => 'Unexpected error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -246,7 +246,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -267,7 +267,7 @@ class DashboardController extends Controller
                 ->whereDate('expiration_date', '>', $monthFromNow)
                 ->where('Openning_quantity', '<>', 0)
                 ->where('Closing_quantity', '<>', 0)
-                ->where('status', '=', 'OPEN')
+                ->whereDate('transaction_date', '=', $today)
                 ->count();
 
             return response()->json([
@@ -286,7 +286,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -327,7 +327,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -413,7 +413,7 @@ class DashboardController extends Controller
                 'error' => $qe->getMessage()
             ], 500);
             //throw $th;
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             //throw $th;
             return response()->json([
                 'success' => false,
@@ -452,7 +452,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -487,7 +487,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -535,7 +535,7 @@ class DashboardController extends Controller
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',

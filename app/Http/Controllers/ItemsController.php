@@ -114,7 +114,7 @@ class ItemsController extends Controller
 
     public function show($id)
     {
-       
+
         try {
 
             $item = Items::where('id', $id)->get();
@@ -637,7 +637,7 @@ class ItemsController extends Controller
             ->where('inv1.Closing_quantity', '>', 0); // 👈 Exclude zero Closing_quantity
 
         $data = DB::table('tbl_items')
-            ->leftJoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
+            ->JoinSub($latestInventoryQuery, 'latest_inventory', function ($join) {
                 $join->on('tbl_items.id', '=', 'latest_inventory.stock_id');
             })
             ->whereDate('tbl_items.expiration_date', '>=', $today)
@@ -672,5 +672,32 @@ class ItemsController extends Controller
             ->values();
 
         return $filtered;
+    }
+
+
+    public function stockCard(Request $request){
+
+        $request->validate([
+            'generic_name' => 'required|exists:tbl_items,generic_name',
+            'brand_name' => 'required|exists:tbl_items,brand_name',
+        ]);
+
+        $generic_name = $request->generic_name;
+        $brand_name = $request->brand_name;
+        $stockCard = DB::table('vw_stock_card')
+            ->where('generic_name', $generic_name)
+            ->where('brand_name', $brand_name)
+            // ->orderBy('transaction_date', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'stockCard' => $stockCard,
+            'message' => 'Stock card retrieved successfully'
+        ], 200);
+
+
+
+
     }
 }
