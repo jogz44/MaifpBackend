@@ -717,22 +717,23 @@ class DailyInventoryController extends Controller
         try {
             //code...
 
-            $subQuery = DB::table('tbl_daily_inventory')
-                ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
-                ->where('status', 'CLOSE')          // Only consider close status in subquery
-                ->groupBy('stock_id');
+            // $subQuery = DB::table('tbl_daily_inventory')
+            //     ->select('stock_id', DB::raw('MAX(transaction_date) as max_date'))
+            //     ->where('status', 'CLOSE')          // Only consider close status in subquery
+            //     ->groupBy('stock_id');
 
-            $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
-                ->joinSub($subQuery, 'latest', function ($join) {
-                    $join->on('inv1.stock_id', '=', 'latest.stock_id')
-                        ->on('inv1.transaction_date', '=', 'latest.max_date');
-                })
-                ->where('inv1.status', 'CLOSE')     // Filter main query for OPEN status as well
-                ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.transaction_date', 'inv1.status');
+            // $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
+            //     ->joinSub($subQuery, 'latest', function ($join) {
+            //         $join->on('inv1.stock_id', '=', 'latest.stock_id')
+            //             ->on('inv1.transaction_date', '=', 'latest.max_date');
+            //     })
+            //     ->where('inv1.status', 'CLOSE')     // Filter main query for OPEN status as well
+            //     ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.transaction_date', 'inv1.status');
 
-            $latestData = $latestInventoryQuery->get();
+            // $latestData = $latestInventoryQuery->get();
+            $AuthenticatedUser = auth()->user();
 
-            return response()->json($latestData, 200);
+            return response()->json($AuthenticatedUser, 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,

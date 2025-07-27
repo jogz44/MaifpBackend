@@ -41,6 +41,7 @@ class DashboardController extends Controller
     private function getRegisteredCustomers($start_date, $end_date)
     {
         try {
+          
             $customers = DB::table('tbl_customers')
                 ->select(
                     DB::raw('COUNT(*) as registered_Customers')
