@@ -75,6 +75,6 @@ class User extends Authenticatable
      */
     public function credentials()
     {
-        return $this->hasMany(UserCredentials::class);
+        return $this->hasMany(UserCredentials::class,'userid');
     }
 }

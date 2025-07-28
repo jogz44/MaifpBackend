@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\UserCredentials;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UserCredentialsController extends Controller
@@ -43,11 +46,14 @@ class UserCredentialsController extends Controller
         }
     }
 
+
     public function store(Request $request)
     {
         try {
+            // 🔍 Extract all input data
             $credentials = $request->all();
 
+            // ❗ Ensure data is an array (for bulk insert/update)
             if (!is_array($credentials)) {
                 return response()->json([
                     'success' => false,
@@ -57,7 +63,9 @@ class UserCredentialsController extends Controller
 
             $saved = [];
 
+            // 🌀 Loop through each credential payload
             foreach ($credentials as $item) {
+                // 🧪 Validate each item
                 $data = validator($item, [
                     'userid' => 'required|exists:users,id',
                     'module' => 'required|string',
@@ -68,9 +76,10 @@ class UserCredentialsController extends Controller
                     'export' => 'nullable|boolean',
                 ])->validate();
 
+                // 📝 Create or update credentials
                 $saved[] = UserCredentials::updateOrCreate(
-                    ['userid' => $data['userid'], 'module' => $data['module']], // search attributes
-                    [ // fields to update or create
+                    ['userid' => $data['userid'], 'module' => $data['module']], // Unique key
+                    [ // Fields to update
                         'view' => $data['view'] ?? false,
                         'add' => $data['add'] ?? false,
                         'edit' => $data['edit'] ?? false,
@@ -80,24 +89,28 @@ class UserCredentialsController extends Controller
                 );
             }
 
-            //dd($saved);
-
-            // $credential = UserCredentials::create($data);
-
-            return response()->json(['success' => true, 'credential' => $saved, 'message' => 'User credential created successfully.'], 201);
+            // ✅ Return success response
+            return response()->json([
+                'success' => true,
+                'credential' => $saved,
+                'message' => 'User credential(s) created or updated successfully.'
+            ], 201);
         } catch (ValidationException $ve) {
+            // 🛑 Validation error
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
                 'errors' => $ve->errors()
             ], 422);
         } catch (QueryException $qe) {
+            // ⚠️ DB-level error
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
                 'error' => $qe->getMessage()
             ], 500);
         } catch (\Throwable $th) {
+            // 💥 Catch-all for unexpected issues
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
@@ -105,6 +118,7 @@ class UserCredentialsController extends Controller
             ], 500);
         }
     }
+
 
     public function show($id)
     {
@@ -166,6 +180,54 @@ class UserCredentialsController extends Controller
 
     public function showModuleCredentialbyUser($userId, $module)
     {
+        try {
+            $credentials = UserCredentials::where('userid', $userId)
+                ->where('module', $module)
+                ->get();
+            if ($credentials->isEmpty()) {
+                return response()->json(['success' => false, 'message' => 'No user credentials found for this user.'], 404);
+            }
+            return response()->json(['success' => true, 'credential' => $credentials], 200);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function GetMyModule(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'module' => 'required|string',
+        ]);
+
+        // Handle validation failure manually
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $userId = Auth::user()->id;
+        $module = $validator->validated()['module'];
+
         try {
             $credentials = UserCredentials::where('userid', $userId)
                 ->where('module', $module)

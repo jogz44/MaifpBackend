@@ -32,6 +32,9 @@ class items extends Model
     ];
 
 
+    
+
+
     protected static function booted()
     {
         static::created(function ($item) {
@@ -79,6 +82,9 @@ class items extends Model
                 ]);
             }
         });
+
+
+
 
 
     }

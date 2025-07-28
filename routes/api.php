@@ -94,6 +94,7 @@ Route::prefix('system')->group(function () {
     Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
     Route::put('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
     Route::put('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
+    Route::post('/user/credentials', [SystemUserController::class, 'GetMyModule']); // Get user credentials
 
 
     Route::get('/user/credentials', [UserCredentialsController::class, 'index']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\AuditTrail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
@@ -731,9 +732,14 @@ class DailyInventoryController extends Controller
             //     ->select('inv1.id', 'inv1.stock_id', 'inv1.Closing_quantity', 'inv1.transaction_date', 'inv1.status');
 
             // $latestData = $latestInventoryQuery->get();
-            $AuthenticatedUser = auth()->user();
+            $AuthenticatedUser = Auth::user();
+            $AuthenticatedUserCredentials = Auth::user()->credentials;
 
-            return response()->json($AuthenticatedUser, 200);
+            if (!$AuthenticatedUser) {
+                return response()->json(['success' => false, 'message' => 'User not authenticated'], 401);
+            }
+
+            return response()->json(["Authenticated User"=>$AuthenticatedUser], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
