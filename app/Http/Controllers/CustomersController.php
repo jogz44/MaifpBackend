@@ -89,7 +89,7 @@ class CustomersController extends Controller
                     'gender' => 'required|string|max:11',
                     'is_not_tagum' => 'boolean',
                     'street' => 'nullable|string|max:255',
-                    'purok'  => 'required|string|max:255',
+                    'purok'  => 'nullable|string|max:255',
                     'barangay' => 'required|string|max:255',
                     'city' => 'nullable|string|max:255',
                     'province' => 'nullable|string|max:255',
