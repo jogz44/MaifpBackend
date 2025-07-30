@@ -557,18 +557,20 @@ class DailyInventoryController extends Controller
 
             DB::table('tbl_daily_inventory')->insert($insertData);
 
+                AuditTrail::create([
+                'action' => 'Regenerated Inventory',
+                'table_name' => 'tbl_daily_inventory',
+                'user_id' => $user_ID,
+                'changes' => 'Regenerated inventory by user ID: ' . $user_ID
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'New inventory records generated successfully',
                 'count' => count($insertData),
             ], 201);
 
-            AuditTrail::create([
-                'action' => 'Regenerated Inventory',
-                'table_name' => 'tbl_daily_inventory',
-                'user_id' => $user_ID,
-                'changes' => 'Regenerated inventory by user ID: ' . $user_ID
-            ]);
+
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
