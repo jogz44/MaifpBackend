@@ -17,6 +17,7 @@ use App\Http\Controllers\MedicinelibraryController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\RequisitionIssuanceSlipController;
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -51,6 +52,8 @@ Route::prefix('daily')->group(function () {
 
     Route::get('/mode/test', [DailyInventoryController::class, 'testQuery']);
     Route::get('/inventoryOpen/today', [DailyInventoryController::class, 'OpenTransactionLookUp']);
+
+    Route::post('/ris/new',[RequisitionIssuanceSlipController::class, 'store']);
 });
 
 
