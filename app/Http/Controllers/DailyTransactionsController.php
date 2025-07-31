@@ -186,7 +186,7 @@ class DailyTransactionsController extends Controller
                 [
                     'item_id' => 'required|exists:tbl_items,id',
                     'transaction_id' => 'required|string',
-                    'customer_id' => 'required|exists:tbl_customers,id',
+                    'customer_id' => 'required|numeric',
                     'quantity' => 'required|numeric|min:1',
                     'unit' => 'nullable|string',
                     'transaction_date' => 'required|date',
@@ -236,7 +236,7 @@ class DailyTransactionsController extends Controller
                 [
                     'item_id' => 'required|exists:tbl_items,id',
                     'transaction_id' => 'required|string',
-                    'customer_id' => 'required|exists:tbl_customers,id',
+                    'customer_id' => 'required|numeric',
                     'quantity' => 'required|numeric|min:1',
                     'unit' => 'nullable|string',
                     'transaction_date' => 'required|date',

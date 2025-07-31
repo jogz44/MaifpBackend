@@ -23,9 +23,13 @@ class RequisitionIssuanceSlipController extends Controller
 
         return "RIS-{$currendate}-{$transactionNumber}";
     }
-    public function index() {}
+    public function index()
+    {
+    }
 
-    public function show($id) {}
+    public function show($id)
+    {
+    }
 
     public function store(Request $request)
     {
@@ -41,28 +45,21 @@ class RequisitionIssuanceSlipController extends Controller
 
 
             // Properly merge Auth ID into request data
-            $request->merge(['userid' => Auth::id()]);
-            $request->merge(['transaction_date' => $currendate]);
-            $request->merge(['ris_id' => $ris_id]);
+            $request->merge([
+                'userid' => Auth::id(),
+                'transaction_date' => $currendate,
+                'ris_id' => $ris_id
+            ]);
 
 
             $validated = $request->validate(
                 [
                     'transaction_date' => 'required|date',
-                    'purpose' => 'required|string|max:500',
+                    'purpose' => 'required|string|max:500|unique:tbl_ris,purpose',
                     'ris_id' => 'required|string',
                     'userid' => 'required|exists:users,id'
                 ]
             );
-
-            $existing = RequisitionIssuanceSlip::where('purpose', $validated['purpose'])->first();
-            if ($existing) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Duplicate details on Purpose detected. Please use a unique purpose.'
-                ], 409);
-            }
 
             $ris = RequisitionIssuanceSlip::create($validated);
             DB::commit();
@@ -94,7 +91,11 @@ class RequisitionIssuanceSlipController extends Controller
         }
     }
 
-    public function update($id, Request $request) {}
+    public function update($id, Request $request)
+    {
+    }
 
-    public function delete($id) {}
+    public function delete($id)
+    {
+    }
 }
