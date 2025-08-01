@@ -54,6 +54,14 @@ Route::prefix('daily')->group(function () {
     Route::get('/inventoryOpen/today', [DailyInventoryController::class, 'OpenTransactionLookUp']);
 
     Route::post('/ris/new',[RequisitionIssuanceSlipController::class, 'store']);
+    Route::get('/ris/list',[RequisitionIssuanceSlipController::class, 'index']);
+    Route::post('/ris',[RequisitionIssuanceSlipController::class, 'show']);
+    Route::put('/ris/update',[RequisitionIssuanceSlipController::class, 'update']);
+    Route::post('/ris/transactions',[RequisitionIssuanceSlipController::class, 'RIS']);
+    Route::post('/ris/info',[RequisitionIssuanceSlipController::class, 'RIS_INFO']);
+
+
+
 });
 
 
