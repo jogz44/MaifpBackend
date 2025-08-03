@@ -18,7 +18,7 @@ return new class extends Migration
                i.generic_name,
                i.dosage,
                i.dosage_form,
-               i.
+               
                dt.quantity,
                dt.transaction_id
         from tbl_items i

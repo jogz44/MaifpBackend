@@ -363,7 +363,8 @@ class DailyTransactionsController extends Controller
                         PARTITION BY t1.customer_id
                         ORDER BY t1.transaction_date DESC, t1.transaction_id DESC
                     ) AS rn') // Break ties by transaction_id if dates are identical
-                );
+                )
+                 ->where('t1.transaction_id', 'not like', '%RIS%');  // Exclude RIS transaction IDs;
 
             // Join with customers table and filter for the latest transaction (rn = 1)
             $customersWithLatestTransactions = DB::table('tbl_customers')
@@ -424,7 +425,8 @@ class DailyTransactionsController extends Controller
                     ORDER BY t1.transaction_date DESC, t1.transaction_id DESC
                 ) AS rn')
                 )
-                ->whereDate('t1.transaction_date', $today); // Filter transactions for today
+                ->whereDate('t1.transaction_date', $today) // Filter transactions for today
+                ->where('t1.transaction_id', 'not like', '%RIS%');  // Exclude RIS transaction IDs
 
             // Join with customers table and filter for the latest transaction (rn = 1)
             $customersWithLatestTransactions = DB::table('tbl_customers')
@@ -473,6 +475,7 @@ class DailyTransactionsController extends Controller
 
             $list_level = DB::table('vw_patients_overall_transactions')
                             ->where('customer_id','=', $id)
+                             ->where('transaction_id', 'not like', '%RIS%')
                             ->get();
 
                             if($list_level -> isEmpty()){
@@ -504,6 +507,7 @@ class DailyTransactionsController extends Controller
             $list_breakdown = DB::table('vw_patient_transactions_list')
                             ->where('customer_id','=', $id)
                             ->where('transaction_id','=', $transaction_id)
+                            ->where('transaction_id', 'not like', '%RIS%')
                             ->get();
 
                             if($list_breakdown -> isEmpty()){
