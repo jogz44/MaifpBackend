@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\RequisitionIssuanceSlip;
 use App\Models\daily_transactions;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -25,6 +26,38 @@ class RequisitionIssuanceSlipController extends Controller
         $transactionNumber = str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
         return "RIS-{$currendate}-{$transactionNumber}";
+    }
+
+    public function RIS_TransactionDate(Request $request){
+
+        $validated = $request->validate([
+         'from' => 'required|date',
+         'to'   => 'required|date|after_or_equal:from',
+        ]);
+
+        try {
+             $list = RequisitionIssuanceSlip::dateBetween($validated['from'],$validated['to'])
+             ->orderBy('created_at', 'asc')
+             ->get();
+            return response()->json(['list'=> $list],200);
+        } catch (QueryException $qe) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $qe->getMessage()
+            ], 500);
+
+        } catch (Throwable $th) {
+
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+
     }
 
 

@@ -59,9 +59,7 @@ Route::prefix('daily')->group(function () {
     Route::put('/ris/update',[RequisitionIssuanceSlipController::class, 'update']);
     Route::post('/ris/transactions',[RequisitionIssuanceSlipController::class, 'RIS']);
     Route::post('/ris/info',[RequisitionIssuanceSlipController::class, 'RIS_INFO']);
-
-
-
+    Route::post('/ris/date',[RequisitionIssuanceSlipController::class, 'RIS_TransactionDate']);
 });
 
 
