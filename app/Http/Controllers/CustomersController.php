@@ -43,13 +43,53 @@ class CustomersController extends Controller
         }
     }
 
+    public function CustomerByDate(Request $request)
+    {
+        try {
+
+
+            $validated = $request->validate([
+                'from' => 'required|date',
+                'to'   => 'required|date|after_or_equal:from',
+            ]);
+
+            $customers = Customers::dateBetween($validated['from'], $validated['to'])
+               ->orderBy('created_at', 'asc')
+                ->get();
+
+            return response()->json(['success' => true, 'customers' =>  $customers]);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $ve->errors()
+            ], 422);
+            //throw $th;
+        } catch (QueryException $qe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error',
+                'errors' => $qe->getMessage()
+            ], 500);
+            //throw $th;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred',
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function show($id)
     {
 
         try {
-            $customers = Customers::where('id',$id)
+            $customers = Customers::where('id', $id)
                 ->get();
-            return response()->json( $customers, 200);
+            return response()->json($customers, 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
@@ -129,9 +169,10 @@ class CustomersController extends Controller
         }
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
-            $customer = Customers::where('id',$id)->first();
+            $customer = Customers::where('id', $id)->first();
             if (!$customer) {
                 return response()->json(['success' => false, 'message' => 'Client not found'], 404);
             }
@@ -186,12 +227,12 @@ class CustomersController extends Controller
                 'errors' => $th->getMessage()
             ], 500);
         }
-
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         try {
-            $customer = Customers::where('id',$id);
+            $customer = Customers::where('id', $id);
             if (!$customer) {
                 return response()->json(['success' => false, 'message' => 'Client not found'], 404);
             }
@@ -199,8 +240,8 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => true,
                 'customers' =>  $customer,
-                'message'=> 'Customer information deleted'
-            ],200);
+                'message' => 'Customer information deleted'
+            ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,

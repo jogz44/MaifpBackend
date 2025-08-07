@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class customers extends Model
 {
@@ -32,4 +33,9 @@ class customers extends Model
         'is_solo',
         'user_id'
     ];
+
+     public function scopeDateBetween($query, $from, $to)
+    {
+        return $query->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]);
+    }
 }

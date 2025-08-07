@@ -33,6 +33,7 @@ Route::prefix('customers')->group(function () {
     Route::delete('/{id}', [CustomersController::class, 'destroy']);
     Route::get('/transactions/{id}',[DailyTransactionsController::class,'Customer_Transaction_List']);
     Route::get('/transactions/{id}/list/{trans_id}',[DailyTransactionsController::class,'Customer_Transaction_List_Breakdown']);
+    Route::post('/list/dates',[CustomersController::class, 'CustomerByDate']);
 });
 
 
