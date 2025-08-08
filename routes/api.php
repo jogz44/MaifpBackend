@@ -78,7 +78,7 @@ Route::prefix('orders')->group(function(){
 
 
 Route::prefix('items')->group(function () {
-    Route::get('/', [ItemsController::class, 'index']);                      // Get all items
+    Route::post('/', [ItemsController::class, 'index']);                      // Get all items
     Route::get('/{id}', [ItemsController::class, 'show']);                  // Get single item by ID
     Route::get('/po/show/{po_number}',[ItemsController::class,'showItemsByPO']); //Get all items By PO
     Route::get('/expire/list',[ItemsController::class,'getExpiringStock']); // Get all expiring item

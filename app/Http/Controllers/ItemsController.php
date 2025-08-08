@@ -75,12 +75,20 @@ class ItemsController extends Controller
 
 
     //
-    public function index()
+    public function index(Request $request)
     {
         try {
 
-            $Items = Items::orderBy('id', 'desc')
+            $validated = $request->validate([
+                'from' => 'required|date',
+                'to'   => 'required|date|after_or_equal:from',
+            ]);
+
+
+            $Items = Items::dateBetween($validated['from'], $validated['to'])
+                ->orderBy('created_at', 'asc')
                 ->get();
+
             return response()->json(
                 [
                     'success' => true,
@@ -584,7 +592,7 @@ class ItemsController extends Controller
         }
     }
 
-     public function getJoinedItemswitInventory()
+    public function getJoinedItemswitInventory()
     {
 
         $latestInventoryQuery = DB::table('tbl_daily_inventory as inv1')
@@ -675,7 +683,8 @@ class ItemsController extends Controller
     }
 
 
-    public function stockCard(Request $request){
+    public function stockCard(Request $request)
+    {
 
         $request->validate([
             'generic_name' => 'required|exists:tbl_items,generic_name',
@@ -695,9 +704,5 @@ class ItemsController extends Controller
             'stockCard' => $stockCard,
             'message' => 'Stock card retrieved successfully'
         ], 200);
-
-
-
-
     }
 }

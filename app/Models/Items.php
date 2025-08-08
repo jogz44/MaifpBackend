@@ -3,8 +3,9 @@
 namespace App\Models;
 
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
 class items extends Model
@@ -31,8 +32,10 @@ class items extends Model
         'user_id',
     ];
 
-
-    
+   public function scopeDateBetween($query, $from, $to)
+    {
+        return $query->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]);
+    }
 
 
     protected static function booted()
