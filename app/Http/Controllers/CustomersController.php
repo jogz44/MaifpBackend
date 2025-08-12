@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\QueryException;
 use App\Models\Customers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 
 class CustomersController extends Controller
@@ -265,4 +266,6 @@ class CustomersController extends Controller
             ], 500);
         }
     }
+
+
 }

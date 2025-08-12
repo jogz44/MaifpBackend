@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Items;
 use App\Models\AuditTrail;
+use GrahamCampbell\ResultType\Success;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -704,5 +705,91 @@ class ItemsController extends Controller
             'stockCard' => $stockCard,
             'message' => 'Stock card retrieved successfully'
         ], 200);
+    }
+
+    public function InventoryRangeDate(Request $request)
+    {
+
+       $validated = $request->validate([
+        'from' => 'required|date',
+        'to'   => 'required|date|after_or_equal:from',
+    ]);
+
+    $from = $validated['from'];
+    $to   = $validated['to'];
+
+    $report = DB::table('tbl_items as itms')
+        ->select(
+            'itms.po_no',
+            'itms.brand_name',
+            'itms.generic_name',
+            'itms.dosage',
+            'itms.dosage_form',
+            'itms.quantity as current_quantity',
+            'itms.expiration_date',
+            'inv_from.Openning_quantity as opening_quantity',
+            'inv_to.Closing_quantity as closing_quantity',
+            DB::raw('SUM(dtxn.quantity) as total_out_quantity')
+        )
+
+        // Opening quantity subquery
+        ->leftJoin(DB::raw("
+            (
+                SELECT inv1.stock_id, inv1.Openning_quantity
+                FROM tbl_daily_inventory inv1
+                INNER JOIN (
+                    SELECT stock_id, MAX(transaction_date) AS max_date
+                    FROM tbl_daily_inventory
+                    WHERE transaction_date <= ?
+                    GROUP BY stock_id
+                ) inv2
+                ON inv1.stock_id = inv2.stock_id AND inv1.transaction_date = inv2.max_date
+            ) as inv_from
+        "), function ($join) {
+            $join->on('inv_from.stock_id', '=', 'itms.id');
+        })
+
+        // Closing quantity subquery
+        ->leftJoin(DB::raw("
+            (
+                SELECT inv1.stock_id, inv1.Closing_quantity
+                FROM tbl_daily_inventory inv1
+                INNER JOIN (
+                    SELECT stock_id, MAX(transaction_date) AS max_date
+                    FROM tbl_daily_inventory
+                    WHERE transaction_date <= ?
+                    GROUP BY stock_id
+                ) inv2
+                ON inv1.stock_id = inv2.stock_id AND inv1.transaction_date = inv2.max_date
+            ) as inv_to
+        "), function ($join) {
+            $join->on('inv_to.stock_id', '=', 'itms.id');
+        })
+
+        // Transactions in range
+        ->leftJoin('tbl_daily_transactions as dtxn', function ($join) use ($from, $to) {
+            $join->on('dtxn.item_id', '=', 'itms.id')
+                ->whereBetween('dtxn.transaction_date', [$from, $to]);
+        })
+
+        ->setBindings([$from, $to]) // Bind $from to first subquery, $to to second
+        ->groupBy(
+            'itms.po_no',
+            'itms.id',
+            'itms.brand_name',
+            'itms.generic_name',
+            'itms.dosage',
+            'itms.dosage_form',
+            'itms.quantity',
+            'itms.expiration_date',
+            'inv_from.Openning_quantity',
+            'inv_to.Closing_quantity'
+        )
+        ->orderBy('itms.brand_name')
+        ->orderBy('itms.generic_name')
+        ->get();
+
+
+        return response()->json(['items' => $report, 'success' => true], 200);
     }
 }
