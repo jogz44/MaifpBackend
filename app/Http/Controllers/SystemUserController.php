@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\role;
 use App\Models\User;
 use App\Models\AuditTrail;
 use Illuminate\Http\Request;
@@ -78,6 +79,14 @@ class SystemUserController extends Controller
         }
     }
 
+    public function role(){
+
+       $role =  role::all();
+         return response()->json(['success' => true,
+         'role' =>  $role]);
+
+    }
+
     public function store(Request $request)
     {
         try {
@@ -90,11 +99,11 @@ class SystemUserController extends Controller
                 'office' => 'required|string|max:100',
                 'username' => 'required|string|max:100|unique:users,username',
                 'password' => 'required|string|max:16',
+                'role_id' => 'required|exists:role,id', // Ensure role_id exists in role table
             ]);
 
             // No need to hash password manually here
             $System_users = User::create($validationInput);
-
             return response()->json([
                 'success' => true,
                 'user' => $System_users
@@ -126,51 +135,6 @@ class SystemUserController extends Controller
 
     public function update(Request $request, $id)
     {
-        // try {
-        //     $user = User::find($id);
-        //     if (!$user) {
-        //         return response()->json(['success' => false, 'message' => 'user not found'], 404);
-        //     }
-
-        //     $validationInput = $request->validate(
-        //         [
-        //             'first_name' => 'required|string|max:100',
-        //             'last_name' => 'required|string|max:100',
-        //             'middle_name' => 'nullable|string|max:100',
-        //             'position' => 'required|string|max:100',
-        //             'office' => 'required|string|max:100',
-        //             'username' => 'required|string|max:100|unique:users,username',
-        //             'password' => 'required|string|max:16',
-        //         ]
-        //     );
-
-        //     $user->update($validationInput);
-        //     return response()->json([
-        //         'success' => true,
-        //         'user' =>  $user
-        //     ]);
-        // } catch (ValidationException $ve) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Validation error',
-        //         'errors' => $ve->errors()
-        //     ], 422);
-        //     //throw $th;
-        // } catch (QueryException $qe) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Database error',
-        //         'error' => $qe->getMessage()
-        //     ], 500);
-        //     //throw $th;
-        // } catch (\Throwable $th) {
-        //     //throw $th;
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'An unexpected error occurred',
-        //         'error' => $th->getMessage()
-        //     ], 500);
-        // }
 
         try {
             $user = User::find($id);
@@ -354,27 +318,14 @@ class SystemUserController extends Controller
 
     //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------
 
-    // public function login_User(Request $request){
-    //     if(!Auth::attempt($request->only('username', 'password')))
-    //     {
-    //             return response()->json(['login_status'=> false, 'mssage'=> 'Login Failed: Invalid Credentials'],401);
-    //     }
 
-    //             $user =  Auth::user();
-    //             $token = $user->createToken('CICTMO2025-CHO-INVENTORY-SYSTEM')->plainTextToken;
-    //             $cookie = cookie('auth_token', $token, 60*24,null,null,true,true,false,'None');
-    //             return response()->json([
-    //                     'Login_Status' => true,
-    //                     'message'=> 'login successfully',
-    //                     'token' => $token
 
-    //             ])->withCookie($cookie);
-    // }
     public function login_User(Request $request)
     {
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+
         ]);
 
         // Find user by username
@@ -415,6 +366,9 @@ class SystemUserController extends Controller
             'office' => $user->office,
             'status' => $user->status,
             'username' => $user->username,
+            'role_id' => $user->role_id,
+            'role_name' => $user->role ? $user->role->role_name : 'N/A',
+            'created_at' => $user->created_at,
             'full_name' => trim($user->first_name . ' ' . $user->middle_name . ' ' . $user->last_name),
         ];
 

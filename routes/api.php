@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ItemsController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
@@ -18,14 +19,40 @@ use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
+use App\Http\Controllers\TransactionController;
 
+Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
+
+
+Route::get('patients/{id}', [PatientController::class, 'show']);     // Fetch a single patient by ID
+Route::get('transactions/{id}', [TransactionController::class, 'show']);
+
+Route::post('/patients/update/{id}', [PatientController::class, 'update']);
+Route::post('/transaction/update/{id}', [TransactionController::class, 'update']);
+Route::delete('patients/delete', [PatientController::class, 'destroyAll']);
+
+Route::post('/patients/store', [PatientController::class, 'storeAll']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
-Route::prefix('customers')->group(function () {
+    Route::prefix('patients')->group(function () {
+    Route::get('/', [PatientController::class, 'index']);              // Fetch all patients
+    // Route::put('/{id}', [PatientController::class, 'update']);                            // Update an existing patient by ID
+    // Route::delete('/{id}', [PatientController::class, 'destroy']);
+
+});
+
+    Route::prefix('transactions')->group(function () {
+        Route::get('/', [PatientController::class, 'index']);                                 // Fetch all patients
+        // Route::get('/{id}', [PatientController::class, 'show']);                              // Fetch a single patient by ID
+
+    });
+
+    Route::prefix('customers')->group(function () {
     Route::get('/', [CustomersController::class, 'index']);                                 // Fetch all customers
     Route::get('/{id}', [CustomersController::class, 'show']);                              // Fetch a single customer by ID
     Route::post('/', [CustomersController::class, 'store']);                                // Create a new customer

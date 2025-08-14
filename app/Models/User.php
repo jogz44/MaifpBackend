@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\role;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 
 class User extends Authenticatable
@@ -26,6 +27,7 @@ class User extends Authenticatable
         'position',
         'office',
         'status',
+        'role_id',
         'username',
         'password',
     ];
@@ -41,6 +43,12 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+
+     public function role(){
+
+        return $this->belongsTo(role::class,);
+
+     }
     public function getFullNameAttribute()
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
