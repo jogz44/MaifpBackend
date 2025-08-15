@@ -18,7 +18,8 @@ class Transaction extends Model
         'transaction_type',
         'transaction_mode',
         'transaction_date',
-        'purpose'
+        'purpose',
+        'status', // Added status field
     ];
 
     public function patient()

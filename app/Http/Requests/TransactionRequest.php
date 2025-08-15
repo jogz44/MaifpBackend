@@ -23,10 +23,10 @@ class TransactionRequest extends FormRequest
     {
         return [
             //
-            'transaction_number' => 'required|string|max:255',
-            'patient_id' => 'required|exists:patient,id',
-            'transaction_type' => 'required|string|max:255',
-
+            'transaction_type' => 'sometimes|required|string|max:255',
+             'transaction_mode' => 'sometimes|required|string|max:255',
+             'transaction_date' => 'sometimes|required|date',
+             'purpose' => 'sometimes|nullable|string|max:255',
         ];
     }
 }

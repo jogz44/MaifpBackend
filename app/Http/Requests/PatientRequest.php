@@ -23,24 +23,24 @@ class PatientRequest extends FormRequest
     {
         return [
             //
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'ext' => 'nullable|string|max:255',
-            'birthdate' => 'required|date',
-            'contact_number' => 'nullable|string|max:11',
-            'age' => 'integer',
-            'gender' => 'required|string|max:11',
-            'is_not_tagum' => 'boolean',
-            'street' => 'nullable|string|max:255',
-            'purok'  => 'nullable|string|max:255',
-            'barangay' => 'required|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'province' => 'nullable|string|max:255',
-            'category' => 'required|in:Child,Adult,Senior',
-            'is_pwd' => 'boolean',
-            'is_solo' => 'boolean',
-            'user_id' => 'required|exists:users,id'
+            'firstname' => 'sometimes|required|string|max:255',
+            'lastname' => 'sometimes|required|string|max:255',
+            'middlename' => 'sometimes|nullable|string|max:255',
+            'ext' => 'sometimes|nullable|string|max:255',
+            'birthdate' => 'sometimes|required|date',
+            'contact_number' => 'sometimes|nullable|string|max:11',
+            'age' => 'sometimes|integer',
+            'gender' => 'sometimes|required|string|max:11',
+            'is_not_tagum' => 'sometimes|boolean',
+            'street' => 'sometimes|nullable|string|max:255',
+            'purok'  => 'sometimes|nullable|string|max:255',
+            'barangay' => 'sometimes|required|string|max:255',
+            'city' => 'sometimes|nullable|string|max:255',
+            'province' => 'sometimes|nullable|string|max:255',
+            'category' => 'sometimes|required|in:Child,Adult,Senior',
+            'is_pwd' => 'sometimes|boolean',
+            'is_solo' => 'sometimes|boolean',
+            'user_id' => 'sometimes|required|exists:users,id'
         ];
     }
 }

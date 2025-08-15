@@ -28,11 +28,17 @@ Route::post('/user/login', [SystemUserController::class, 'login_User']);
 Route::get('patients/{id}', [PatientController::class, 'show']);     // Fetch a single patient by ID
 Route::get('transactions/{id}', [TransactionController::class, 'show']);
 
-Route::post('/patients/update/{id}', [PatientController::class, 'update']);
-Route::post('/transaction/update/{id}', [TransactionController::class, 'update']);
-Route::delete('patients/delete', [PatientController::class, 'destroyAll']);
+Route::put('/patients/update/{id}', [PatientController::class, 'update']);
+Route::put('/transaction/update/{id}', [TransactionController::class, 'update']);
+Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']);
 
-Route::post('/patients/store', [PatientController::class, 'storeAll']);
+Route::get('/transaction/qualified', [TransactionController::class, 'qualifiedTransactions']);
+
+Route::delete('transaction/delete', [TransactionController::class, 'deleteAllTransactions']);
+
+Route::put('/transaction/{id}/update/status/', [TransactionController::class, 'status_update']);
+
+Route::post('/transaction/add', [PatientController::class, 'addTransactionAndVitals']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -41,9 +47,9 @@ Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
     Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']);              // Fetch all patients
-    // Route::put('/{id}', [PatientController::class, 'update']);                            // Update an existing patient by ID
-    // Route::delete('/{id}', [PatientController::class, 'destroy']);
-
+        // Route::put('/{id}', [PatientController::class, 'update']);                            // Update an existing patient by ID
+        // Route::delete('/{id}', [PatientController::class, 'destroy']);
+        Route::post('/store', [PatientController::class, 'storeAll']);
 });
 
     Route::prefix('transactions')->group(function () {
