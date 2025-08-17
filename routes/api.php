@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ReportsController;
@@ -12,33 +13,20 @@ use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DosageTypeController;
 use App\Http\Controllers\SystemUserController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ConfigurationsController;
 use App\Http\Controllers\DailyInventoryController;
 use App\Http\Controllers\MedicinelibraryController;
+use App\Http\Controllers\TransactionTypeController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
-use App\Http\Controllers\TransactionController;
 
 Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
 
-Route::get('patients/{id}', [PatientController::class, 'show']);     // Fetch a single patient by ID
-Route::get('transactions/{id}', [TransactionController::class, 'show']);
-
-Route::put('/patients/update/{id}', [PatientController::class, 'update']);
-Route::put('/transaction/update/{id}', [TransactionController::class, 'update']);
-Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']);
-
-Route::get('/transaction/qualified', [TransactionController::class, 'qualifiedTransactions']);
-
-Route::delete('transaction/delete', [TransactionController::class, 'deleteAllTransactions']);
-
-Route::put('/transaction/{id}/update/status/', [TransactionController::class, 'status_update']);
-
-Route::post('/transaction/add', [PatientController::class, 'addTransactionAndVitals']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -47,14 +35,37 @@ Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
     Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']);              // Fetch all patients
-        // Route::put('/{id}', [PatientController::class, 'update']);                            // Update an existing patient by ID
-        // Route::delete('/{id}', [PatientController::class, 'destroy']);
+        Route::get('/{id}', [PatientController::class, 'show']);     // Fetch a single patient by ID
+        Route::put('/update/{id}', [PatientController::class, 'update']);
+        Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']);
         Route::post('/store', [PatientController::class, 'storeAll']);
 });
 
     Route::prefix('transactions')->group(function () {
         Route::get('/', [PatientController::class, 'index']);                                 // Fetch all patients
-        // Route::get('/{id}', [PatientController::class, 'show']);                              // Fetch a single patient by ID
+        // Route::get('/{id}', [PatientController::class, 'show']);
+        Route::get('/qualified', [TransactionController::class, 'qualifiedTransactions']);
+        Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']);
+        Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);
+        Route::post('/add', [PatientController::class, 'addTransactionAndVitals']);                        // Fetch a single patient by ID
+        Route::put('/update/{id}', [TransactionController::class, 'update']);
+        Route::get('/{id}', [TransactionController::class, 'show']);
+    });
+
+    Route::prefix('Budgets')->group(function () {
+        Route::get('/', [BudgetController::class, 'index']);                                 // Fetch all transaction types
+        Route::get('/{id}', [BudgetController::class, 'show']);                              // Fetch a single transaction type by ID
+        Route::post('/store', [BudgetController::class, 'store']);                             // Create a new transaction type
+        Route::put('/update/{id}', [BudgetController::class, 'update']);                      // Update an existing transaction type by ID
+        Route::delete('/delete/{id}', [BudgetController::class, 'destroy']);
+    });
+
+    Route::prefix('transaction-types')->group(function (){
+        Route::get('/', [TransactionTypeController::class, 'index']);                                 // Fetch all transaction types
+        Route::get('/{id}', [TransactionTypeController::class, 'show']);                              // Fetch a single transaction type by ID
+        Route::post('/store', [TransactionTypeController::class, 'store']);                             // Create a new transaction type
+        Route::put('/update/{id}', [TransactionTypeController::class, 'update']);                      // Update an existing transaction type by ID
+        Route::delete('/delete/{id}', [TransactionTypeController::class, 'destroy']);
 
     });
 
