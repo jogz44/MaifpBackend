@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction', function (Blueprint $table) {
+        Schema::create('new_consultation', function (Blueprint $table) {
             $table->id();
-            $table->string('transaction_number')->nullable();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->string('transaction_type')->nullable();
-            $table->enum('status', ['qualified', 'unqualified', 'for assessment'])->default('for assessment');
-            $table->date('transaction_date')->nullable();
+            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->date('consultation_date')->nullable();
+            $table->time('consultation_time')->nullable();
+            $table->enum('status', ['Done', 'Processing','Pending'])->default('pending');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction');
+        Schema::dropIfExists('new_consultation');
     }
 };

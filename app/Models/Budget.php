@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class Budget extends Model
@@ -11,10 +12,33 @@ class Budget extends Model
     protected $table = 'budget';
 
     protected $fillable = [
-        'budget_date',
+        'budget_start_date',
+        'budget_end_date',
         'funds',
-        'additional_funds',
         'remaining_funds',
-        'release_funds',
+
     ];
+
+
+    public function releases(){
+
+        return $this->hasMany(BudgetRelease::class);
+    }
+
+    public function releaseFunds($amount)
+    {
+
+        if ($this->remaining_funds < $amount) {
+            throw new Exception('Insufficient funds');
+        }
+        // Deduct from remaining funds
+        $this->remaining_funds -= $amount;
+        $this->save();
+
+        // Log the release
+        $this->releases()->create([
+            'release_amount' => $amount,
+        ]);
+
+    }
 }

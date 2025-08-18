@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class BudgetRequest extends FormRequest
+class BudgetAdditionalFundsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,12 +23,14 @@ class BudgetRequest extends FormRequest
     {
         return [
             //
-            'funds' => 'required|numeric',
-            'budget_start_date' => 'required|date',
-            'budget_end_date' => 'required|date',
-            'remaining_funds' => 'numeric'
-
-
+            'budget_id' => 'required|exists:budget,id',
+            'additional' => 'required|numeric',
+        ];
+    }
+    public function messages(): array
+    {
+        return [
+            'budget_id.exists' => 'The selected budget_id does not exist.',
         ];
     }
 }

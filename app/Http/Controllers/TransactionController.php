@@ -84,28 +84,56 @@ class TransactionController extends Controller
         }
     }
 
-    // public function qualifiedTransactions()
-    // {
-    //     try {
-    //         $transactions = Transaction::where('status', 'qualified')->with('patient')->get();
+    public function qualifiedTransactionsConsultation()
+    {
+        try {
+            $patients = Transaction::where('status', 'qualified')
+                ->where('transaction_type', 'Consultation')
+                // exclude patients who already have ANY "Done" consultation
+                ->whereDoesntHave('consultation', function ($query) {
+                    $query->where('status', 'Done');
+                })
+                ->with([
+                    'patient',
+                    'vital',
+                    'consultation'
+                ])
+                ->get()
+                ->groupBy('patient_id')
+                ->map(function ($group) {
+                    $patient = $group->first()->patient;
 
-    //         return response()->json([
-    //             'success' => true,
-    //             'transactions' => $transactions
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to fetch qualified transactions.',
-    //             'error' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
-    // public function qualifiedTransactions()
+                    // attach transactions to patient
+                    $patient->transaction = $group->map(function ($transaction) {
+                        return collect($transaction)->except('patient');
+                    })->values();
+
+                    return $patient;
+                })
+                ->values();
+
+            return response()->json($patients);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch qualified transactions.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    // public function qualifiedTransactionsConsultation()
     // {
     //     try {
     //         $transactions = Transaction::where('status', 'qualified')
-    //             ->with('patient')
+    //             ->where('transaction_type', 'Consultation')
+    //             ->with([
+    //                 'patient',
+    //                 'vital', // 👈 fetch vitals of the transaction
+    //                 'Consulation'
+    //             ])->whereHas('status','Done')
     //             ->get()
     //             ->groupBy('patient_id')
     //             ->map(function ($group) {
@@ -132,13 +160,52 @@ class TransactionController extends Controller
     // }
 
 
-    public function qualifiedTransactions()
+
+    public function qualifiedTransactionsLaboratory()
     {
         try {
             $transactions = Transaction::where('status', 'qualified')
-                ->with(['patient' => function ($query) {
-                    $query->select('id', 'firstname', 'lastname');
-                }])
+                ->where('transaction_type', 'Laboratory')
+                ->with([
+                    'patient',
+                    'vital' // 👈 fetch vitals of the transaction
+                ])
+                ->get()
+                ->groupBy('patient_id')
+                ->map(function ($group) {
+                    return [
+                        'patient' => $group->first()->patient,
+                        'transactions' => $group->map(function ($transaction) {
+                            return collect($transaction)->except('patient');
+                        })->values()
+                    ];
+                })
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'patients' => $transactions
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch qualified transactions.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function qualifiedTransactionsMedication()
+    {
+        try {
+            $transactions = Transaction::where('status', 'qualified')
+                ->where('transaction_type', 'Medication')
+                ->with([
+                    'patient',
+                    'vital' // 👈 fetch vitals of the transaction
+                ])
                 ->get()
                 ->groupBy('patient_id')
                 ->map(function ($group) {

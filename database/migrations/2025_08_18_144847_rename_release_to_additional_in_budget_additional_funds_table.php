@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transaction', function (Blueprint $table) {
-            //
-            $table->string('status') ->default('unqualified') ->after('transaction_date'); // place column after transaction_date
-
+        Schema::table('budget_additional_funds', function (Blueprint $table) {
+            $table->renameColumn('release', 'additional');
         });
     }
 
@@ -23,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('transaction', function (Blueprint $table) {
-            //
-            $table->dropColumn('status');
+        Schema::table('budget_additional_funds', function (Blueprint $table) {
+            $table->renameColumn('additional', 'release');
         });
     }
 };
