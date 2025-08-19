@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\PatientController;
@@ -21,14 +22,22 @@ use App\Http\Controllers\TransactionTypeController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
+use App\Models\New_Consultation;
 
 Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
+Route::get('patients/consultation/return', [NewConsultationController::class, 'ReturnConsultation']);
 
+Route::get('laboratory', [TransactionController::class, 'qualifiedTransactionsLaboratory']);
 Route::get('patients/assessment', [PatientController::class, 'assessment']);
+
 Route::get('transactions/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);
+Route::get('transactions/{transactionId}', [BillingController::class, 'billing']);
+
+Route::post('laboratory/store', [LaboratoryController::class, 'store']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -47,10 +56,13 @@ Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
         Route::get('/', [PatientController::class, 'index']);                                 // Fetch all patients
         // Route::get('/{id}', [PatientController::class, 'show']);
         // Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);
-        Route::get('/laboratory', [TransactionController::class, 'qualifiedTransactionsLaboratory']);
-        Route::get('/Medication', [TransactionController::class, 'qualifiedTransactionsMedication']);
+        // Route::get('/laboratory', [TransactionController::class, 'qualifiedTransactionsLaboratory']);
+        // Route::get('/Medication', [TransactionController::class, 'qualifiedTransactionsMedication']);
         Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']);
+
         Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);
+        // Route::post('/{id}/update/status/', [TransactionController::class, 'status_update']);
+
         Route::post('/add', [PatientController::class, 'addTransactionAndVitals']);                        // Fetch a single patient by ID
         Route::put('/update/{id}', [TransactionController::class, 'update']);
         Route::get('/{id}', [TransactionController::class, 'show']);
@@ -63,6 +75,12 @@ Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
         Route::post('/store', [NewConsultationController::class, 'store']);
 
     });
+
+    // Route::prefix('laboratory')->group(function () {
+    //     Route::get('/', [NewConsultationController::class, 'index']);
+    //     Route::get('/show/{id}', [NewConsultationController::class, 'show']);                                   // Fetch all patients
+    //     Route::post('/store', [NewConsultationController::class, 'store']);
+    // });
 
 
     Route::prefix('Budgets')->group(function () {

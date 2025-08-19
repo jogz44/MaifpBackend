@@ -25,7 +25,7 @@ class Transaction extends Model
 
     public function patient()
     {
-        return $this->belongsTo(Patient::class,);
+        return $this->belongsTo(Patient::class);
     }
 
     public function vital()
@@ -34,6 +34,18 @@ class Transaction extends Model
     }
     public function consultation()
     {
-        return $this->hasOne(New_Consultation::class,);
+        return $this->hasOne(New_Consultation::class);
+    }
+
+    // public function getTotalBillingAttribute()
+    // {
+    //     $consultationAmount = $this->consultation ? $this->consultation->amount : 0;
+    //     $laboratoryTotal = $this->laboratories()->sum('amount');
+
+    //     return $consultationAmount + $laboratoryTotal;
+    // }
+    public function laboratories()
+    {
+        return $this->hasMany(Laboratory::class, 'transaction_id');
     }
 }

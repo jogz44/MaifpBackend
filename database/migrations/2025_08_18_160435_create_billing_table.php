@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('billing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
             $table->foreignId('laboratory_id')->nullable()->constrained('laboratory')->onDelete('cascade');
-            $table->string('laboratort_type')->nullable();
-            $table->string('amount',15,2)->nullable();
+            // $table->string('laboratory_type')->nullable();
+            // $table->decimal('amount',15,2)->nullable();
+            $table->enum('status', ['Unpaid', 'Paid'])->default('Unpaid');
 
             $table->timestamps();
         });

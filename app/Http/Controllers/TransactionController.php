@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\TransactionRequest;
-use App\Http\Requests\VitalRequest;
+use Carbon\Carbon;
+use App\Models\vital;
 use App\Models\Patient;
 use App\Models\Transaction;
-use App\Models\vital;
 use Illuminate\Http\Request;
+use App\Http\Requests\VitalRequest;
+use App\Http\Requests\TransactionRequest;
 
 class TransactionController extends Controller
 {
@@ -91,7 +92,7 @@ class TransactionController extends Controller
                 ->where('transaction_type', 'Consultation')
                 // exclude patients who already have ANY "Done" consultation
                 ->whereDoesntHave('consultation', function ($query) {
-                    $query->where('status', 'Done');
+                      $query->whereIn('status', ['Done', 'Processing', 'Returned']);
                 })
                 ->with([
                     'patient',
@@ -124,32 +125,40 @@ class TransactionController extends Controller
 
 
 
+
     // public function qualifiedTransactionsConsultation()
     // {
     //     try {
-    //         $transactions = Transaction::where('status', 'qualified')
+    //         $today = Carbon::today()->toDateString(); // example: "2025-08-19"
+
+    //         $patients = Transaction::where('status', 'qualified')
     //             ->where('transaction_type', 'Consultation')
+    //             // exclude patients who already have ANY consultation with status Done, Processing, Returned for today only
+    //             ->whereDoesntHave('consultation', function ($query) use ($today) {
+    //                 $query->whereDate('consultation_date', $today)
+    //                     ->whereIn('status', ['Done', 'Processing', 'Returned']);
+    //             })
     //             ->with([
     //                 'patient',
-    //                 'vital', // 👈 fetch vitals of the transaction
-    //                 'Consulation'
-    //             ])->whereHas('status','Done')
+    //                 'vital',
+    //                 'consultation'
+    //             ])
+    //             ->whereDate('transaction_date', $today) // ✅ only today's transactions
     //             ->get()
     //             ->groupBy('patient_id')
     //             ->map(function ($group) {
-    //                 return [
-    //                     'patient' => $group->first()->patient,
-    //                     'transactions' => $group->map(function ($transaction) {
-    //                         return collect($transaction)->except('patient');
-    //                     })->values()
-    //                 ];
+    //                 $patient = $group->first()->patient;
+
+    //                 // attach transactions to patient
+    //                 $patient->transaction = $group->map(function ($transaction) {
+    //                     return collect($transaction)->except('patient');
+    //                 })->values();
+
+    //                 return $patient;
     //             })
     //             ->values();
 
-    //         return response()->json([
-    //             'success' => true,
-    //             'patients' => $transactions
-    //         ]);
+    //         return response()->json($patients);
     //     } catch (\Throwable $th) {
     //         return response()->json([
     //             'success' => false,
@@ -165,23 +174,30 @@ class TransactionController extends Controller
     {
         try {
             $transactions = Transaction::where('status', 'qualified')
-                ->where('transaction_type', 'Laboratory')
+                ->where(function ($query) {
+                    $query->where('transaction_type', 'Laboratory')
+                        ->orWhereHas('consultation', function ($q) {
+                            $q->where('status', 'Processing');
+                        });
+                })
                 ->with([
                     'patient',
-                    'vital' // 👈 fetch vitals of the transaction
+                    'vital',       // fetch vitals of the transaction
+                    'consultation' // fetch consultation if exists
                 ])
                 ->get()
                 ->groupBy('patient_id')
                 ->map(function ($group) {
-                    return [
-                        'patient' => $group->first()->patient,
-                        'transactions' => $group->map(function ($transaction) {
-                            return collect($transaction)->except('patient');
-                        })->values()
-                    ];
+                    $patient = $group->first()->patient;
+
+                    // attach transactions to patient
+                    $patient->transaction = $group->map(function ($transaction) {
+                        return collect($transaction)->except('patient');
+                    })->values();
+
+                    return $patient;
                 })
                 ->values();
-
             return response()->json([
                 'success' => true,
                 'patients' => $transactions

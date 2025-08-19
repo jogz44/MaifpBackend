@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('laboratory', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->constrained('transaction')->onDelete('cascade');
             $table->foreignId('new_consultation_id')->nullable()->constrained('new_consultation')->onDelete('cascade');
+            // $table->string('laboratory_type')->nullable();
+            // $table->string('amount', 15, 2)->nullable();
+            $table->enum('status', ['Pending', 'Processing', 'Returned','Done'])->default('Pending');
+
             $table->timestamps();
         });
     }

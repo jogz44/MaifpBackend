@@ -16,6 +16,12 @@ class New_Consultation extends Model
         'transaction_id',
         'consultation_time',
         'consultation_date',
+        'amount',
         'status',
     ];
+
+    public function laboratories()
+    {
+        return $this->hasMany(Laboratory::class, 'new_consultation_id');
+    }
 }
