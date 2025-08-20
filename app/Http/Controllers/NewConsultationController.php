@@ -29,6 +29,7 @@ class NewConsultationController extends Controller
             $patients = Transaction::whereHas('consultation', function ($query) {
                 $query->where('status', 'Returned');
             })
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
                 ->with([
                     'patient',
                     'vital',
@@ -83,7 +84,23 @@ class NewConsultationController extends Controller
 
     // }
 
-    public function store(NewConsultationRequest $request) // this  method is for status of the patient if procesing or done 
+    // public function store(NewConsultationRequest $request) // this  method is for status of the patient if procesing or done
+    // {
+    //     $validated = $request->validated();
+
+    //     // If status is Done, set amount = 500
+    //     if (isset($validated['status']) && $validated['status'] === 'Done') {
+    //         $validated['amount'] = 500;
+    //     }
+
+    //     $NewConsultation = New_Consultation::Updatrcreate($validated);
+
+    //     return response()->json([
+    //         'message' => 'Successfully Saved',
+    //         'consultation' => $NewConsultation,
+    //     ]);
+    // }
+    public function store(NewConsultationRequest $request)
     {
         $validated = $request->validated();
 
@@ -92,7 +109,11 @@ class NewConsultationController extends Controller
             $validated['amount'] = 500;
         }
 
-        $NewConsultation = New_Consultation::create($validated);
+        // ✅ Update if transaction_id exists, otherwise create
+        $NewConsultation = New_Consultation::updateOrCreate(
+            ['transaction_id' => $validated['transaction_id']], // match condition
+            $validated                                          // values to update
+        );
 
         return response()->json([
             'message' => 'Successfully Saved',
@@ -100,3 +121,4 @@ class NewConsultationController extends Controller
         ]);
     }
 }
+

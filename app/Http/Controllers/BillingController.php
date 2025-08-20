@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
@@ -31,5 +32,36 @@ class BillingController extends Controller
             'laboratory_total'    => $laboratoryTotal,
             'total_billing'       => $totalBilling,
         ]);
+    }
+    public function index()
+    {
+
+
+$transactions = Transaction::whereHas('patient')
+            // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+            // make sure patient exists
+            ->where(function ($query) {
+        // Case 1: Transaction with consultation
+        $query->whereHas('consultation', function ($q) {
+            $q->where('status', 'Done');
+        })
+        // Case 2: Transaction without consultation but with lab Done
+        ->orWhere(function ($q) {
+            $q->whereDoesntHave('consultation') // no consultation
+              ->whereHas('laboratories', function ($lab) {
+                  $lab->where('status', 'Done');
+              });
+        });
+    })
+    ->with([
+            'patient:id,firstname,lastname,middlename,ext,birthdate,age,contact_number,barangay',
+        'consultation.laboratories', // load consultation + its labs
+        'laboratories' // load labs directly tied to transaction
+    ])
+    ->get();
+
+
+    return response()->json($transactions);
+
     }
 }

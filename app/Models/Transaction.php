@@ -23,6 +23,7 @@ class Transaction extends Model
         'status', // Added status field
     ];
 
+    
     public function patient()
     {
         return $this->belongsTo(Patient::class);

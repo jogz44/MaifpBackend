@@ -35,13 +35,15 @@ Route::get('laboratory', [TransactionController::class, 'qualifiedTransactionsLa
 Route::get('patients/assessment', [PatientController::class, 'assessment']);
 
 Route::get('transactions/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);
-Route::get('transactions/{transactionId}', [BillingController::class, 'billing']);
+Route::get('billing/{transactionId}', [BillingController::class, 'billing']);
 
 Route::post('laboratory/store', [LaboratoryController::class, 'store']);
 
+Route::get('billing/', [BillingController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
 
-Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
+
+    Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
     Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']);
@@ -54,7 +56,7 @@ Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
     Route::prefix('transactions')->group(function () {
         Route::get('/', [PatientController::class, 'index']);                                 // Fetch all patients
-        // Route::get('/{id}', [PatientController::class, 'show']);
+        Route::get('/{id}', [PatientController::class, 'show']);
         // Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);
         // Route::get('/laboratory', [TransactionController::class, 'qualifiedTransactionsLaboratory']);
         // Route::get('/Medication', [TransactionController::class, 'qualifiedTransactionsMedication']);

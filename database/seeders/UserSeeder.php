@@ -40,5 +40,19 @@ class UserSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+
+         User::create([
+            'first_name' => 'cliford',
+            'last_name' => 'millan',
+            'position' => 'Janitor',
+            'status' => 'Active',
+            'office' => 'CICTMO',
+            'username' => 'millan',
+            'password' => 'admin',
+            'role_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

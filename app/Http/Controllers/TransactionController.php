@@ -15,7 +15,8 @@ class TransactionController extends Controller
     // Add methods for handling transactions here
     // For example, you might have methods to create, update, delete, and fetch transactions
 
-    public function show($id) //this method is for showing a transaction by ID
+    //this method is for showing a transaction by ID
+    public function show($id)
     {
         // Logic to fetch a transaction by ID
         $transaction = Transaction::with('vital')->find($id);
@@ -24,7 +25,8 @@ class TransactionController extends Controller
 
     }
 
-    public function update(TransactionRequest $request, $id) // this method is for updating transaction
+    // this method is for updating transaction
+    public function update(TransactionRequest $request, $id)
     {
         // Logic to update a transaction
         $validated =  $request->validated();
@@ -37,7 +39,8 @@ class TransactionController extends Controller
             'transaction' => $transaction]);
     }
 
-    public function vital_update(VitalRequest $request, $id) // this method is for updating vital signs
+    // this method is for updating vital signs
+    public function vital_update(VitalRequest $request, $id)
     {
         // Logic to update a transaction
         $validated =  $request->validated();
@@ -51,7 +54,8 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function status_update(Request $request, $id) // this method is for updating transaction status
+    // this method is for updating transaction status if the patient are qualified or unqualified
+    public function status_update(Request $request, $id)
     {
         // Logic to update a transaction
         $validated =  $request->validate([
@@ -67,6 +71,7 @@ class TransactionController extends Controller
         ]);
     }
 
+    //deleting the AllTransactions Data
     public function deleteAllTransactions()
     {
         try {
@@ -85,11 +90,13 @@ class TransactionController extends Controller
         }
     }
 
-    public function qualifiedTransactionsConsultation()
-    {
+    // this method for qualiafied for consultation and  will fetch this current date
+    public function qualifiedTransactionsConsultation(){
         try {
             $patients = Transaction::where('status', 'qualified')
                 ->where('transaction_type', 'Consultation')
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ only today's transactions
+
                 // exclude patients who already have ANY "Done" consultation
                 ->whereDoesntHave('consultation', function ($query) {
                       $query->whereIn('status', ['Done', 'Processing', 'Returned']);
@@ -170,6 +177,7 @@ class TransactionController extends Controller
 
 
 
+     // this method is for laboratory will fetch the patient need to laboratory
     public function qualifiedTransactionsLaboratory()
     {
         try {
@@ -180,6 +188,8 @@ class TransactionController extends Controller
                             $q->where('status', 'Processing');
                         });
                 })
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+
                 ->with([
                     'patient',
                     'vital',       // fetch vitals of the transaction
@@ -212,7 +222,7 @@ class TransactionController extends Controller
     }
 
 
-
+    // this method is for Medication will fetch the patient need to Medication
     public function qualifiedTransactionsMedication()
     {
         try {
