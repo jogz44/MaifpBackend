@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
             $table->date('consultation_date')->nullable();
             $table->time('consultation_time')->nullable();
-            $table->enum('status', ['Done', 'Processing','Pending','Returned'])->default('pending');
+            $table->enum('status', ['Done', 'Processing','Pending','Returned','Medication'])->default('pending');
             $table->timestamps();
         });
     }

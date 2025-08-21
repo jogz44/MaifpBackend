@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patient;
+use App\Models\Laboratory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\New_Consultation;
@@ -12,16 +13,16 @@ class NewConsultationController extends Controller
 {
     //
 
-    public function index() // fetching the consultation
-    {
+    // public function index() // fetching the consultation
+    // {
 
-        $NewConsultation = New_Consultation::all();
+    //     $NewConsultation = New_Consultation::all();
 
-        return response()->json([
-            'message' => 'successfully',
-            'consultation' => $NewConsultation
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'successfully',
+    //         'consultation' => $NewConsultation
+    //     ]);
+    // }
 
     public function ReturnConsultation() //result of the consultation for return
     {
@@ -70,21 +71,7 @@ class NewConsultationController extends Controller
         ]);
     }
 
-
-
-    // public function store(NewConsultationRequest $request){
-
-    //     $validated = $request->validated();
-    //     $NewConsultation = New_Consultation::create($validated);
-
-    //     return response()->json([
-    //         'message' => 'Successfully Saved',
-    //         'consulatation' => $NewConsultation,
-    //     ]);
-
-    // }
-
-    // public function store(NewConsultationRequest $request) // this  method is for status of the patient if procesing or done
+    // public function store(NewConsultationRequest $request) //  this method have 2 condition update and create the consultation of the patient
     // {
     //     $validated = $request->validated();
 
@@ -93,13 +80,18 @@ class NewConsultationController extends Controller
     //         $validated['amount'] = 500;
     //     }
 
-    //     $NewConsultation = New_Consultation::Updatrcreate($validated);
+    //     // ✅ Update if transaction_id exists, otherwise create
+    //     $NewConsultation = New_Consultation::updateOrCreate(
+    //         ['transaction_id' => $validated['transaction_id']], // match condition
+    //         $validated                                          // values to update
+    //     );
 
     //     return response()->json([
     //         'message' => 'Successfully Saved',
     //         'consultation' => $NewConsultation,
     //     ]);
     // }
+
     public function store(NewConsultationRequest $request)
     {
         $validated = $request->validated();
@@ -114,6 +106,19 @@ class NewConsultationController extends Controller
             ['transaction_id' => $validated['transaction_id']], // match condition
             $validated                                          // values to update
         );
+
+        // 🔄 Update related Laboratory status
+        if ($NewConsultation && isset($validated['status'])) {
+            Laboratory::where('transaction_id', $validated['transaction_id'])
+                ->update(['status' => $validated['status']]);
+        }
+
+        // // 🐞 Debug: Check what was updated
+        // $labs = Laboratory::where('transaction_id', $validated['transaction_id'])->get();
+        // // dd([
+        // //     'consultation' => $NewConsultation,
+        // //     'laboratories' => $labs,
+        // // ]);
 
         return response()->json([
             'message' => 'Successfully Saved',

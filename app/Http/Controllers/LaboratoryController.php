@@ -9,59 +9,67 @@ use Illuminate\Http\Request;
 
 class LaboratoryController extends Controller
 {
-    //
 
-
-    public function status(Request $request, $id)
+    // this method for the status on the laboratory that have connected on the consultation for the patient
+    public function status(Request $request, $transactionId)
     {
         // validate request
         $validated = $request->validate([
             'status' => 'required|in:Done,Returned,Pending'
         ]);
 
-        // find laboratory record
-        $lab = Laboratory::findOrFail($id);
+        // find all labs by transaction_id
+        $labs = Laboratory::where('transaction_id', $transactionId)->get();
 
-        // update lab
-        $lab->update($validated);
+        if ($labs->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No laboratories found for this transaction.'
+            ], 404);
+        }
 
-        // If lab is Returned, also update related consultation
-        if ($lab->status === 'Returned' && $lab->new_consultation_id) {
-            $consultation = New_Consultation::find($lab->new_consultation_id);
+        // update all labs
+        foreach ($labs as $lab) {
+            $lab->update($validated);
 
-            if ($consultation) {
-                $consultation->status = 'Returned';
-                $consultation->save();
+            // If lab is Returned, also update related consultation
+            if ($lab->status === 'Returned' && $lab->new_consultation_id) {
+                $consultation = New_Consultation::find($lab->new_consultation_id);
+
+                if ($consultation) {
+                    $consultation->status = 'Returned';
+                    $consultation->save();
+                }
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Laboratory status updated successfully.',
-            'data' => $lab
+            'message' => 'All laboratories under this transaction updated successfully.',
+            'data' => $labs
         ]);
     }
 
 
-    //     return response()->json([
-    //         'message' => 'Laboratory stored successfully',
-    //         'laboratory' => $lab
-    //     ]);
-    // }
-
-    // public function store(LaboratoryRequest $request)
+    // public function store(LaboratoryRequest $request) //  this method is for saving the laboratory of the patient will his transaction with amount
     // {
     //     $validated = $request->validated();
 
-    //     // Create the laboratory record
-    //     $lab = Laboratory::create($validated);
+    //     $labs = [];
 
-
-
+    //     foreach ($validated['laboratories'] as $labData) {
+    //         $labs[] = Laboratory::create([
+    //             'transaction_id' => $validated['transaction_id'],
+    //             'new_consultation_id' => $validated['new_consultation_id'] ?? null,
+    //             'laboratory_type' => $labData['laboratory_type'],
+    //             'amount' => $labData['amount'],
+    //             'status' => $labData['status'] ?? 'Pending',
+    //         ]);
+    //     }
 
     //     return response()->json([
-    //         'message' => 'Laboratory stored successfully',
-    //         'laboratory' => $lab
+    //         'message' => 'Laboratories stored successfully',
+    //         'laboratories' => $labs
     //     ]);
     // }
 
@@ -69,12 +77,20 @@ class LaboratoryController extends Controller
     {
         $validated = $request->validated();
 
+        // Check if transaction has consultation
+        $transaction = \App\Models\Transaction::with('consultation')
+            ->findOrFail($validated['transaction_id']);
+
+        $newConsultationId = $transaction->consultation
+            ? $transaction->consultation->id
+            : null;
+
         $labs = [];
 
         foreach ($validated['laboratories'] as $labData) {
             $labs[] = Laboratory::create([
                 'transaction_id' => $validated['transaction_id'],
-                'new_consultation_id' => $validated['new_consultation_id'] ?? null,
+                'new_consultation_id' => $newConsultationId, // set only if exists
                 'laboratory_type' => $labData['laboratory_type'],
                 'amount' => $labData['amount'],
                 'status' => $labData['status'] ?? 'Pending',
@@ -86,5 +102,4 @@ class LaboratoryController extends Controller
             'laboratories' => $labs
         ]);
     }
-
 }

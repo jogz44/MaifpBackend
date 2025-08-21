@@ -5,21 +5,57 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\vital;
 use App\Models\Patient;
-use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Http\Requests\VitalRequest;
 use App\Http\Requests\TransactionRequest;
+use App\Models\Transaction;
 
 class TransactionController extends Controller
 {
     // Add methods for handling transactions here
     // For example, you might have methods to create, update, delete, and fetch transactions
 
+
+    public function assessment()
+    {
+        $patients = Patient::whereHas('transaction', function ($query) {
+            $query->where('status','assessment')
+                ->whereDate('transaction_date', now()->toDateString());
+        })
+            ->with(['transaction' => function ($query) {
+                $query->where('status','assessment')
+                    ->whereDate('transaction_date', now()->toDateString());
+            }])
+            ->get();
+
+        return response()->json($patients);
+    }
+
+
+    public function index(){
+
+    $transaction = Transaction::all();
+
+    return response()->json($transaction);
+
+
+     }
+
     //this method is for showing a transaction by ID
+    // public function show($id)
+    // {
+    //     // Logic to fetch a transaction by ID
+    //     $transaction = Transaction::with('vital')->find($id);
+
+    //     return response()->json($transaction);
+
+    // }
+
+
     public function show($id)
     {
         // Logic to fetch a transaction by ID
-        $transaction = Transaction::with('vital')->find($id);
+        $transaction = Transaction::with(['vital','laboratories'])->find($id);
 
         return response()->json($transaction);
 
@@ -61,7 +97,6 @@ class TransactionController extends Controller
         $validated =  $request->validate([
             'status' => 'sometimes|required|string|max:255',
         ]);
-
         $transaction = Transaction::findOrFail($id);
         $transaction->update($validated);
 
@@ -222,38 +257,4 @@ class TransactionController extends Controller
     }
 
 
-    // this method is for Medication will fetch the patient need to Medication
-    public function qualifiedTransactionsMedication()
-    {
-        try {
-            $transactions = Transaction::where('status', 'qualified')
-                ->where('transaction_type', 'Medication')
-                ->with([
-                    'patient',
-                    'vital' // 👈 fetch vitals of the transaction
-                ])
-                ->get()
-                ->groupBy('patient_id')
-                ->map(function ($group) {
-                    return [
-                        'patient' => $group->first()->patient,
-                        'transactions' => $group->map(function ($transaction) {
-                            return collect($transaction)->except('patient');
-                        })->values()
-                    ];
-                })
-                ->values();
-
-            return response()->json([
-                'success' => true,
-                'patients' => $transactions
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch qualified transactions.',
-                'error' => $th->getMessage()
-            ], 500);
-        }
-    }
 }

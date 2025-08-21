@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('transaction_number')->nullable();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->string('transaction_type')->nullable();
-            $table->enum('status', ['qualified', 'unqualified', 'for assessment'])->default('for assessment');
+            $table->enum('status', ['qualified', 'unqualified', 'assessment'])->default('assessment');
             $table->date('transaction_date')->nullable();
             $table->timestamps();
         });
