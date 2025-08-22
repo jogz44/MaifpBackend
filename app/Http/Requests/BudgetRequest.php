@@ -24,10 +24,10 @@ class BudgetRequest extends FormRequest
         return [
             //
             'funds' => 'required|numeric',
-            'budget_start_date' => 'required|date',
-            'budget_end_date' => 'required|date',
-            'remaining_funds' => 'numeric'
-
+            // 'budget_start_date' => 'required|date',
+            // 'budget_end_date' => 'required|date',
+            // 'remaining_funds' => 'numeric'
+            'remarks' => 'required|string|max:255'
 
         ];
     }

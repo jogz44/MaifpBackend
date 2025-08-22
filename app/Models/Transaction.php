@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Models\vital;
 use App\Models\Patient;
+use App\Models\GuaranteeLetter;
 use App\Models\New_Consultation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transaction extends Model
 {
     //
+    use HasFactory;
 
     protected $table = 'transaction';
 
@@ -23,7 +26,7 @@ class Transaction extends Model
         'status', // Added status field
     ];
 
-    
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);
@@ -48,5 +51,9 @@ class Transaction extends Model
     public function laboratories()
     {
         return $this->hasMany(Laboratory::class, 'transaction_id');
+    }
+    public function guaranteeLetter()
+    {
+        return $this->hasOne(GuaranteeLetter::class, 'transaction_id');
     }
 }

@@ -12,10 +12,11 @@ class Budget extends Model
     protected $table = 'budget';
 
     protected $fillable = [
-        'budget_start_date',
-        'budget_end_date',
+        // 'budget_start_date',
+        // 'budget_end_date',
         'funds',
-        'remaining_funds',
+        // 'remaining_funds',
+        'remarks'
 
     ];
 

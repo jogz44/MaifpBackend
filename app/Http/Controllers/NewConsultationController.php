@@ -24,24 +24,25 @@ class NewConsultationController extends Controller
     //     ]);
     // }
 
-    public function ReturnConsultation() //result of the consultation for return
+    public function ReturnConsultation()
     {
         try {
             $patients = Transaction::whereHas('consultation', function ($query) {
                 $query->where('status', 'Returned');
             })
-                ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions only
                 ->with([
                     'patient',
                     'vital',
-                    'consultation'
+                    'consultation',
+                    'laboratories'
                 ])
                 ->get()
                 ->groupBy('patient_id')
                 ->map(function ($group) {
                     $patient = $group->first()->patient;
 
-                    // attach transactions to patient
+                    // attach transactions WITH labs (don’t exclude them)
                     $patient->transaction = $group->map(function ($transaction) {
                         return collect($transaction)->except('patient');
                     })->values();

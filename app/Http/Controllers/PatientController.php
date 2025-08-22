@@ -23,14 +23,20 @@ class PatientController extends Controller
 {
 
     //fetch all patients
+
+    public function index()
+    {
+        $patients = Patient::all();
+
+        return response()->json($patients);
+    }
+
     // public function index()
     // {
-    //     $patients = Patient::all();
+    //     $patients = Patient::orderby('created_at','desc')->get();
 
     //     return response()->json($patients);
     // }
-
-
 
 
     // for transaction of the patient
@@ -43,17 +49,14 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
-
-
-
     public function assessment()
     {
         $patients = Patient::whereHas('transaction', function ($query) {
-            $query->where('status', 'assessment')
+            $query->where('status','assessment')
                 ->whereDate('transaction_date', now()->toDateString());
         })
             ->with(['transaction' => function ($query) {
-                $query->where('status', 'assessment')
+                $query->where('status','assessment')
                     ->whereDate('transaction_date', now()->toDateString());
             }])
             ->get();

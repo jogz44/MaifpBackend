@@ -34,7 +34,7 @@ class TransactionController extends Controller
 
     public function index(){
 
-    $transaction = Transaction::all();
+    $transaction = Transaction::with('laboratories')->get();
 
     return response()->json($transaction);
 
@@ -134,12 +134,13 @@ class TransactionController extends Controller
 
                 // exclude patients who already have ANY "Done" consultation
                 ->whereDoesntHave('consultation', function ($query) {
-                      $query->whereIn('status', ['Done', 'Processing', 'Returned']);
+                      $query->whereIn('status', ['Done', 'Processing', 'Returned','Medication']);
                 })
                 ->with([
                     'patient',
                     'vital',
-                    'consultation'
+                    'consultation',
+                    // 'laboratories'
                 ])
                 ->get()
                 ->groupBy('patient_id')
@@ -212,7 +213,52 @@ class TransactionController extends Controller
 
 
 
-     // this method is for laboratory will fetch the patient need to laboratory
+    // this method is for laboratory will fetch the patient need to laboratory
+    // public function qualifiedTransactionsLaboratory()
+    // {
+    //     try {
+    //         $transactions = Transaction::where('status', 'qualified')
+    //             ->where(function ($query) {
+    //                 $query->where('transaction_type', 'Laboratory')
+    //                     ->orWhereHas('consultation', function ($q) {
+    //                         $q->where('status', 'Processing');
+    //                     });
+    //             })
+    //             ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+
+    //             ->with([
+    //                 'patient',
+    //                 'vital',       // fetch vitals of the transaction
+    //                 'consultation',
+    //                 'laboratories' // fetch laboratory
+    //             ])
+    //             ->get()
+    //             ->groupBy('patient_id')
+    //             ->map(function ($group) {
+    //                 $patient = $group->first()->patient;
+
+    //                 // attach transactions to patient
+    //                 $patient->transaction = $group->map(function ($transaction) {
+    //                     return collect($transaction)->except('patient');
+    //                 })->values();
+
+    //                 return $patient;
+    //             })
+    //             ->values();
+    //         return response()->json([
+    //             'success' => true,
+    //             'patients' => $transactions
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to fetch qualified transactions.',
+    //             'error' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // this method is for laboratory will fetch the patient need to laboratory
     public function qualifiedTransactionsLaboratory()
     {
         try {
@@ -223,12 +269,16 @@ class TransactionController extends Controller
                             $q->where('status', 'Processing');
                         });
                 })
+                // ❌ Exclude transactions that already have laboratories with status = 'Done'
+                ->whereDoesntHave('laboratories', function ($lab) {
+                    $lab->where('status', 'Done');
+                })
                 ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
-
                 ->with([
                     'patient',
                     'vital',       // fetch vitals of the transaction
-                    'consultation' // fetch consultation if exists
+                    'consultation',
+                    'laboratories' // fetch laboratories
                 ])
                 ->get()
                 ->groupBy('patient_id')
@@ -243,6 +293,7 @@ class TransactionController extends Controller
                     return $patient;
                 })
                 ->values();
+
             return response()->json([
                 'success' => true,
                 'patients' => $transactions
@@ -255,6 +306,4 @@ class TransactionController extends Controller
             ], 500);
         }
     }
-
-
 }

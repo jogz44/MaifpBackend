@@ -19,15 +19,18 @@ use App\Http\Controllers\TransactionTypeController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
+use App\Http\Controllers\GuaranteeLetterController;
 use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
-use App\Models\New_Consultation;
 
 
 
-Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+// Route::get('patients/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+
+// Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
 Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']); // list of patient
     Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
@@ -42,14 +45,15 @@ Route::prefix('patients')->group(function () {
 Route::prefix('transactions')->group(function () {
     Route::get('/', [TransactionController::class, 'index']);
     // Route::get('/{id}', [PatientController::class, 'show']);
-    // Route::get('/Medication', [TransactionController::class, 'qualifiedTransactionsMedication']);
     Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']); // the all data on the transaction table
     // Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);  //updating transaction status if the patient are qualified or unqualified
 
     Route::post('/add', [PatientController::class, 'addTransactionAndVitals']); // adding the patient transaction and vital
-    // Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
-    Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
+    Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
+    // Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
     Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
+
+
     Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
 
 
@@ -73,12 +77,19 @@ Route::prefix('laboratory')->group(function () {
 });
 
 Route::prefix('billing')->group(function () {
+    // Route::post('/update/status/{transactionId}', [BillingController::class]);
     Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
     Route::get('/', [BillingController::class, 'index']); // fetch the patient  already done for his transaction
 
 });
 
 
+Route::prefix('guarantee')->group(function () {
+    // Route::post('/update/status/{transactionId}', [BillingController::class]);
+    Route::get('/', [GuaranteeLetterController::class, 'index']); // billing of the patient per transaction
+    Route::post('/store', [GuaranteeLetterController::class, 'store']); // billing of the patient per transaction
+
+});
 
 Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
 Route::post('/user/login', [SystemUserController::class, 'login_User']);

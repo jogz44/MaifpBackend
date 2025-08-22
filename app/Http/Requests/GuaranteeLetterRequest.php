@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class NewConsultationRequest extends FormRequest
+class GuaranteeLetterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,15 +23,14 @@ class NewConsultationRequest extends FormRequest
     {
         return [
             //
-
-        'patient_id' => 'required|exists:patient,id',
-        'transaction_id'    => 'required|exists:transaction,id',
-        'consultation_time'=>'nullable',
-        'consultation_date' => 'required|date',
-        'status' => 'required|in:Done,Processing,Pending,Returned,Medication',
-        
+            'patient_id' => 'required|exists:patient,id',
+            'transaction_id' => 'required|exists:transaction,id',
+            'laboratory_total' => 'required|numeric',
+            'total_billing' => 'required|numeric',
+            'consultation_amount' => 'required|numeric'
         ];
     }
+
     public function messages(): array
     {
         return [

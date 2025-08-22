@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('new_consultation_id')->nullable()->constrained('new_consultation')->onDelete('cascade');
             // $table->string('laboratory_type')->nullable();
             // $table->string('amount', 15, 2)->nullable();
-            $table->enum('status', ['Pending', 'Processing', 'Returned','Done'])->default('Pending');
+            $table->enum('status', ['Pending', 'Processing', 'Returned','Done','Medication'])->default('Pending');
 
             $table->timestamps();
         });

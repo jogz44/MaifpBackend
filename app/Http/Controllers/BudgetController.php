@@ -15,9 +15,16 @@ class BudgetController extends Controller
     //
 
 
+
+    // public function index()
+    // {
+    //     $budget = Budget::with('releases')->get();
+    //     return response()->json($budget);
+    // }
+
     public function index()
     {
-        $budget = Budget::with('releases')->get();
+        $budget = Budget::all();
         return response()->json($budget);
     }
 
@@ -36,7 +43,7 @@ class BudgetController extends Controller
     {
 
         $validated = $request->validated();
-         $validated['remaining_funds'] =  $validated['funds'];
+        //  $validated['remaining_funds'] =  $validated['funds'];
 
         $budget = Budget::create($validated);
 
