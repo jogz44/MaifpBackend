@@ -27,10 +27,10 @@ use App\Http\Controllers\RequisitionIssuanceSlipController;
 
 
 
-Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+// Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
 // Route::get('patients/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
-// Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
 Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']); // list of patient
     Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
@@ -47,48 +47,53 @@ Route::prefix('transactions')->group(function () {
     // Route::get('/{id}', [PatientController::class, 'show']);
     Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']); // the all data on the transaction table
     // Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);  //updating transaction status if the patient are qualified or unqualified
-
     Route::post('/add', [PatientController::class, 'addTransactionAndVitals']); // adding the patient transaction and vital
     Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
     // Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
     Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
-
-
     Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
-
 
 });
 
 Route::prefix('new_consultations')->group(function () {
-    Route::get('/show/{id}', [NewConsultationController::class, 'show']);
     Route::post('/store', [NewConsultationController::class, 'store']); // this route is for the consultation of patient update if the transaction was exist if didnt exist create
 });
 
 Route::prefix('medications')->group(function () {
-    Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']);
+    Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']);// fetching the patient need to go on the medication  base on the transaction_type and consultation
     // Route::post('/store', [NewConsultationController::class, 'store']);
 });
 
 Route::prefix('laboratory')->group(function () {
-    Route::get('/show/{id}', [NewConsultationController::class, 'show']);
     Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
     Route::post('/update/{id}', [LaboratoryController::class, 'status']); // store the patient laboratory and amount
     Route::get('/', [TransactionController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
+
 });
 
 Route::prefix('billing')->group(function () {
     // Route::post('/update/status/{transactionId}', [BillingController::class]);
     Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
     Route::get('/', [BillingController::class, 'index']); // fetch the patient  already done for his transaction
+    Route::post('/store',[BillingController::class,'store']); // storing the patient and his transaction on the billing table  to deduc the total_amount of patient billing on the remaining funds
 
 });
 
 
 Route::prefix('guarantee')->group(function () {
     // Route::post('/update/status/{transactionId}', [BillingController::class]);
-    Route::get('/', [GuaranteeLetterController::class, 'index']); // billing of the patient per transaction
+    Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter 
     Route::post('/store', [GuaranteeLetterController::class, 'store']); // billing of the patient per transaction
 
+});
+
+
+Route::prefix('Budgets')->group(function () {
+    Route::get('/', [BudgetController::class, 'index']);
+    Route::post('/store', [BudgetController::class, 'store']);
+    Route::delete('/delete/{id}', [BudgetController::class, 'destroy']);
+    Route::get('/funded', [BudgetController::class, 'list_of_funded']);
+    Route::get('/{id}', [BudgetController::class, 'show']);
 });
 
 Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
@@ -97,14 +102,6 @@ Route::post('/user/login', [SystemUserController::class, 'login_User']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
-    Route::prefix('Budgets')->group(function () {
-        Route::get('/', [BudgetController::class, 'index']);                                 // Fetch all transaction types
-        Route::get('/{id}', [BudgetController::class, 'show']);                              // Fetch a single transaction type by ID
-        Route::post('/store', [BudgetController::class, 'store']);                             // Create a new transaction type
-        Route::post('/release/{id}', [BudgetController::class, 'releaseFunds']);
-        Route::post('/additional', [BudgetController::class, 'additionalFunds']);
-        Route::delete('/delete/{id}', [BudgetController::class, 'destroy']);
-    });
 
     Route::prefix('transaction-types')->group(function () {
         Route::get('/', [TransactionTypeController::class, 'index']);                                 // Fetch all transaction types

@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('billing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->foreignId('laboratory_id')->nullable()->constrained('laboratory')->onDelete('cascade');
-            // $table->string('laboratory_type')->nullable();
-            // $table->decimal('amount',15,2)->nullable();
-            $table->enum('status', ['Unpaid', 'Paid'])->default('Unpaid');
-
+            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->decimal('consultation_amount', 15, 2)->nullable();
+            $table->decimal('laboratory_amount', 15, 2)->nullable();
+            $table->decimal('medication_amount', 15, 2)->nullable();
+            $table->decimal('total_amount', 15, 2)->nullable();
+            $table->enum('status', ['unfunded','funded'])->default('unfunded');
             $table->timestamps();
         });
     }

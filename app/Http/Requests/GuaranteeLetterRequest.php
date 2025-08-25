@@ -25,9 +25,10 @@ class GuaranteeLetterRequest extends FormRequest
             //
             'patient_id' => 'required|exists:patient,id',
             'transaction_id' => 'required|exists:transaction,id',
+            'consultation_total' => 'required|numeric',
             'laboratory_total' => 'required|numeric',
-            'total_billing' => 'required|numeric',
-            'consultation_amount' => 'required|numeric'
+            'medication_total' => 'required|numeric',
+            'total_amount' => 'required|numeric',
         ];
     }
 

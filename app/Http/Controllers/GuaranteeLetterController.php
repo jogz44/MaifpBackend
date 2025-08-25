@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GuaranteeLetterRequest;
-use App\Models\GuaranteeLetter;
 use Carbon\Carbon;
+use App\Models\Budget;
+use App\Models\Billing;
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use App\Models\GuaranteeLetter;
+use App\Http\Requests\BillingRequest;
+use App\Http\Requests\GuaranteeLetterRequest;
 
 class GuaranteeLetterController extends Controller
 {
@@ -39,6 +42,8 @@ class GuaranteeLetterController extends Controller
 
     //     return response()->json($patients);
     // }
+
+
     public function index()
     {
         $patients = Patient::whereHas('transaction', function ($query) {
@@ -70,18 +75,54 @@ class GuaranteeLetterController extends Controller
     }
 
 
-    public function store (GuaranteeLetterRequest $request){ // store for guarantee letter
+    // public function store (GuaranteeLetterRequest $request){ // store for guarantee letter
 
+    //     $validated = $request->validated();
+
+    //     $guarantee = GuaranteeLetter::updateOrCreate(
+    //         ['transaction_id' => $validated['transaction_id']], // match condition
+    //         $validated                                          // values to update
+    //     );
+    //     return response()->json($guarantee);
+
+    // }
+
+    public function store(GuaranteeLetterRequest $request)
+    {
         $validated = $request->validated();
 
-        $guarantee = GuaranteeLetter::updateOrCreate(
-            ['transaction_id' => $validated['transaction_id']], // match condition
-            $validated                                          // values to update
-        );
+        // Get total funds from all budgets
+        $totalFunds = Budget::sum('funds');
 
+        // Get total used so far (sum of billings)
+        $totalUsed = GuaranteeLetter::sum('total_amount');
 
-        return response()->json($guarantee);
+        // Remaining funds
+        $remainingFunds = $totalFunds - $totalUsed;
 
+        // Check if enough funds are available
+        if ($remainingFunds < $validated['total_amount']) {
+            return response()->json([
+                'success' => false,
+                'message' => "Not enough funds. Please add more funds before creating this billing. Remaining funds: {$remainingFunds}",
 
+                // 'total_funds' => $totalFunds,
+                // 'remaining_funds' => $remainingFunds,
+            ], 400); // Bad Request
+        }
+
+        // Create the billing record
+        $billing = GuaranteeLetter::create($validated);
+
+        // Update remaining funds after this billing
+        $remainingFunds -= $validated['total_amount'];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Billing created successfully',
+            'billing' => $billing,
+            'total_funds' => $totalFunds,
+            'remaining_funds' => $remainingFunds
+        ]);
     }
 }

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Budget;
+use App\Models\Billing;
 use App\Models\Patient;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Http\Requests\BillingRequest;
 
 class BillingController extends Controller
 {
@@ -53,38 +56,7 @@ class BillingController extends Controller
         ]);
     }
 
-
-
-    // this method is for fetching the patient on the billing
-    // public function index()
-    // {
-    //     $transactions = Transaction::whereHas('Patient')
-    //         // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
-    //         // make sure patient exists
-    //         ->where(function ($query) {
-    //             // Case 1: Transaction with consultation
-    //             $query->whereHas('consultation', function ($q) {
-    //                 $q->where('status', 'Done');
-    //             })
-    //                 // Case 2: Transaction without consultation but with lab Done
-    //                 ->orWhere(function ($q) {
-    //                     $q->whereDoesntHave('consultation') // no consultation
-    //                         ->whereHas('laboratories', function ($lab) {
-    //                             $lab->where('status', 'Done');
-    //                         });
-    //                 });
-    //         })
-    //         ->with([
-    //             'patient:id,firstname,lastname,middlename,ext,birthdate,age,contact_number,barangay',
-    //             'consultation.laboratories', // load consultation + its labs
-    //             // 'laboratories' // load labs directly tied to transaction
-    //         ])
-    //         ->get();
-    //     return response()->json($transactions);
-    // }
-
-    // PatientController.php
-    public function index()
+    public function index() //fetching the
     {
         $patients = Patient::whereHas('transaction', function ($query) {
             $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
@@ -124,6 +96,97 @@ class BillingController extends Controller
 
         return response()->json($patients);
     }
+    
+    // public function index()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+    //             ->where(function ($q) {
+    //                 // Case 1: Transaction with consultation Done
+    //                 $q->whereHas('consultation', function ($con) {
+    //                     $con->where('status', 'Done');
+    //                 })
+    //                     // Case 2: Transaction without consultation but with lab Done
+    //                     ->orWhere(function ($q2) {
+    //                         $q2->whereDoesntHave('consultation')
+    //                             ->whereHas('laboratories', function ($lab) {
+    //                                 $lab->where('status', 'Done');
+    //                             });
+    //                     });
+    //             });
+    //     })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->where('status', '!=', 'Complete'); // ✅ exclude completed only
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+    // }
+    // public function index()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+    //             ->where(function ($q) {
+    //                 // Case 1: Transaction with consultation Done
+    //                 $q->whereHas('consultation', function ($con) {
+    //                     $con->where('status', 'Done');
+    //                 })
+    //                     // Case 2: Transaction without consultation but with lab Done
+    //                     ->orWhere(function ($q2) {
+    //                         $q2->whereDoesntHave('consultation')
+    //                             ->whereHas('laboratories', function ($lab) {
+    //                                 $lab->where('status', 'Done');
+    //                             });
+    //                     });
+    //             });
+    //     })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->where('status', '!=', 'Complete'); // ✅ exclude completed only
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     // ✅ Save each transaction into Billing table if not already saved
+    //     foreach ($patients as $patient) {
+    //         foreach ($patient->transaction as $transaction) {
+    //             Billing::firstOrCreate(
+    //                 [
+    //                     'transaction_id' => $transaction->id, // ensure unique per transaction
+    //                 ],
+    //                 [
+    //                     'patient_id' => $patient->id,
+    //                     'transaction_number' => $transaction->transaction_number,
+    //                     // 'total_amount' => 0, // you can replace with actual computation if needed
+    //                 ]
+    //             );
+    //         }
+    //     }
+
+    //     return response()->json($patients);
+    // }
 
 
     public function TransactionUpdate( Request $request ,$transactionId){
@@ -138,4 +201,5 @@ class BillingController extends Controller
 
         return response()->json($transaction);
     }
+
 }

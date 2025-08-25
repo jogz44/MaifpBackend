@@ -61,16 +61,16 @@ class NewConsultationController extends Controller
         }
     }
 
-    public function show($id)
-    {
+    // public function show($id)
+    // {
 
-        $NewConsultation = New_Consultation::findOrFail($id);
+    //     $NewConsultation = New_Consultation::findOrFail($id);
 
-        return response()->json([
-            'message' => 'successfully',
-            'consultation' => $NewConsultation
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'successfully',
+    //         'consultation' => $NewConsultation
+    //     ]);
+    // }
 
     // public function store(NewConsultationRequest $request) //  this method have 2 condition update and create the consultation of the patient
     // {

@@ -11,11 +11,12 @@ class Billing extends Model
     protected $table ='billing';
 
     protected $fillable = [
-
         'patient_id',
-        'laboratory_id',
-        'laboratory_type',
-        'amount',
+        'transaction_id',
+        'consultation_total',
+        'laboratory_total',
+        'medication_total',
+        'total_amount',
         'status'
 
     ];

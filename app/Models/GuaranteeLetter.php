@@ -14,9 +14,10 @@ class GuaranteeLetter extends Model
     protected $fillable = [
         'patient_id',
         'transaction_id',
+        'consultation_total',
         'laboratory_total',
-        'total_billing',
-        'consultation_amount',
+        'medication_total',
+        'total_amount',
         'status'
     ];
 

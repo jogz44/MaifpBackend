@@ -2,49 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BudgetAdditionalFundsRequest;
+use Exception;
 use App\Models\Budget;
+use App\Models\Billing;
 use Illuminate\Http\Request;
 use App\Http\Requests\BudgetRequest;
-use App\Models\budget_additional_funds;
-use Exception;
 use Illuminate\Auth\Events\Validated;
+use App\Models\budget_additional_funds;
+use App\Http\Requests\BudgetAdditionalFundsRequest;
+use App\Models\GuaranteeLetter;
 
 class BudgetController extends Controller
 {
     //
-
-
 
     // public function index()
     // {
     //     $budget = Budget::with('releases')->get();
     //     return response()->json($budget);
     // }
-
-    public function index()
+    public function list_of_funded()
     {
-        $budget = Budget::all();
+        $budget = Billing::all();
         return response()->json($budget);
     }
 
 
-    public function show($id)
-    {
+    // public function index()
+    // {
+    //     $budgets = Budget::all();
 
-        $budget = Budget::findOrfail($id);
+    //     $totalFunds = $budgets->sum('funds');
+    //     $totalUsed = Billing::sum('total_amount');
+    //     $remainingFunds = $totalFunds - $totalUsed;
+
+    //     return response()->json([
+    //         'total_funds' => $totalFunds,
+    //         'remaining_funds' => $remainingFunds,
+    //         'budgets' => $budgets
+    //     ]);
+    // }
+
+    public function index()
+    {
+        $budgets = Budget::all();
+
+        $totalFunds = $budgets->sum('funds');
+        $totalUsed = GuaranteeLetter::sum('total_amount'); // ✅ already released funds
+        $remainingFunds = $totalFunds - $totalUsed;
+
         return response()->json([
-            'budget' => $budget
+            'total_funds' => $totalFunds,
+            'released_funds' => $totalUsed, // ✅ added
+            'remaining_funds' => $remainingFunds,
+            'budgets' => $budgets
         ]);
     }
+
 
 
     public function store(BudgetRequest $request)
     {
 
         $validated = $request->validated();
-        //  $validated['remaining_funds'] =  $validated['funds'];
-
         $budget = Budget::create($validated);
 
         return response()->json([
@@ -53,38 +73,8 @@ class BudgetController extends Controller
         ]);
     }
 
-    public function additionalFunds(BudgetAdditionalFundsRequest $request)
-    {
-        $validated = $request->validated();
-        $additional = budget_additional_funds::create($validated);
-
-        return response()->json([
-            'message' => 'Successfully updated funds',
-            'additional' => $additional
-        ]);
-    }
 
 
-    public function releaseFunds(Request $request, $id)
-    {
 
-        $budget = Budget::findOrFail($id);
-
-        try {
-            $budget->releaseFunds(
-                $request->release_amount,
-            );
-
-            return response()->json([
-                'message' => 'Funds released successfully',
-                'remaining_funds' => $budget->remaining_funds,
-                'history' => $budget->releases
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
-        }
-    }
 
 }
