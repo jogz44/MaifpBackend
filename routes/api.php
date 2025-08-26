@@ -24,13 +24,12 @@ use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
+use App\Models\Medication;
 
-
-
-// Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
 // Route::get('patients/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
-Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+// Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
 Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']); // list of patient
     Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
@@ -50,6 +49,7 @@ Route::prefix('transactions')->group(function () {
     Route::post('/add', [PatientController::class, 'addTransactionAndVitals']); // adding the patient transaction and vital
     Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
     // Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
+
     Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
     Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
 
@@ -61,7 +61,11 @@ Route::prefix('new_consultations')->group(function () {
 
 Route::prefix('medications')->group(function () {
     Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']);// fetching the patient need to go on the medication  base on the transaction_type and consultation
-    // Route::post('/store', [NewConsultationController::class, 'store']);
+    Route::post('/store', [MedicationController::class, 'store']);
+    // Route::post('/status/{transactionId}', [MedicationController::class, 'status']); // updating the status of the  transaction_id if Done
+
+    Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
+
 });
 
 Route::prefix('laboratory')->group(function () {
@@ -79,17 +83,16 @@ Route::prefix('billing')->group(function () {
 
 });
 
-
 Route::prefix('guarantee')->group(function () {
     // Route::post('/update/status/{transactionId}', [BillingController::class]);
-    Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter 
+    Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter
     Route::post('/store', [GuaranteeLetterController::class, 'store']); // billing of the patient per transaction
 
 });
 
-
 Route::prefix('Budgets')->group(function () {
     Route::get('/', [BudgetController::class, 'index']);
+    Route::get('/dashboard', [BudgetController::class, 'dashboardBudget']);
     Route::post('/store', [BudgetController::class, 'store']);
     Route::delete('/delete/{id}', [BudgetController::class, 'destroy']);
     Route::get('/funded', [BudgetController::class, 'list_of_funded']);

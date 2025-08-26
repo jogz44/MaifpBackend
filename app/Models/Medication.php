@@ -8,14 +8,25 @@ class Medication extends Model
 {
     //
 
-    protected $table = 'medication';
+    protected $table = 'medication_details';
 
     protected $fillable =[
 
-        'transaction_id',
-        'new_consultation_id',
-        'item_id',
+        'medication_id',
+        'item_description',
+        'patient_id', // the costumeer is the patient_id
         'quantity',
-        'capsule',
+        'unit',
+        'transaction_date',
+        'amount',
+        // 'status',
+        'user_id',
+
+
     ];
+
+     public function consultation()
+    {
+        return $this->belongsTo(New_Consultation::class, 'new_consultation_id');
+    }
 }

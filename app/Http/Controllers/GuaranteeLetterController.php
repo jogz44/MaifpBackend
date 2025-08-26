@@ -95,13 +95,13 @@ class GuaranteeLetterController extends Controller
         $totalFunds = Budget::sum('funds');
 
         // Get total used so far (sum of billings)
-        $totalUsed = GuaranteeLetter::sum('total_amount');
+        $totalUsed = GuaranteeLetter::sum('total_billing');
 
         // Remaining funds
         $remainingFunds = $totalFunds - $totalUsed;
 
         // Check if enough funds are available
-        if ($remainingFunds < $validated['total_amount']) {
+        if ($remainingFunds < $validated['total_billing']) {
             return response()->json([
                 'success' => false,
                 'message' => "Not enough funds. Please add more funds before creating this billing. Remaining funds: {$remainingFunds}",
@@ -115,7 +115,7 @@ class GuaranteeLetterController extends Controller
         $billing = GuaranteeLetter::create($validated);
 
         // Update remaining funds after this billing
-        $remainingFunds -= $validated['total_amount'];
+        $remainingFunds -= $validated['total_billing'];
 
         return response()->json([
             'success' => true,

@@ -93,7 +93,33 @@ class NewConsultationController extends Controller
     //     ]);
     // }
 
-    public function store(NewConsultationRequest $request)
+    // public function store(NewConsultationRequest $request) // store and updating the status
+    // {
+    //     $validated = $request->validated();
+
+    //     // If status is Done, set amount = 500
+    //     if (isset($validated['status']) && $validated['status'] === 'Done') {
+    //         $validated['amount'] = 500;
+    //     }
+
+    //     // ✅ Update if transaction_id exists, otherwise create
+    //     $NewConsultation = New_Consultation::updateOrCreate(
+    //         ['transaction_id' => $validated['transaction_id']], // match condition
+    //         $validated                                          // values to update
+    //     );
+
+    //     // 🔄 Update related Laboratory status
+    //     if ($NewConsultation && isset($validated['status'])) {
+    //         Laboratory::where('transaction_id', $validated['transaction_id'])
+    //             ->update(['status' => $validated['status']]);
+    //     }
+
+    //     return response()->json([
+    //         'message' => 'Successfully Saved',
+    //         'consultation' => $NewConsultation,
+    //     ]);
+    // }
+    public function store(NewConsultationRequest $request) // store and update status
     {
         $validated = $request->validated();
 
@@ -110,16 +136,16 @@ class NewConsultationController extends Controller
 
         // 🔄 Update related Laboratory status
         if ($NewConsultation && isset($validated['status'])) {
-            Laboratory::where('transaction_id', $validated['transaction_id'])
-                ->update(['status' => $validated['status']]);
+            if ($validated['status'] === 'Medication') {
+                // ✅ When consultation status is Medication → lab status becomes Done
+                Laboratory::where('transaction_id', $validated['transaction_id'])
+                    ->update(['status' => 'Done']);
+            } else {
+                // otherwise, just mirror the consultation status
+                Laboratory::where('transaction_id', $validated['transaction_id'])
+                    ->update(['status' => $validated['status']]);
+            }
         }
-
-        // // 🐞 Debug: Check what was updated
-        // $labs = Laboratory::where('transaction_id', $validated['transaction_id'])->get();
-        // // dd([
-        // //     'consultation' => $NewConsultation,
-        // //     'laboratories' => $labs,
-        // // ]);
 
         return response()->json([
             'message' => 'Successfully Saved',

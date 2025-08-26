@@ -21,11 +21,13 @@ class BillingController extends Controller
             'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay',
             'consultation:id,transaction_id,amount',
             'laboratories:id,transaction_id,laboratory_type,amount,status',
+            // 'medication:id,transaction_id,item_description,quantity,unit,amount,status',
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;
+        // $medicationTotal = $transaction->medication->sum('amount');
         $laboratoryTotal = $transaction->laboratories->sum('amount');
-        $totalBilling = $consultationAmount + $laboratoryTotal;
+        $totalBilling = $consultationAmount + $laboratoryTotal ;
 
         return response()->json([
             'patient_id'      => $transaction->patient->id,
@@ -44,6 +46,7 @@ class BillingController extends Controller
             'transaction_date'    => $transaction->transaction_date,
             'consultation_amount' => $consultationAmount,
             'laboratory_total'    => $laboratoryTotal,
+            // 'medication_total'    => $medicationTotal,
             'total_billing'       => $totalBilling,
             'laboratories'        => $transaction->laboratories->map(function ($lab) {
                 return [
@@ -53,6 +56,16 @@ class BillingController extends Controller
                     'status'          => $lab->status,
                 ];
             }),
+            // 'medication'        => $transaction->medication->map(function ($med) {
+            //     return [
+            //         'id'              => $med->id,
+            //         'item_description' => $med->item_description,
+            //         'quantity'          => $med->quantity,
+            //         'unit'          => $med->unit,
+            //         'amount'      => $med->amount,
+            //         'status'  => $med->status,
+            //     ];
+            // }),
         ]);
     }
 
@@ -96,7 +109,7 @@ class BillingController extends Controller
 
         return response()->json($patients);
     }
-    
+
     // public function index()
     // {
     //     $patients = Patient::whereHas('transaction', function ($query) {

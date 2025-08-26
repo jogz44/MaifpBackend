@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Laboratory;
+use App\Models\Medication;
+use App\Models\medoratory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Http\Requests\LaboratoryRequest;
-use App\Models\Medication;
+use App\Models\New_Consultation;
+use App\Http\Requests\MedicationRequest;
+use App\Http\Requests\medoratoryRequest;
+use App\Models\TransactionStatus;
 
 class MedicationController extends Controller
 {
@@ -59,58 +64,57 @@ class MedicationController extends Controller
     }
 
 
-    public function store(Request $request){
+    public function store(MedicationRequest $request)
+    {
+        $validated = $request->validated();
 
-        $validated = $request->validated([
+        // Fetch transaction with consultation
+        // $transaction = Transaction::with('consultation')
+        //     ->findOrFail($validated['transaction_id']);
 
+        //If consultation exists, add it to validated data
+        // if ($transaction->consultation) {
+        //     $validated['new_consultation_id'] = $transaction->consultation->id;
+        // }
 
-        ]);
+        //  current date
+        $validated['transaction_date'] = Carbon::now();
+
+        //Create medication with complete data
+        $medication = Medication::create($validated);
+
+        return response()->json($medication);
     }
 
+
+
     // this method for the status on the Medication
-    public function status(Request $request, $transactionId)
+    public function status(Request $request)
     {
-        // validate request
+        // ✅ validate request
         $validated = $request->validate([
-            'status' => 'required|in:Done,Returned,Pending'
+            'status' => 'required|in:Done,Pending',
+            'transaction_id' => 'required|exists:transaction,id',
         ]);
 
-        // find all labs by transaction_id
-        $labs = Medication::where('transaction_id', $transactionId)->get();
+        // ✅ Update or create transaction status
+        $transactionStatus = TransactionStatus::updateOrCreate(
+            ['transaction_id' => $validated['transaction_id']], // condition
+            ['status' => $validated['status']]                 // values to update
+        );
 
-        if ($labs->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No laboratories found for this transaction.'
-            ], 404);
-        }
-
-        // update all labs
-        foreach ($labs as $lab) {
-            $lab->update($validated);
-
-            // If lab is Returned, also update related consultation
-            if ($lab->status === 'Returned' && $lab->new_consultation_id) {
-                $consultation = Medication::find($lab->new_consultation_id);
-
-                if ($consultation) {
-                    $consultation->status = 'Returned';
-                    $consultation->save();
-                }
-            }
-        }
 
         return response()->json([
             'success' => true,
             'message' => 'All Medicine under this transaction updated successfully.',
-            'data' => $labs
+            'data' => $transactionStatus
         ]);
     }
 
 
     // pu
 
-    // public function store(LaboratoryRequest $request)
+    // public function store(medoratoryRequest $request)
     // {
     //     $validated = $request->validated();
 
@@ -122,21 +126,21 @@ class MedicationController extends Controller
     //         ? $transaction->consultation->id
     //         : null;
 
-    //     $labs = [];
+    //     $meds = [];
 
-    //     foreach ($validated['laboratories'] as $labData) {
-    //         $labs[] = Laboratory::create([
+    //     foreach ($validated['medoratories'] as $medData) {
+    //         $meds[] = medoratory::create([
     //             'transaction_id' => $validated['transaction_id'],
     //             'new_consultation_id' => $newConsultationId, // set only if exists
-    //             'laboratory_type' => $labData['laboratory_type'],
-    //             'amount' => $labData['amount'],
-    //             'status' => $labData['status'] ?? 'Pending',
+    //             'medoratory_type' => $medData['medoratory_type'],
+    //             'amount' => $medData['amount'],
+    //             'status' => $medData['status'] ?? 'Pending',
     //         ]);
     //     }
 
     //     return response()->json([
-    //         'message' => 'Laboratories stored successfully',
-    //         'laboratories' => $labs
+    //         'message' => 'medoratories stored successfully',
+    //         'medoratories' => $meds
     //     ]);
     // }
 

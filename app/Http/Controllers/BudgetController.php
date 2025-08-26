@@ -42,21 +42,36 @@ class BudgetController extends Controller
     //         'budgets' => $budgets
     //     ]);
     // }
+    public function dashboardBudget()
+    {
+        $budgets = Budget::all();
+        $totalFunds = $budgets->sum('funds');
+        $totalUsed = GuaranteeLetter::sum('total_billing'); // already released funds
+        $remainingFunds = $totalFunds - $totalUsed;
+
+        return response()->json([
+            'total_funds' => $totalFunds,
+            'released_funds' => $totalUsed, //  added
+            'remaining_funds' => $remainingFunds,
+
+        ]);
+    }
+
 
     public function index()
     {
         $budgets = Budget::all();
 
-        $totalFunds = $budgets->sum('funds');
-        $totalUsed = GuaranteeLetter::sum('total_amount'); // ✅ already released funds
-        $remainingFunds = $totalFunds - $totalUsed;
+        // $totalFunds = $budgets->sum('funds');
+        // $totalUsed = GuaranteeLetter::sum('total_amount'); // ✅ already released funds
+        // $remainingFunds = $totalFunds - $totalUsed;
 
-        return response()->json([
-            'total_funds' => $totalFunds,
-            'released_funds' => $totalUsed, // ✅ added
-            'remaining_funds' => $remainingFunds,
-            'budgets' => $budgets
-        ]);
+        return response()->json(
+            // 'total_funds' => $totalFunds,
+            // 'released_funds' => $totalUsed, // ✅ added
+            // 'remaining_funds' => $remainingFunds,
+            $budgets
+        );
     }
 
 

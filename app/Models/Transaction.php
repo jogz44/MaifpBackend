@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\vital;
 use App\Models\Patient;
+use App\Models\Medication;
 use App\Models\GuaranteeLetter;
 use App\Models\New_Consultation;
 use Illuminate\Database\Eloquent\Model;
@@ -56,4 +57,9 @@ class Transaction extends Model
     {
         return $this->hasOne(GuaranteeLetter::class, 'transaction_id');
     }
+
+//     public function medication()
+//     {
+//         return $this->hasMany(Medication::class, 'transaction_id');
+//     }
 }

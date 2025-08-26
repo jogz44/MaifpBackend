@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
-            $table->decimal('consultation_total', 15, 2)->nullable();
+            $table->decimal('consultation_amount', 15, 2)->nullable();
             $table->decimal('laboratory_total', 15, 2)->nullable();
             $table->decimal('medication_total', 15, 2)->nullable();
-            $table->decimal('total_amount', 15, 2)->nullable();
+            $table->decimal('total_billing', 15, 2)->nullable();
             $table->enum('status', ['Funded'])->default('Funded');
             $table->timestamps();
         });

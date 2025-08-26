@@ -294,10 +294,7 @@ class TransactionController extends Controller
                 })
                 ->values();
 
-            return response()->json([
-                'success' => true,
-                'patients' => $transactions
-            ]);
+            return response()->json($transactions);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
