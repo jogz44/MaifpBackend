@@ -30,6 +30,7 @@ Route::put('transactions/{id}/update/status/', [TransactionController::class, 's
 // Route::get('patients/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
 // Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+
 Route::prefix('patients')->group(function () {
     Route::get('/', [PatientController::class, 'index']); // list of patient
     Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
@@ -37,6 +38,8 @@ Route::prefix('patients')->group(function () {
     Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
     Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
     Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+    Route::get('/count/badge', [PatientController::class, 'total_count_badge']); // fetch patient for assessment on the social if this qualified or unqualified
+
     Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
 
 });

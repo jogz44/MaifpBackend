@@ -370,4 +370,134 @@ class PatientController extends Controller
             ], 500);
         }
     }
+
+    public function total_count_badge()
+    {
+        // ✅ Count of assessed patients
+        $count_assessment = Patient::whereHas('transaction', function ($query) {
+            $query->where('status', 'assessment')
+                ->whereDate('transaction_date', now()->toDateString());
+        })->count();
+
+        // ✅ Count of qualified consultations
+        $count_consultation = Transaction::where('status', 'qualified')
+            ->where('transaction_type', 'Consultation')
+            ->whereDate('transaction_date', now()->toDateString()) // only today's transactions
+            ->whereDoesntHave('consultation', function ($query) {
+                $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
+            })
+            ->get()
+            ->groupBy('patient_id')
+            ->count(); // ✅ just count unique patient groups
+
+
+
+        $count_laboratory = Transaction::where('status', 'qualified')
+            ->where(function ($query) {
+                $query->where('transaction_type', 'Laboratory')
+                    ->orWhereHas('consultation', function ($q) {
+                        $q->where('status', 'Processing');
+                    });
+            })
+            // ❌ Exclude transactions that already have laboratories with status = 'Done'
+            ->whereDoesntHave('laboratories', function ($lab) {
+                $lab->where('status', 'Done');
+            })
+            ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+            ->with([
+                'patient',
+                'vital',       // fetch vitals of the transaction
+                'consultation',
+                'laboratories' // fetch laboratories
+            ])
+            ->get()
+            ->groupBy('patient_id')
+            ->count(); // ✅ just count unique patient groups
+
+
+
+
+        $count_medication = Transaction::where('status', 'qualified')
+            ->where(function ($query) {
+                $query->where('transaction_type', 'Medication')
+                    ->orWhereHas('consultation', function ($q) {
+                        $q->where('status', 'Medication');
+                    });
+            })
+            ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions
+            ->whereDoesntHave('medication', function ($q) {
+                $q->where('status', 'Done'); // ❌ exclude if medication is Done
+            })
+            ->with([
+                'patient',
+                'consultation'
+            ])
+            ->get()
+            ->groupBy('patient_id')
+            ->count();
+
+
+
+        $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
+            $query->where('status', 'Returned');
+        })
+            ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions only
+            ->with([
+                'patient',
+                'vital',
+                'consultation',
+                'laboratories'
+            ])
+            ->get()
+            ->groupBy('patient_id')
+            ->count();
+
+
+
+
+        $count_billing = Patient::whereHas('transaction', function ($query) {
+            $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+                ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+                ->where(function ($q) {
+                    // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+                    // Case 1: Transaction with consultation Done
+                    $q->whereHas('consultation', function ($con) {
+                        $con->where('status', 'Done');
+                    })
+                        // Case 2: Transaction without consultation but with lab Done
+                        ->orWhere(function ($q2) {
+                            $q2->whereDoesntHave('consultation')
+                                ->whereHas('laboratories', function ($lab) {
+                                    $lab->where('status', 'Done');
+                                });
+                        });
+                });
+        })
+            ->with([
+                'transaction' => function ($q) {
+                    $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
+                        ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+                }
+            ])
+            ->get([
+                'id',
+                'firstname',
+                'lastname',
+                'middlename',
+                'ext',
+                'birthdate',
+                'age',
+                'contact_number',
+                'barangay'
+            ])->count();
+            
+        return response()->json([
+            'totalAssessedCount' => $count_assessment,
+            'totalQualifiedCount' => $count_consultation,
+            'totalLaboratoryCount' => $count_laboratory,
+            'totalMedicationCount'  => $count_medication,
+            'totalReturnedCount' => $count_return_consultation,
+            'totalBillingCount'   =>  $count_billing,
+        ]);
+    }
 }
