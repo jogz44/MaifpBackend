@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\New_Consultation;
 use App\Http\Requests\MedicationRequest;
 use App\Http\Requests\medoratoryRequest;
+use App\Models\Medication_details;
 use App\Models\TransactionStatus;
 
 class MedicationController extends Controller
@@ -81,7 +82,7 @@ class MedicationController extends Controller
         $validated['transaction_date'] = Carbon::now();
 
         //Create medication with complete data
-        $medication = Medication::create($validated);
+        $medication = Medication_details::create($validated);
 
         return response()->json($medication);
     }
@@ -95,10 +96,11 @@ class MedicationController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:Done,Pending',
             'transaction_id' => 'required|exists:transaction,id',
+            // 'medication_detials_id' => 'required|exists:medication_details,id'
         ]);
 
         // ✅ Update or create transaction status
-        $transactionStatus = TransactionStatus::updateOrCreate(
+        $transactionStatus = Medication::updateOrCreate(
             ['transaction_id' => $validated['transaction_id']], // condition
             ['status' => $validated['status']]                 // values to update
         );
@@ -110,6 +112,34 @@ class MedicationController extends Controller
             'data' => $transactionStatus
         ]);
     }
+
+    // public function transaction_medication_status()
+    // {
+    //     // ✅ Get all medications with status "Done"
+    //     $medications = Medication::where('status', 'Done')->get();
+
+    //     foreach ($medications as $med) {
+    //         // ✅ Find the transaction with relation to new_consultation
+    //         $transaction = Transaction::with('consultation')
+    //             ->where('id', $med->transaction_id)
+    //             ->first();
+
+    //         if ($transaction && $transaction->consultation) {
+    //             // ✅ Update new_consultation status to Done if not already
+    //             if ($transaction->consultation->status !== 'Done') {
+    //                 $transaction->consultation->update([
+    //                     'status' => 'Done'
+    //                 ]);
+    //             }
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'message' => '✅ Consultation statuses updated based on medication statuses.',
+    //     ]);
+    // }
+
+
 
 
     // pu

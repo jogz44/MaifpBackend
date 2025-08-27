@@ -23,9 +23,9 @@ class MedicationRequest extends FormRequest
     {
         return [
             //
-            // 'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transaction,id',
             // 'patient_id' => 'required|exists:patient,id',
-            'medication_id' => 'required|exists:medication,id',
+            // 'medication_id' => 'required|exists:medication,id',
             'item_description' => 'required|string|max:255',
             'quantity' => 'required|integer',
             'unit' => 'required|string|max:255',

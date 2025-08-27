@@ -8,6 +8,8 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\New_Consultation;
 use App\Http\Requests\NewConsultationRequest;
+use App\Models\Medication;
+use App\Models\Medication_details;
 
 class NewConsultationController extends Controller
 {
@@ -152,5 +154,6 @@ class NewConsultationController extends Controller
             'consultation' => $NewConsultation,
         ]);
     }
+
 }
 

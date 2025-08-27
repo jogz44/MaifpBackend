@@ -63,7 +63,7 @@ Route::prefix('medications')->group(function () {
     Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']);// fetching the patient need to go on the medication  base on the transaction_type and consultation
     Route::post('/store', [MedicationController::class, 'store']);
     // Route::post('/status/{transactionId}', [MedicationController::class, 'status']); // updating the status of the  transaction_id if Done
-
+    // Route::get('/transaction/status', [MedicationController::class, 'transaction_medication_status']); // fetching the transaction on his vital
     Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
 
 });

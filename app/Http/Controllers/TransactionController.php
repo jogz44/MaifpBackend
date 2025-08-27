@@ -30,6 +30,19 @@ class TransactionController extends Controller
 
         return response()->json($patients);
     }
+    // public function assessment()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', 'assessment');
+    //     })
+    //         ->with(['transaction' => function ($query) {
+    //             $query->where('status', 'assessment');
+    //         }])
+    //         ->get();
+
+    //     return response()->json($patients);
+    // }
+
 
 
     public function index(){

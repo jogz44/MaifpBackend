@@ -13,24 +13,42 @@ use App\Http\Requests\BillingRequest;
 class BillingController extends Controller
 {
     //
-    // this method will get the billing of the per transaction of the patient
-    // this method will get the billing of the per transaction of the patient
     public function billing($transactionId)
     {
         $transaction = Transaction::with([
             'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay',
             'consultation:id,transaction_id,amount',
             'laboratories:id,transaction_id,laboratory_type,amount,status',
-            // 'medication:id,transaction_id,item_description,quantity,unit,amount,status',
+            'medication:id,transaction_id,status', // ✅ medication status
+            'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;
-        // $medicationTotal = $transaction->medication->sum('amount');
-        $laboratoryTotal = $transaction->laboratories->sum('amount');
-        $totalBilling = $consultationAmount + $laboratoryTotal ;
+        $laboratoryTotal    = $transaction->laboratories->sum('amount');
+
+        // ✅ Check if transaction has Medication with status "Done"
+        $medicationTotal = 0;
+        $medicationDetails = [];
+        if ($transaction->medication && $transaction->medication->status === 'Done') {
+            $medicationTotal = $transaction->medicationDetails->sum('amount');
+
+            $medicationDetails = $transaction->medicationDetails->map(function ($med) {
+                return [
+                    'id'              => $med->id,
+                    'item_description' => $med->item_description,
+                    'quantity'        => $med->quantity,
+                    'unit'            => $med->unit,
+                    'amount'          => $med->amount,
+                    'transaction_date' => $med->transaction_date,
+
+                ];
+            });
+        }
+
+        $totalBilling = $consultationAmount + $laboratoryTotal + $medicationTotal;
 
         return response()->json([
-            'patient_id'      => $transaction->patient->id,
+            'patient_id'          => $transaction->patient->id,
             'transaction_id'      => $transaction->id,
             'transaction_type'    => $transaction->transaction_type,
             'firstname'           => $transaction->patient->firstname,
@@ -46,7 +64,7 @@ class BillingController extends Controller
             'transaction_date'    => $transaction->transaction_date,
             'consultation_amount' => $consultationAmount,
             'laboratory_total'    => $laboratoryTotal,
-            // 'medication_total'    => $medicationTotal,
+            'medication_total'    => $medicationTotal,
             'total_billing'       => $totalBilling,
             'laboratories'        => $transaction->laboratories->map(function ($lab) {
                 return [
@@ -56,20 +74,67 @@ class BillingController extends Controller
                     'status'          => $lab->status,
                 ];
             }),
-            // 'medication'        => $transaction->medication->map(function ($med) {
-            //     return [
-            //         'id'              => $med->id,
-            //         'item_description' => $med->item_description,
-            //         'quantity'          => $med->quantity,
-            //         'unit'          => $med->unit,
-            //         'amount'      => $med->amount,
-            //         'status'  => $med->status,
-            //     ];
-            // }),
+            'medication'  => $medicationDetails,
         ]);
     }
 
-    public function index() //fetching the
+    // this method will get the billing of the per transaction of the patient
+    // this method will get the billing of the per transaction of the patient
+    // public function billing($transactionId)
+    // {
+    //     $transaction = Transaction::with([
+    //         'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay',
+    //         'consultation:id,transaction_id,amount',
+    //         'laboratories:id,transaction_id,laboratory_type,amount,status',
+    //         // 'medication:id,transaction_id,item_description,quantity,unit,amount,status',
+    //     ])->findOrFail($transactionId);
+
+    //     $consultationAmount = $transaction->consultation?->amount ?? 0;
+    //     // $medicationTotal = $transaction->medication->sum('amount');
+    //     $laboratoryTotal = $transaction->laboratories->sum('amount');
+    //     $totalBilling = $consultationAmount + $laboratoryTotal ;
+
+    //     return response()->json([
+    //         'patient_id'      => $transaction->patient->id,
+    //         'transaction_id'      => $transaction->id,
+    //         'transaction_type'    => $transaction->transaction_type,
+    //         'firstname'           => $transaction->patient->firstname,
+    //         'lastname'            => $transaction->patient->lastname,
+    //         'age'                 => $transaction->patient->age,
+    //         'gender'              => $transaction->patient->gender,
+    //         'contact_number'      => $transaction->patient->contact_number,
+    //         'address'             => [
+    //             'street'   => $transaction->patient->street,
+    //             'purok'    => $transaction->patient->purok,
+    //             'barangay' => $transaction->patient->barangay,
+    //         ],
+    //         'transaction_date'    => $transaction->transaction_date,
+    //         'consultation_amount' => $consultationAmount,
+    //         'laboratory_total'    => $laboratoryTotal,
+    //         // 'medication_total'    => $medicationTotal,
+    //         'total_billing'       => $totalBilling,
+    //         'laboratories'        => $transaction->laboratories->map(function ($lab) {
+    //             return [
+    //                 'id'              => $lab->id,
+    //                 'laboratory_type' => $lab->laboratory_type,
+    //                 'amount'          => $lab->amount,
+    //                 'status'          => $lab->status,
+    //             ];
+    //         }),
+    //         // 'medication'        => $transaction->medication->map(function ($med) {
+    //         //     return [
+    //         //         'id'              => $med->id,
+    //         //         'item_description' => $med->item_description,
+    //         //         'quantity'          => $med->quantity,
+    //         //         'unit'          => $med->unit,
+    //         //         'amount'      => $med->amount,
+    //         //         'status'  => $med->status,
+    //         //     ];
+    //         // }),
+    //     ]);
+    // }
+
+    public function index() //fetching the patient have billing
     {
         $patients = Patient::whereHas('transaction', function ($query) {
             $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions

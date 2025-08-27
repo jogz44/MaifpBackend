@@ -2,31 +2,39 @@
 
 namespace App\Models;
 
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Model;
 
 class Medication extends Model
 {
     //
 
-    protected $table = 'medication_details';
+    protected $table = 'medication';
 
-    protected $fillable =[
-
-        'medication_id',
-        'item_description',
-        'patient_id', // the costumeer is the patient_id
-        'quantity',
-        'unit',
-        'transaction_date',
-        'amount',
-        // 'status',
-        'user_id',
-
-
+    protected $fillable = [
+         'status',
+         'transaction_id'
     ];
 
-     public function consultation()
+    // app/Models/Medication.php
+
+    protected static function booted()
     {
-        return $this->belongsTo(New_Consultation::class, 'new_consultation_id');
+        static::saved(function ($medication) {
+            if ($medication->status === 'Done') {
+                $transaction = Transaction::with('consultation')
+                    ->find($medication->transaction_id);
+
+                if ($transaction && $transaction->consultation) {
+                    $consultation = $transaction->consultation;
+
+                    // ✅ Update status and add 500 to amount
+                    $consultation->update([
+                        'status' => 'Done',
+                        'amount' => ($consultation->amount ?? 0) + 500
+                    ]);
+                }
+            }
+        });
     }
 }

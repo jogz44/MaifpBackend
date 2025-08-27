@@ -58,8 +58,18 @@ class Transaction extends Model
         return $this->hasOne(GuaranteeLetter::class, 'transaction_id');
     }
 
-//     public function medication()
-//     {
-//         return $this->hasMany(Medication::class, 'transaction_id');
-//     }
+    //     public function medication()
+    //     {
+    //         return $this->hasMany(Medication::class, 'transaction_id');
+    //     }
+
+    public function medication()
+    {
+        return $this->hasOne(Medication::class, 'transaction_id');
+    }
+
+    public function medicationDetails()
+    {
+        return $this->hasMany(Medication_details::class, 'transaction_id');
+    }
 }
