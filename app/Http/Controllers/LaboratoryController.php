@@ -2,13 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LaboratoryRequest;
 use App\Models\Laboratory;
-use App\Models\New_Consultation;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\New_Consultation;
+use App\Http\Requests\LaboratoryRequest;
 
 class LaboratoryController extends Controller
 {
+    // this method is for laboratory will fetch the patient need to laboratory
+    public function qualifiedTransactionsLaboratory()
+    {
+        try {
+            $transactions = Transaction::where('status', 'qualified')
+                ->where(function ($query) {
+                    $query->where('transaction_type', 'Laboratory')
+                        ->orWhereHas('consultation', function ($q) {
+                            $q->where('status', 'Processing');
+                        });
+                })
+                // ❌ Exclude transactions that already have laboratories with status = 'Done'
+                ->whereDoesntHave('laboratories', function ($lab) {
+                    $lab->where('status', 'Done');
+                })
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+                ->with([
+                    'patient',
+                    'vital',       // fetch vitals of the transaction
+                    'consultation',
+                    'laboratories' // fetch laboratories
+                ])
+                ->get()
+                ->groupBy('patient_id')
+                ->map(function ($group) {
+                    $patient = $group->first()->patient;
+
+                    // attach transactions to patient
+                    $patient->transaction = $group->map(function ($transaction) {
+                        return collect($transaction)->except('patient');
+                    })->values();
+
+                    return $patient;
+                })
+                ->values();
+
+            return response()->json($transactions);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch qualified transactions.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 
     // this method for the status on the laboratory that have connected on the consultation for the patient
     public function status(Request $request, $transactionId)
@@ -50,30 +96,7 @@ class LaboratoryController extends Controller
         ]);
     }
 
-
-    // public function store(LaboratoryRequest $request) //  this method is for saving the laboratory of the patient will his transaction with amount
-    // {
-    //     $validated = $request->validated();
-
-    //     $labs = [];
-
-    //     foreach ($validated['laboratories'] as $labData) {
-    //         $labs[] = Laboratory::create([
-    //             'transaction_id' => $validated['transaction_id'],
-    //             'new_consultation_id' => $validated['new_consultation_id'] ?? null,
-    //             'laboratory_type' => $labData['laboratory_type'],
-    //             'amount' => $labData['amount'],
-    //             'status' => $labData['status'] ?? 'Pending',
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'message' => 'Laboratories stored successfully',
-    //         'laboratories' => $labs
-    //     ]);
-    // }
-
-    public function store(LaboratoryRequest $request)
+    public function store(LaboratoryRequest $request) //  this method is for saving the laboratory of the patient will his transaction with amount
     {
         $validated = $request->validated();
 

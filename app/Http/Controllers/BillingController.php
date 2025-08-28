@@ -78,88 +78,35 @@ class BillingController extends Controller
         ]);
     }
 
-    // this method will get the billing of the per transaction of the patient
-    // this method will get the billing of the per transaction of the patient
-    // public function billing($transactionId)
-    // {
-    //     $transaction = Transaction::with([
-    //         'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay',
-    //         'consultation:id,transaction_id,amount',
-    //         'laboratories:id,transaction_id,laboratory_type,amount,status',
-    //         // 'medication:id,transaction_id,item_description,quantity,unit,amount,status',
-    //     ])->findOrFail($transactionId);
-
-    //     $consultationAmount = $transaction->consultation?->amount ?? 0;
-    //     // $medicationTotal = $transaction->medication->sum('amount');
-    //     $laboratoryTotal = $transaction->laboratories->sum('amount');
-    //     $totalBilling = $consultationAmount + $laboratoryTotal ;
-
-    //     return response()->json([
-    //         'patient_id'      => $transaction->patient->id,
-    //         'transaction_id'      => $transaction->id,
-    //         'transaction_type'    => $transaction->transaction_type,
-    //         'firstname'           => $transaction->patient->firstname,
-    //         'lastname'            => $transaction->patient->lastname,
-    //         'age'                 => $transaction->patient->age,
-    //         'gender'              => $transaction->patient->gender,
-    //         'contact_number'      => $transaction->patient->contact_number,
-    //         'address'             => [
-    //             'street'   => $transaction->patient->street,
-    //             'purok'    => $transaction->patient->purok,
-    //             'barangay' => $transaction->patient->barangay,
-    //         ],
-    //         'transaction_date'    => $transaction->transaction_date,
-    //         'consultation_amount' => $consultationAmount,
-    //         'laboratory_total'    => $laboratoryTotal,
-    //         // 'medication_total'    => $medicationTotal,
-    //         'total_billing'       => $totalBilling,
-    //         'laboratories'        => $transaction->laboratories->map(function ($lab) {
-    //             return [
-    //                 'id'              => $lab->id,
-    //                 'laboratory_type' => $lab->laboratory_type,
-    //                 'amount'          => $lab->amount,
-    //                 'status'          => $lab->status,
-    //             ];
-    //         }),
-    //         // 'medication'        => $transaction->medication->map(function ($med) {
-    //         //     return [
-    //         //         'id'              => $med->id,
-    //         //         'item_description' => $med->item_description,
-    //         //         'quantity'          => $med->quantity,
-    //         //         'unit'          => $med->unit,
-    //         //         'amount'      => $med->amount,
-    //         //         'status'  => $med->status,
-    //         //     ];
-    //         // }),
-    //     ]);
-    // }
-
     public function index() //fetching the patient have billing
     {
         $patients = Patient::whereHas('transaction', function ($query) {
             $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
                 ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
                 ->where(function ($q) {
-                // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
-                // Case 1: Transaction with consultation Done
-                $q->whereHas('consultation', function ($con) {
-                    $con->where('status', 'Done');
-                })
-                    // Case 2: Transaction without consultation but with lab Done
-                    ->orWhere(function ($q2) {
-                        $q2->whereDoesntHave('consultation')
-                            ->whereHas('laboratories', function ($lab) {
-                                $lab->where('status', 'Done');
-                            });
-                    });
-            });
+                    // Case 1: Transaction with consultation Done
+                    $q->whereHas('consultation', function ($con) {
+                        $con->where('status', 'Done');
+                    })
+                        // Case 2: Transaction without consultation but with lab Done
+                        ->orWhere(function ($q2) {
+                            $q2->whereDoesntHave('consultation')
+                                ->whereHas('laboratories', function ($lab) {
+                                    $lab->where('status', 'Done');
+                                });
+                        })
+                        // ✅ Case 3: Transaction with medication Done
+                        ->orWhereHas('medication', function ($med) {
+                            $med->where('status', 'Done');
+                        });
+                });
         })
             ->with([
-            'transaction' => function ($q) {
-                $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
-                 ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
-            }
-        ])
+                'transaction' => function ($q) {
+                    $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
+                        ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+                }
+            ])
             ->get([
                 'id',
                 'firstname',
@@ -175,6 +122,7 @@ class BillingController extends Controller
         return response()->json($patients);
     }
 
+
     // public function index()
     // {
     //     $patients = Patient::whereHas('transaction', function ($query) {
@@ -209,59 +157,6 @@ class BillingController extends Controller
     //             'contact_number',
     //             'barangay'
     //         ]);
-
-    //     return response()->json($patients);
-    // }
-    // public function index()
-    // {
-    //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
-    //             ->where(function ($q) {
-    //                 // Case 1: Transaction with consultation Done
-    //                 $q->whereHas('consultation', function ($con) {
-    //                     $con->where('status', 'Done');
-    //                 })
-    //                     // Case 2: Transaction without consultation but with lab Done
-    //                     ->orWhere(function ($q2) {
-    //                         $q2->whereDoesntHave('consultation')
-    //                             ->whereHas('laboratories', function ($lab) {
-    //                                 $lab->where('status', 'Done');
-    //                             });
-    //                     });
-    //             });
-    //     })
-    //         ->with([
-    //             'transaction' => function ($q) {
-    //                 $q->where('status', '!=', 'Complete'); // ✅ exclude completed only
-    //             }
-    //         ])
-    //         ->get([
-    //             'id',
-    //             'firstname',
-    //             'lastname',
-    //             'middlename',
-    //             'ext',
-    //             'birthdate',
-    //             'age',
-    //             'contact_number',
-    //             'barangay'
-    //         ]);
-
-    //     // ✅ Save each transaction into Billing table if not already saved
-    //     foreach ($patients as $patient) {
-    //         foreach ($patient->transaction as $transaction) {
-    //             Billing::firstOrCreate(
-    //                 [
-    //                     'transaction_id' => $transaction->id, // ensure unique per transaction
-    //                 ],
-    //                 [
-    //                     'patient_id' => $patient->id,
-    //                     'transaction_number' => $transaction->transaction_number,
-    //                     // 'total_amount' => 0, // you can replace with actual computation if needed
-    //                 ]
-    //             );
-    //         }
-    //     }
 
     //     return response()->json($patients);
     // }

@@ -23,6 +23,16 @@ class AddTransactionRequest extends FormRequest
     {
         return [
             'patient_id' => 'required|integer',
+            // representative
+            'rep_name' => 'required|string|max:255',
+            'rep_relationship' => 'nullable|string|max:255',
+            'rep_contact' => 'nullable|string|max:255',
+            'rep_barangay' => 'nullable|string|max:255',
+            'rep_address' => 'nullable|string|max:255',
+            'rep_purok' => 'nullable|string|max:255',
+            'rep_street' => 'nullable|string|max:255',
+            'rep_province' => 'nullable|string|max:255',
+            'rep_city' => 'nullable|string|max:255',
 
             // Transaction fields
             'transaction_type' => 'required|string|max:255',

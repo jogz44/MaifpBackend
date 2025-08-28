@@ -7,6 +7,7 @@ use App\Http\Requests\PatientRequest;
 use App\Http\Requests\PatientRequestAll;
 use App\Models\vital;
 use App\Models\Patient;
+use App\Models\Representative;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
 use Exception;
@@ -26,7 +27,7 @@ class PatientController extends Controller
 
     public function index()
     {
-        $patients = Patient::all();
+        $patients = Patient::with(['transaction','medication','consultation'])->get();
 
         return response()->json($patients);
     }
@@ -110,6 +111,20 @@ class PatientController extends Controller
             // ✅ Create new patient
             $patient = Patient::create($patientData);
 
+            $representativeData  = $request->only([
+                'rep_name',
+                'rep_relationship',
+                'rep_contact',
+                'rep_barangay',
+                'rep_address',
+                'rep_purok',
+                'rep_street',
+                'rep_city',
+                 'rep_province'
+            ]);
+
+            $representative = Representative::create($representativeData);
+
             // ✅ Generate transaction number
             $datePart = now()->format('Y-m-d');
             $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
@@ -122,7 +137,9 @@ class PatientController extends Controller
                 'transaction_mode',
                 'purpose'
             ]);
+
             $transactionData['patient_id'] = $patient->id;
+            $transactionData['representative_id'] = $representative->id;
             $transactionData['transaction_number'] = $transactionNumber;
             $transaction = Transaction::create($transactionData);
 
@@ -141,6 +158,7 @@ class PatientController extends Controller
                 'medicine',
                 'LMP'
             ]);
+
             $vitalData['patient_id'] = $patient->id;
             $vitalData['transaction_id'] = $transaction->id;
             $vital = Vital::create($vitalData);
@@ -151,7 +169,9 @@ class PatientController extends Controller
                 'patient' => $patient,
                 'transaction' => $transaction,
                 'vital' => $vital,
-                'transaction_number' => $transactionNumber
+                'representative' => $representative,
+                'transaction_number' => $transactionNumber,
+
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -161,122 +181,6 @@ class PatientController extends Controller
             ], 500);
         }
     }
-
-
-
-    // public function storeAll(PatientRequestAll $request) // this method is for adding new patient, transaction and vitals
-    // {
-    //     $userId = Auth::id();
-
-    //     try {
-    //         // ✅ Validate patient data
-    //         $patientData = $request->validate([
-    //             'firstname' => 'required|string|max:255',
-    //             'lastname' => 'required|string|max:255',
-    //             'middlename' => 'nullable|string|max:255',
-    //             'ext' => 'nullable|string|max:255',
-    //             'birthdate' => 'required|date',
-    //             'contact_number' => 'nullable|string|max:11',
-    //             'age' => 'integer',
-    //             'gender' => 'required|string|max:11',
-    //             'is_not_tagum' => 'boolean',
-    //             'street' => 'nullable|string|max:255',
-    //             'purok'  => 'nullable|string|max:255',
-    //             'barangay' => 'required|string|max:255',
-    //             'city' => 'nullable|string|max:255',
-    //             'province' => 'nullable|string|max:255',
-    //             'category' => 'required|in:Child,Adult,Senior',
-    //             'is_pwd' => 'boolean',
-    //             'is_solo' => 'boolean',
-
-    //         ]);
-
-    //         // ✅ Check if patient already exists
-    //         $existingPatient = Patient::select(['lastname', 'birthdate', 'firstname', 'lastname'])->where('firstname', $patientData['firstname'])
-    //             ->where('lastname', $patientData['lastname'])
-    //             ->where('birthdate', $patientData['birthdate']) // Better uniqueness check
-    //             ->first();
-
-    //         if ($existingPatient) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Patient already has a record. Please add a new transaction instead.',
-    //                 'patient' => $existingPatient
-    //             ], 409); // 409 Conflict
-    //         }
-
-    //         // ✅ Add logged-in user ID to patient data
-    //         $patientData['user_id'] = $userId;
-    //         // ✅ Create new patient
-    //         $patient = Patient::create($patientData,[
-    //             'user_id' => $userId, // Ensure user_id is set
-    //         ]);
-
-    //         // ✅ Generate transaction number
-    //         $datePart = now()->format('Y-m-d');
-    //         $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
-    //         $transactionNumber = "{$datePart}-{$sequenceFormatted}";
-
-    //         // ✅ Validate transaction data
-    //         $transactionData = $request->validate([
-    //             'transaction_type' => 'required|string|max:255',
-    //             'transaction_date' => 'required|string|max:255',
-    //             'transaction_mode' => 'required|string|max:255',
-    //             'purpose' => 'required|string|max:255',
-    //         ]);
-
-    //         $transactionData['patient_id'] = $patient->id;
-    //         $transactionData['transaction_number'] = $transactionNumber;
-    //         $transaction = Transaction::create($transactionData);
-
-    //         // ✅ Validate vital signs
-    //         $vitalData = $request->validate([
-    //             'height' => 'required|string|max:255',
-    //             'weight' => 'required|string|max:255',
-    //             'bmi' => 'nullable|string|max:255',
-    //             'temperature' => 'nullable|string|max:255',
-    //             'waist' => 'nullable|string|max:255',
-    //             'pulse_rate' => 'nullable|string|max:255',
-    //             'sp02' => 'nullable|string|max:255',
-    //             'heart_rate' => 'nullable|string|max:255',
-    //             'blood_pressure' => 'nullable|string|max:255',
-    //             'respiratory_rate' => 'nullable|string|max:255',
-    //             'medicine' => 'nullable|string|max:255',
-    //             'LMP' => 'nullable|string|max:255',
-    //         ]);
-
-    //         $vitalData['patient_id'] = $patient->id;
-    //         $vitalData['transaction_id'] = $transaction->id;
-    //         $vital = Vital::create($vitalData);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Patient, transaction, and vitals created successfully.',
-    //             'patient' => $patient,
-    //             'transaction' => $transaction,
-    //             'vital' => $vital,
-    //             'transaction_number' => $transactionNumber
-    //         ]);
-    //     } catch (ValidationException $ve) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Validation error',
-    //             'errors' => $ve->errors()
-    //         ], 422);
-    //     } catch (QueryException $qe) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Database error',
-    //             'errors' => $qe->getMessage()
-    //         ], 500);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'An unexpected error occurred',
-    //             'errors' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
 
     public function update(PatientRequest $request, $id) // this method is for updating patient
     {
@@ -314,9 +218,29 @@ class PatientController extends Controller
             $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
             $transactionNumber = "{$datePart}-{$sequenceFormatted}";
 
+
+
+            $representative = Representative::create([
+
+                'rep_name' => $validated['rep_name'],
+                'rep_relationship' => $validated['rep_relationship'] ?? 'NA',
+                'rep_contact' => $validated['rep_contact'] ?? 'NA',
+                'rep_barangay' => $validated['rep_barangay'] ?? 'NA',
+                'rep_address' => $validated['rep_address'] ?? 'NA',
+                'rep_purok' => $validated['rep_purok'] ?? 'NA',
+                'rep_street' => $validated['rep_street'] ?? 'NA',
+                'rep_province' => $validated['rep_province'] ?? 'NA',
+                'rep_city' => $validated['rep_city'] ?? 'NA',
+
+            ]);
+
+
+
+
             // ✅ Create transaction
             $transaction = Transaction::create([
                 'patient_id' => $patient->id,
+                'representative_id' => $representative->id,
                 'transaction_number' => $transactionNumber,
                 'transaction_type' => $validated['transaction_type'],
                 'transaction_date' => $validated['transaction_date'],
@@ -348,6 +272,7 @@ class PatientController extends Controller
                 'patient' => $patient,
                 'transaction' => $transaction,
                 'vital' => $vital,
+                'representative' => $representative,
                 'transaction_number' => $transactionNumber
             ]);
         } catch (ValidationException $ve) {
@@ -373,25 +298,25 @@ class PatientController extends Controller
 
     public function total_count_badge()
     {
+        $today = now()->toDateString();
+
         // ✅ Count of assessed patients
-        $count_assessment = Patient::whereHas('transaction', function ($query) {
+        $count_assessment = Patient::whereHas('transaction', function ($query) use ($today) {
             $query->where('status', 'assessment')
-                ->whereDate('transaction_date', now()->toDateString());
+                ->whereDate('transaction_date', $today);
         })->count();
 
-        // ✅ Count of qualified consultations
+        // ✅ Count of qualified consultations (unique patients)
         $count_consultation = Transaction::where('status', 'qualified')
             ->where('transaction_type', 'Consultation')
-            ->whereDate('transaction_date', now()->toDateString()) // only today's transactions
+            ->whereDate('transaction_date', $today)
             ->whereDoesntHave('consultation', function ($query) {
                 $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
             })
-            ->get()
-            ->groupBy('patient_id')
-            ->count(); // ✅ just count unique patient groups
+            ->distinct('patient_id')
+            ->count('patient_id');
 
-
-
+        // ✅ Laboratory count (unique patients)
         $count_laboratory = Transaction::where('status', 'qualified')
             ->where(function ($query) {
                 $query->where('transaction_type', 'Laboratory')
@@ -399,24 +324,14 @@ class PatientController extends Controller
                         $q->where('status', 'Processing');
                     });
             })
-            // ❌ Exclude transactions that already have laboratories with status = 'Done'
             ->whereDoesntHave('laboratories', function ($lab) {
                 $lab->where('status', 'Done');
             })
-            ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
-            ->with([
-                'patient',
-                'vital',       // fetch vitals of the transaction
-                'consultation',
-                'laboratories' // fetch laboratories
-            ])
-            ->get()
-            ->groupBy('patient_id')
-            ->count(); // ✅ just count unique patient groups
+            ->whereDate('transaction_date', $today)
+            ->distinct('patient_id')
+            ->count('patient_id');
 
-
-
-
+        // ✅ Medication count (unique patients)
         $count_medication = Transaction::where('status', 'qualified')
             ->where(function ($query) {
                 $query->where('transaction_type', 'Medication')
@@ -424,80 +339,223 @@ class PatientController extends Controller
                         $q->where('status', 'Medication');
                     });
             })
-            ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions
+            ->whereDate('transaction_date', $today)
             ->whereDoesntHave('medication', function ($q) {
-                $q->where('status', 'Done'); // ❌ exclude if medication is Done
+                $q->where('status', 'Done');
             })
-            ->with([
-                'patient',
-                'consultation'
-            ])
-            ->get()
-            ->groupBy('patient_id')
-            ->count();
+            ->distinct('patient_id')
+            ->count('patient_id');
 
-
-
+        // ✅ Returned consultations
         $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
             $query->where('status', 'Returned');
         })
-            ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions only
-            ->with([
-                'patient',
-                'vital',
-                'consultation',
-                'laboratories'
-            ])
-            ->get()
-            ->groupBy('patient_id')
-            ->count();
+            ->whereDate('transaction_date', $today)
+            ->distinct('patient_id')
+            ->count('patient_id');
 
-
-
-
-        $count_billing = Patient::whereHas('transaction', function ($query) {
-            $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
-                ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+        // ✅ Billing patients
+        $count_billing = Patient::whereHas('transaction', function ($query) use ($today) {
+            $query->whereDate('transaction_date', $today)
+                ->where('status', '!=', 'Complete')
                 ->where(function ($q) {
-                    // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
-                    // Case 1: Transaction with consultation Done
                     $q->whereHas('consultation', function ($con) {
                         $con->where('status', 'Done');
                     })
-                        // Case 2: Transaction without consultation but with lab Done
                         ->orWhere(function ($q2) {
                             $q2->whereDoesntHave('consultation')
                                 ->whereHas('laboratories', function ($lab) {
                                     $lab->where('status', 'Done');
                                 });
-                        });
+
+                        })
+                    // ✅ Case 3: Transaction with medication Done
+                    ->orWhereHas('medication', function ($med) {
+                        $med->where('status', 'Done');
+                    });
                 });
         })
-            ->with([
-                'transaction' => function ($q) {
-                    $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
-                        ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
-                }
-            ])
-            ->get([
-                'id',
-                'firstname',
-                'lastname',
-                'middlename',
-                'ext',
-                'birthdate',
-                'age',
-                'contact_number',
-                'barangay'
-            ])->count();
-            
+            ->distinct('id')
+            ->count('id');
+
+        // ✅ Guarantee letter patients
+        $count_guarantee = Patient::whereHas('transaction', function ($query) use ($today) {
+            $query->whereDate('transaction_date', $today)
+                ->where('status', 'Complete');
+        })
+            ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
+                $query->where('status', 'Funded');
+            })
+            ->distinct('id')
+            ->count('id');
+
         return response()->json([
-            'totalAssessedCount' => $count_assessment,
-            'totalQualifiedCount' => $count_consultation,
+            'totalAssessedCount'   => $count_assessment,
+            'totalQualifiedCount'  => $count_consultation,
             'totalLaboratoryCount' => $count_laboratory,
-            'totalMedicationCount'  => $count_medication,
-            'totalReturnedCount' => $count_return_consultation,
-            'totalBillingCount'   =>  $count_billing,
+            'totalMedicationCount' => $count_medication,
+            'totalReturnedCount'   => $count_return_consultation,
+            'totalBillingCount'    => $count_billing,
+            'totalGLCount'         => $count_guarantee,
         ]);
     }
+
+
+    // public function total_count_badge()
+    // {
+    //     // ✅ Count of assessed patients
+    //     $count_assessment = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', 'assessment')
+    //             ->whereDate('transaction_date', now()->toDateString());
+    //     })->count();
+
+    //     // ✅ Count of qualified consultations
+    //     $count_consultation = Transaction::where('status', 'qualified')
+    //         ->where('transaction_type', 'Consultation')
+    //         ->whereDate('transaction_date', now()->toDateString()) // only today's transactions
+    //         ->whereDoesntHave('consultation', function ($query) {
+    //             $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
+    //         })
+    //         ->get()
+    //         ->groupBy('patient_id')
+    //         ->count(); // ✅ just count unique patient groups
+
+
+
+    //     $count_laboratory = Transaction::where('status', 'qualified')
+    //         ->where(function ($query) {
+    //             $query->where('transaction_type', 'Laboratory')
+    //                 ->orWhereHas('consultation', function ($q) {
+    //                     $q->where('status', 'Processing');
+    //                 });
+    //         })
+    //         // ❌ Exclude transactions that already have laboratories with status = 'Done'
+    //         ->whereDoesntHave('laboratories', function ($lab) {
+    //             $lab->where('status', 'Done');
+    //         })
+    //         ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+    //         ->with([
+    //             'patient',
+    //             'vital',       // fetch vitals of the transaction
+    //             'consultation',
+    //             'laboratories' // fetch laboratories
+    //         ])
+    //         ->get()
+    //         ->groupBy('patient_id')
+    //         ->count(); // ✅ just count unique patient groups
+
+
+
+
+    //     $count_medication = Transaction::where('status', 'qualified')
+    //         ->where(function ($query) {
+    //             $query->where('transaction_type', 'Medication')
+    //                 ->orWhereHas('consultation', function ($q) {
+    //                     $q->where('status', 'Medication');
+    //                 });
+    //         })
+    //         ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions
+    //         ->whereDoesntHave('medication', function ($q) {
+    //             $q->where('status', 'Done'); // ❌ exclude if medication is Done
+    //         })
+    //         ->with([
+    //             'patient',
+    //             'consultation'
+    //         ])
+    //         ->get()
+    //         ->groupBy('patient_id')
+    //         ->count();
+
+
+
+    //     $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
+    //         $query->where('status', 'Returned');
+    //     })
+    //         ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions only
+    //         ->with([
+    //             'patient',
+    //             'vital',
+    //             'consultation',
+    //             'laboratories'
+    //         ])
+    //         ->get()
+    //         ->groupBy('patient_id')
+    //         ->count();
+
+
+
+
+    //     $count_billing = Patient::whereHas('transaction', function ($query) {
+    //         $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+    //             ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+    //             ->where(function ($q) {
+    //                 // ->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+    //                 // Case 1: Transaction with consultation Done
+    //                 $q->whereHas('consultation', function ($con) {
+    //                     $con->where('status', 'Done');
+    //                 })
+    //                     // Case 2: Transaction without consultation but with lab Done
+    //                     ->orWhere(function ($q2) {
+    //                         $q2->whereDoesntHave('consultation')
+    //                             ->whereHas('laboratories', function ($lab) {
+    //                                 $lab->where('status', 'Done');
+    //                             });
+    //                     });
+    //             });
+    //     })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
+    //                     ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ])->count();
+
+
+    //     $count_guarantee = Patient::whereHas('transaction', function ($query) {
+    //         $query->whereDate('transaction_date', Carbon::today())
+    //             ->where('status', 'Complete');
+    //     })
+    //         ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
+    //             $query->where('status', 'Funded');
+    //         })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->whereDate('transaction_date', Carbon::today())
+    //                     ->where('status', 'Complete');
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+
+    //         ])->count();
+
+    //     return response()->json([
+    //         'totalAssessedCount' => $count_assessment,
+    //         'totalQualifiedCount' => $count_consultation,
+    //         'totalLaboratoryCount' => $count_laboratory,
+    //         'totalMedicationCount'  => $count_medication,
+    //         'totalReturnedCount' => $count_return_consultation,
+    //         'totalBillingCount'   =>  $count_billing,
+    //         'totalGLCount' => $count_guarantee
+    //     ]);
+    // }
 }

@@ -13,20 +13,51 @@ use App\Models\Medication_details;
 
 class NewConsultationController extends Controller
 {
-    //
 
-    // public function index() // fetching the consultation
-    // {
 
-    //     $NewConsultation = New_Consultation::all();
+    // this method for qualiafied for consultation and  will fetch this current date
+    public function qualifiedTransactionsConsultation()
+    {
+        try {
+            $patients = Transaction::where('status', 'qualified')
+                ->where('transaction_type', 'Consultation')
+                ->whereDate('transaction_date', now()->toDateString()) // ✅ only today's transactions
 
-    //     return response()->json([
-    //         'message' => 'successfully',
-    //         'consultation' => $NewConsultation
-    //     ]);
-    // }
+                // exclude patients who already have ANY "Done" consultation
+                ->whereDoesntHave('consultation', function ($query) {
+                    $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
+                })
+                ->with([
+                    'patient',
+                    'vital',
+                    'consultation',
+                    // 'laboratories'
+                ])
+                ->get()
+                ->groupBy('patient_id')
+                ->map(function ($group) {
+                    $patient = $group->first()->patient;
 
-    public function ReturnConsultation()
+                    // attach transactions to patient
+                    $patient->transaction = $group->map(function ($transaction) {
+                        return collect($transaction)->except('patient');
+                    })->values();
+
+                    return $patient;
+                })
+                ->values();
+
+            return response()->json($patients);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch qualified transactions.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function ReturnConsultation() // fetching the  patient to the return consultation  consultation->laboratory->consultation
     {
         try {
             $patients = Transaction::whereHas('consultation', function ($query) {
@@ -63,64 +94,7 @@ class NewConsultationController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-
-    //     $NewConsultation = New_Consultation::findOrFail($id);
-
-    //     return response()->json([
-    //         'message' => 'successfully',
-    //         'consultation' => $NewConsultation
-    //     ]);
-    // }
-
-    // public function store(NewConsultationRequest $request) //  this method have 2 condition update and create the consultation of the patient
-    // {
-    //     $validated = $request->validated();
-
-    //     // If status is Done, set amount = 500
-    //     if (isset($validated['status']) && $validated['status'] === 'Done') {
-    //         $validated['amount'] = 500;
-    //     }
-
-    //     // ✅ Update if transaction_id exists, otherwise create
-    //     $NewConsultation = New_Consultation::updateOrCreate(
-    //         ['transaction_id' => $validated['transaction_id']], // match condition
-    //         $validated                                          // values to update
-    //     );
-
-    //     return response()->json([
-    //         'message' => 'Successfully Saved',
-    //         'consultation' => $NewConsultation,
-    //     ]);
-    // }
-
-    // public function store(NewConsultationRequest $request) // store and updating the status
-    // {
-    //     $validated = $request->validated();
-
-    //     // If status is Done, set amount = 500
-    //     if (isset($validated['status']) && $validated['status'] === 'Done') {
-    //         $validated['amount'] = 500;
-    //     }
-
-    //     // ✅ Update if transaction_id exists, otherwise create
-    //     $NewConsultation = New_Consultation::updateOrCreate(
-    //         ['transaction_id' => $validated['transaction_id']], // match condition
-    //         $validated                                          // values to update
-    //     );
-
-    //     // 🔄 Update related Laboratory status
-    //     if ($NewConsultation && isset($validated['status'])) {
-    //         Laboratory::where('transaction_id', $validated['transaction_id'])
-    //             ->update(['status' => $validated['status']]);
-    //     }
-
-    //     return response()->json([
-    //         'message' => 'Successfully Saved',
-    //         'consultation' => $NewConsultation,
-    //     ]);
-    // }
+    // this line of code  are need to revision
     public function store(NewConsultationRequest $request) // store and update status
     {
         $validated = $request->validated();

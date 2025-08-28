@@ -15,33 +15,12 @@ use App\Models\GuaranteeLetter;
 class BudgetController extends Controller
 {
     //
-
-    // public function index()
-    // {
-    //     $budget = Budget::with('releases')->get();
-    //     return response()->json($budget);
-    // }
     public function list_of_funded()
     {
         $budget = Billing::all();
         return response()->json($budget);
     }
 
-
-    // public function index()
-    // {
-    //     $budgets = Budget::all();
-
-    //     $totalFunds = $budgets->sum('funds');
-    //     $totalUsed = Billing::sum('total_amount');
-    //     $remainingFunds = $totalFunds - $totalUsed;
-
-    //     return response()->json([
-    //         'total_funds' => $totalFunds,
-    //         'remaining_funds' => $remainingFunds,
-    //         'budgets' => $budgets
-    //     ]);
-    // }
     public function dashboardBudget()
     {
         $budgets = Budget::all();
@@ -56,7 +35,6 @@ class BudgetController extends Controller
 
         ]);
     }
-
 
     public function index()
     {
@@ -73,8 +51,6 @@ class BudgetController extends Controller
             $budgets
         );
     }
-
-
 
     public function store(BudgetRequest $request)
     {

@@ -19,6 +19,14 @@ class PatientRequestAll extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+    public function prepareForValidation(){
+
+        $this->merge([
+            'street' => $this->input('street') ?: 'NA', // ✅ if street is null/empty → NA
+        ]);
+    }
+
     public function rules(): array
     {
 
@@ -44,6 +52,18 @@ class PatientRequestAll extends FormRequest
             'is_solo' => 'sometimes|boolean',
             'user_id' => 'sometimes|required|exists:users,id',
 
+            // representative
+            'rep_name' => 'required|string|max:255',
+            'rep_relationship' => 'nullable|string|max:255',
+            'rep_contact' => 'nullable|string|max:255',
+            'rep_barangay' => 'nullable|string|max:255',
+            'rep_address' => 'nullable|string|max:255',
+            'rep_purok' => 'nullable|string|max:255',
+            'rep_street' => 'nullable|string|max:255',
+            'rep_province' => 'nullable|string|max:255',
+            'rep_city' => 'nullable|string|max:255',
+
+
             //transaction
             'transaction_type' => 'required|string|max:255',
             'transaction_mode' => 'required|string|max:255',
@@ -62,7 +82,7 @@ class PatientRequestAll extends FormRequest
             'blood_pressure' => 'sometimes|nullable|string|max:255',
             'respiratory_rate' => 'sometimes|nullable|string|max:255',
             'medicine' => 'sometimes|nullable|string|max:255',
-            'LMP' => 'sometimes|required|nullable|string|max:255',
+            'LMP' => 'sometimes|nullable|string|max:255',
         ];
 
     }

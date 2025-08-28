@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\vital;
 use App\Models\Patient;
 use App\Models\Medication;
+use App\Models\Representative;
 use App\Models\GuaranteeLetter;
 use App\Models\New_Consultation;
 use Illuminate\Database\Eloquent\Model;
@@ -25,12 +26,18 @@ class Transaction extends Model
         'transaction_date',
         'purpose',
         'status', // Added status field
+        'representative_id'
     ];
 
 
     public function patient()
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function representative()
+    {
+        return $this->belongsTo(Representative::class);
     }
 
     public function vital()

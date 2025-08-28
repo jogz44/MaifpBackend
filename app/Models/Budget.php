@@ -14,7 +14,6 @@ class Budget extends Model
     protected $fillable = [
 
         'funds',
-
         'remarks'
 
     ];

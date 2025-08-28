@@ -24,6 +24,7 @@ use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
+use App\Models\Laboratory;
 use App\Models\Medication;
 
 Route::put('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
@@ -53,7 +54,7 @@ Route::prefix('transactions')->group(function () {
     Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
     // Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
 
-    Route::get('/qualified', [TransactionController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
+    Route::get('/qualified', [NewConsultationController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
     Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
 
 });
@@ -74,7 +75,7 @@ Route::prefix('medications')->group(function () {
 Route::prefix('laboratory')->group(function () {
     Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
     Route::post('/update/{id}', [LaboratoryController::class, 'status']); // store the patient laboratory and amount
-    Route::get('/', [TransactionController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
+    Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
 
 });
 

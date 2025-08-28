@@ -37,5 +37,8 @@ class Patient extends Model
     {
         return $this->hasMany(Transaction::class);
     }
-
+    // public function laboratories()
+    // {
+    //     return $this->hasMany(Laboratory::class);
+    // }
 }
