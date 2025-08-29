@@ -1,0 +1,2333 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MAIFP API Docs",
+        "description": "Swagger documentation for MAIFP project",
+        "contact": {
+            "email": "devteam@maifp.local"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://192.168.8.182:8000",
+            "description": "Local development server"
+        }
+    ],
+    "paths": {
+        "/api/billing": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Fetch patients with billing today",
+                "description": "Retrieves all patients with transactions today that have at least one 'Done' service (consultation, laboratory, or medication) but not yet marked as 'Complete'.",
+                "operationId": "cf94aaf03e8e4f4a3c147f4eb908eddc",
+                "responses": {
+                    "200": {
+                        "description": "List of patients with active billing",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "firstname": {
+                                                "type": "string",
+                                                "example": "Maria"
+                                            },
+                                            "lastname": {
+                                                "type": "string",
+                                                "example": "Santos"
+                                            },
+                                            "age": {
+                                                "type": "integer",
+                                                "example": 35
+                                            },
+                                            "contact_number": {
+                                                "type": "string",
+                                                "example": "09123456789"
+                                            },
+                                            "barangay": {
+                                                "type": "string",
+                                                "example": "San Roque"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/billing/{transactionId}": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Get billing details for a transaction",
+                "description": "Fetches the billing breakdown for a transaction including consultation, laboratory, and medication details (if completed). Returns total billing with patient information.",
+                "operationId": "83b1a20b4712dd4676e70c78f522bcd7",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "path",
+                        "description": "ID of the transaction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 123
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Billing details retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "patient_id": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "transaction_id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "transaction_type": {
+                                            "type": "string",
+                                            "example": "Consultation"
+                                        },
+                                        "firstname": {
+                                            "type": "string",
+                                            "example": "Juan"
+                                        },
+                                        "lastname": {
+                                            "type": "string",
+                                            "example": "Dela Cruz"
+                                        },
+                                        "age": {
+                                            "type": "integer",
+                                            "example": 42
+                                        },
+                                        "gender": {
+                                            "type": "string",
+                                            "example": "Male"
+                                        },
+                                        "address": {
+                                            "properties": {
+                                                "street": {
+                                                    "type": "string",
+                                                    "example": "Purok 2"
+                                                },
+                                                "barangay": {
+                                                    "type": "string",
+                                                    "example": "San Isidro"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "consultation_amount": {
+                                            "type": "number",
+                                            "example": 200
+                                        },
+                                        "laboratory_total": {
+                                            "type": "number",
+                                            "example": 450
+                                        },
+                                        "medication_total": {
+                                            "type": "number",
+                                            "example": 120
+                                        },
+                                        "total_billing": {
+                                            "type": "number",
+                                            "example": 770
+                                        },
+                                        "laboratories": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "laboratory_type": {
+                                                        "type": "string",
+                                                        "example": "X-Ray"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "example": 300
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "Done"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "medication": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "item_description": {
+                                                        "type": "string",
+                                                        "example": "Amoxicillin"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    },
+                                                    "unit": {
+                                                        "type": "string",
+                                                        "example": "Capsule"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "example": 120
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    }
+                }
+            }
+        },
+        "/api/new_consultations/return": {
+            "get": {
+                "tags": [
+                    "Consultations"
+                ],
+                "summary": "Fetch patients with returned consultations (today only)",
+                "description": "This endpoint retrieves patients whose consultations have a status of 'Returned' for the current date,\n *                  along with their related transactions, vitals, consultation, and laboratories.",
+                "operationId": "3f462041aa5879342e318a55e844ba2b",
+                "responses": {
+                    "200": {
+                        "description": "List of patients with returned consultations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 12
+                                            },
+                                            "firstname": {
+                                                "type": "string",
+                                                "example": "Juan"
+                                            },
+                                            "lastname": {
+                                                "type": "string",
+                                                "example": "Dela Cruz"
+                                            },
+                                            "transaction": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 101
+                                                        },
+                                                        "transaction_date": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-08-29"
+                                                        },
+                                                        "consultation": {
+                                                            "properties": {
+                                                                "status": {
+                                                                    "type": "string",
+                                                                    "example": "Returned"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        },
+                                                        "laboratories": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 88
+                                                                    },
+                                                                    "status": {
+                                                                        "type": "string",
+                                                                        "example": "Pending"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch returned consultations"
+                    }
+                }
+            }
+        },
+        "/api/new_consultations": {
+            "post": {
+                "tags": [
+                    "Consultations"
+                ],
+                "summary": "Store or update a consultation and sync status with laboratories",
+                "description": "Creates a new consultation record or updates it if the transaction_id already exists. Automatically updates amount if status is 'Done' and syncs laboratory statuses based on consultation status.",
+                "operationId": "bb36442e9903e8eba4ecaadef05ea3f1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "description": "ID of the related transaction",
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "status": {
+                                        "description": "Status of the consultation",
+                                        "type": "string",
+                                        "example": "Done"
+                                    },
+                                    "amount": {
+                                        "description": "Amount for the consultation (auto-set if status is Done)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    },
+                                    "remarks": {
+                                        "description": "Additional notes or remarks",
+                                        "type": "string",
+                                        "example": "Patient referred for medication"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Consultation successfully created or updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully Saved"
+                                        },
+                                        "consultation": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 55
+                                                },
+                                                "transaction_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Done"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 500
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The transaction_id field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/guarantee": {
+            "get": {
+                "tags": [
+                    "Guarantee Letters"
+                ],
+                "summary": "Fetch patients eligible for a guarantee letter",
+                "description": "Fetches patients with completed transactions today that do not yet have a funded guarantee letter.",
+                "operationId": "ca6a9949a6cee2b068ae8697aa610cd3",
+                "responses": {
+                    "200": {
+                        "description": "List of eligible patients",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "firstname": {
+                                                "type": "string",
+                                                "example": "Juan"
+                                            },
+                                            "lastname": {
+                                                "type": "string",
+                                                "example": "Dela Cruz"
+                                            },
+                                            "middlename": {
+                                                "type": "string",
+                                                "example": "Santos"
+                                            },
+                                            "ext": {
+                                                "type": "string",
+                                                "example": "Jr."
+                                            },
+                                            "birthdate": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "1995-03-15"
+                                            },
+                                            "age": {
+                                                "type": "integer",
+                                                "example": 28
+                                            },
+                                            "contact_number": {
+                                                "type": "string",
+                                                "example": "09171234567"
+                                            },
+                                            "barangay": {
+                                                "type": "string",
+                                                "example": "San Isidro"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/guarantee/store": {
+            "post": {
+                "tags": [
+                    "Guarantee Letters"
+                ],
+                "summary": "Create a new guarantee letter",
+                "description": "Stores a guarantee letter if funds are available, deducting billing from the remaining budget.",
+                "operationId": "8bfce2fa9383e903ccaaa93ae429ceff",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "patient_id",
+                                    "transaction_id",
+                                    "medication_total",
+                                    "total_billing"
+                                ],
+                                "properties": {
+                                    "patient_id": {
+                                        "description": "ID of the patient",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "transaction_id": {
+                                        "description": "ID of the related transaction",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "consultation_amount": {
+                                        "description": "Total consultation amount",
+                                        "type": "number",
+                                        "example": 500
+                                    },
+                                    "laboratory_total": {
+                                        "description": "Total lab charges",
+                                        "type": "number",
+                                        "example": 1500
+                                    },
+                                    "medication_total": {
+                                        "description": "Total medication charges",
+                                        "type": "number",
+                                        "example": 800
+                                    },
+                                    "total_billing": {
+                                        "description": "Grand total billing",
+                                        "type": "number",
+                                        "example": 2800
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Guarantee letter created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Billing created successfully"
+                                        },
+                                        "billing": {
+                                            "type": "object"
+                                        },
+                                        "total_funds": {
+                                            "type": "number",
+                                            "example": 10000
+                                        },
+                                        "remaining_funds": {
+                                            "type": "number",
+                                            "example": 7500
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not enough funds",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not enough funds. Please add more funds before creating this billing. Remaining funds: 1500"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/laboratory": {
+            "get": {
+                "tags": [
+                    "Laboratory"
+                ],
+                "summary": "Fetch patients qualified for Laboratory",
+                "description": "Retrieves patients who are qualified for laboratory services today,\n *                  excluding those who already have laboratory records marked as 'Done'.\n *                  Includes related patient, vitals, consultations, and laboratories.",
+                "operationId": "1f4485f70df0a02ccbd2b696cbea2731",
+                "responses": {
+                    "200": {
+                        "description": "List of patients qualified for laboratory",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch qualified laboratory transactions"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/update/{id}": {
+            "post": {
+                "tags": [
+                    "Laboratory"
+                ],
+                "summary": "Update status of laboratories under a transaction",
+                "description": "Updates the status (Pending, Done, Returned) of all laboratories associated with a given transaction.\n *                  If status is 'Returned', the linked consultation will also be updated to Returned.",
+                "operationId": "3730a9aee90945f1c361d0792f8df102",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "path",
+                        "description": "ID of the transaction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Done",
+                                            "Returned",
+                                            "Pending"
+                                        ],
+                                        "example": "Returned"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Laboratory statuses updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No laboratories found for this transaction"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/Laboratory/store": {
+            "post": {
+                "tags": [
+                    "Laboratory"
+                ],
+                "summary": "Store new laboratory records for a transaction",
+                "description": "Stores multiple laboratory records for a patient’s transaction,\n *                  each with type, amount, and optional status.\n *                  Automatically links to a consultation if present.",
+                "operationId": "70af4004fcba1416c86c34252025af0c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id",
+                                    "laboratories"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "laboratories": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "laboratory_type",
+                                                "amount"
+                                            ],
+                                            "properties": {
+                                                "laboratory_type": {
+                                                    "type": "string",
+                                                    "example": "X-Ray"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 500
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Pending",
+                                                        "Returned",
+                                                        "Done"
+                                                    ],
+                                                    "example": "Pending"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Laboratories stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/medications": {
+            "get": {
+                "tags": [
+                    "Medications"
+                ],
+                "summary": "Fetch patients qualified for Medication",
+                "description": "This endpoint retrieves patients with transactions that are qualified for Medication today,\n *                  excluding those whose medication status is already 'Done'.\n *                  It groups the transactions by patient and attaches related consultation data.",
+                "operationId": "a90bda3d246bd094d94cfd9ad312afb5",
+                "responses": {
+                    "200": {
+                        "description": "List of patients qualified for medication",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch qualified transactions"
+                    }
+                }
+            }
+        },
+        "/api/medications/store": {
+            "post": {
+                "tags": [
+                    "Medications"
+                ],
+                "summary": "Create a new medication record",
+                "description": "Stores a new medication record for a given transaction, including details such as\n *                  item description, quantity, unit, user, and amount.",
+                "operationId": "5f7985b48f65588fc71a82860f948e58",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id",
+                                    "item_description",
+                                    "quantity",
+                                    "unit",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "item_description": {
+                                        "type": "string",
+                                        "example": "Paracetamol 500mg"
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "example": "tablet"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 250.5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Medication created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/medications/status": {
+            "post": {
+                "tags": [
+                    "Medications"
+                ],
+                "summary": "Update or create a medication status",
+                "description": "Updates or creates a medication status for the given transaction ID.\n *                  Status must be either 'Done' or 'Pending'.",
+                "operationId": "521ced7775c4152d1a6eac02c1ff27ab",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Done",
+                                            "Pending"
+                                        ],
+                                        "example": "Done"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Medication status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/patients": {
+            "get": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Get all patients",
+                "operationId": "35a58b8f8f41310485c2967992308b6d",
+                "responses": {
+                    "200": {
+                        "description": "List of patients"
+                    }
+                }
+            }
+        },
+        "/api/patients/master_list": {
+            "get": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Get all patients  lastest transaction fetch on the master list module",
+                "operationId": "a3709d40ba633f87df66726029b2a464",
+                "responses": {
+                    "200": {
+                        "description": "Master list "
+                    }
+                }
+            }
+        },
+        "/api/patients/count/badge": {
+            "get": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Count patients",
+                "operationId": "3c6f9c447e45b21810833b978ed31ff5",
+                "responses": {
+                    "200": {
+                        "description": "Count the patients every module"
+                    }
+                }
+            }
+        },
+        "/api/patients/assessment": {
+            "get": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "fetch all patient need to assess",
+                "operationId": "5d84f2c19c2cad1a70554da39bb69f49",
+                "responses": {
+                    "200": {
+                        "description": "list of patient for assessment"
+                    }
+                }
+            }
+        },
+        "/api/patients/{id}": {
+            "get": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Get a patient with transactions",
+                "operationId": "2d963a3cf0517745371533d7e968e640",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Patient ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Patient details with transactions"
+                    }
+                }
+            }
+        },
+        "/api/patients/update/{id}": {
+            "put": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Update an existing patient",
+                "operationId": "005212949fa27812f17c319f068b5af9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Patient ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "firstname": {
+                                        "type": "string",
+                                        "example": "Juan"
+                                    },
+                                    "lastname": {
+                                        "type": "string",
+                                        "example": "Dela Cruz"
+                                    },
+                                    "middlename": {
+                                        "type": "string",
+                                        "example": "Santos"
+                                    },
+                                    "ext": {
+                                        "type": "string",
+                                        "example": "Jr."
+                                    },
+                                    "birthdate": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-01"
+                                    },
+                                    "contact_number": {
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    },
+                                    "age": {
+                                        "type": "integer",
+                                        "example": 34
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "example": "Male"
+                                    },
+                                    "is_not_tagum": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "street": {
+                                        "type": "string",
+                                        "example": "Purok 1"
+                                    },
+                                    "purok": {
+                                        "type": "string",
+                                        "example": "2A"
+                                    },
+                                    "barangay": {
+                                        "type": "string",
+                                        "example": "San Roque"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Tagum"
+                                    },
+                                    "province": {
+                                        "type": "string",
+                                        "example": "Davao del Norte"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Child",
+                                            "Adult",
+                                            "Senior"
+                                        ],
+                                        "example": "Adult"
+                                    },
+                                    "is_pwd": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "is_solo": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Patient updated successfully"
+                    }
+                }
+            }
+        },
+        "/api/patients/store": {
+            "post": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Create a patient with representative, transaction, and vitals",
+                "description": "This endpoint creates a new patient record, a representative, a transaction, and the patient's vital signs in one request.",
+                "operationId": "6b91bdb0af39337b74990386ad84964a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "firstname",
+                                    "lastname",
+                                    "birthdate",
+                                    "gender",
+                                    "barangay",
+                                    "category",
+                                    "rep_name",
+                                    "transaction_type",
+                                    "transaction_mode",
+                                    "transaction_date",
+                                    "height",
+                                    "weight"
+                                ],
+                                "properties": {
+                                    "firstname": {
+                                        "type": "string",
+                                        "example": "Juan"
+                                    },
+                                    "lastname": {
+                                        "type": "string",
+                                        "example": "Dela Cruz"
+                                    },
+                                    "middlename": {
+                                        "type": "string",
+                                        "example": "Santos"
+                                    },
+                                    "ext": {
+                                        "type": "string",
+                                        "example": "Jr."
+                                    },
+                                    "birthdate": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-15"
+                                    },
+                                    "contact_number": {
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    },
+                                    "age": {
+                                        "type": "integer",
+                                        "example": 35
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "example": "Male"
+                                    },
+                                    "is_not_tagum": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "street": {
+                                        "type": "string",
+                                        "example": "San Pedro"
+                                    },
+                                    "purok": {
+                                        "type": "string",
+                                        "example": "5"
+                                    },
+                                    "barangay": {
+                                        "type": "string",
+                                        "example": "Poblacion"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Tagum City"
+                                    },
+                                    "province": {
+                                        "type": "string",
+                                        "example": "Davao del Norte"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Child",
+                                            "Adult",
+                                            "Senior"
+                                        ],
+                                        "example": "Adult"
+                                    },
+                                    "is_pwd": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "is_solo": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "rep_name": {
+                                        "type": "string",
+                                        "example": "Maria Dela Cruz"
+                                    },
+                                    "rep_relationship": {
+                                        "type": "string",
+                                        "example": "Mother"
+                                    },
+                                    "rep_contact": {
+                                        "type": "string",
+                                        "example": "09987654321"
+                                    },
+                                    "rep_barangay": {
+                                        "type": "string",
+                                        "example": "Magugpo"
+                                    },
+                                    "rep_address": {
+                                        "type": "string",
+                                        "example": "Blk 5 Lot 10"
+                                    },
+                                    "rep_purok": {
+                                        "type": "string",
+                                        "example": "2"
+                                    },
+                                    "rep_street": {
+                                        "type": "string",
+                                        "example": "Quezon St."
+                                    },
+                                    "rep_city": {
+                                        "type": "string",
+                                        "example": "Tagum City"
+                                    },
+                                    "rep_province": {
+                                        "type": "string",
+                                        "example": "Davao del Norte"
+                                    },
+                                    "transaction_type": {
+                                        "type": "string",
+                                        "example": "Consultation"
+                                    },
+                                    "transaction_mode": {
+                                        "type": "string",
+                                        "example": "Walk-in"
+                                    },
+                                    "transaction_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-29"
+                                    },
+                                    "purpose": {
+                                        "type": "string",
+                                        "example": "Routine checkup"
+                                    },
+                                    "height": {
+                                        "type": "string",
+                                        "example": "170 cm"
+                                    },
+                                    "weight": {
+                                        "type": "string",
+                                        "example": "65 kg"
+                                    },
+                                    "bmi": {
+                                        "type": "string",
+                                        "example": "22.5"
+                                    },
+                                    "temperature": {
+                                        "type": "string",
+                                        "example": "36.8"
+                                    },
+                                    "pulse_rate": {
+                                        "type": "string",
+                                        "example": "72"
+                                    },
+                                    "sp02": {
+                                        "type": "string",
+                                        "example": "98"
+                                    },
+                                    "heart_rate": {
+                                        "type": "string",
+                                        "example": "75"
+                                    },
+                                    "blood_pressure": {
+                                        "type": "string",
+                                        "example": "120/80"
+                                    },
+                                    "respiratory_rate": {
+                                        "type": "string",
+                                        "example": "18"
+                                    },
+                                    "medicine": {
+                                        "type": "string",
+                                        "example": "N/A"
+                                    },
+                                    "LMP": {
+                                        "type": "string",
+                                        "example": "2025-08-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Patient, representative, transaction, and vitals created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Patient, transaction, and vitals created successfully."
+                                        },
+                                        "patient": {
+                                            "type": "object"
+                                        },
+                                        "transaction": {
+                                            "type": "object"
+                                        },
+                                        "vital": {
+                                            "type": "object"
+                                        },
+                                        "representative": {
+                                            "type": "object"
+                                        },
+                                        "transaction_number": {
+                                            "type": "string",
+                                            "example": "2025-08-29-00108"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Duplicate patient record found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Patient already has a record. Please add a new transaction instead."
+                                        },
+                                        "patient": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred"
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": "SQLSTATE[23000]..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/patients/add-transaction": {
+            "post": {
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Add a new transaction and vitals for an existing patient",
+                "operationId": "49a7e8ef902867dde60877df1e2190f4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "patient_id",
+                                    "rep_name",
+                                    "transaction_type",
+                                    "transaction_date",
+                                    "transaction_mode",
+                                    "purpose",
+                                    "height",
+                                    "weight"
+                                ],
+                                "properties": {
+                                    "patient_id": {
+                                        "type": "integer",
+                                        "example": 108
+                                    },
+                                    "rep_name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "rep_relationship": {
+                                        "type": "string",
+                                        "example": "Mother"
+                                    },
+                                    "rep_contact": {
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    },
+                                    "rep_barangay": {
+                                        "type": "string",
+                                        "example": "Central"
+                                    },
+                                    "rep_address": {
+                                        "type": "string",
+                                        "example": "Blk 5 Lot 9"
+                                    },
+                                    "rep_purok": {
+                                        "type": "string",
+                                        "example": "Purok 2"
+                                    },
+                                    "rep_street": {
+                                        "type": "string",
+                                        "example": "Rizal St."
+                                    },
+                                    "rep_province": {
+                                        "type": "string",
+                                        "example": "Davao del Norte"
+                                    },
+                                    "rep_city": {
+                                        "type": "string",
+                                        "example": "Tagum City"
+                                    },
+                                    "transaction_type": {
+                                        "type": "string",
+                                        "example": "Consultation"
+                                    },
+                                    "transaction_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-29"
+                                    },
+                                    "transaction_mode": {
+                                        "type": "string",
+                                        "example": "Walk-in"
+                                    },
+                                    "purpose": {
+                                        "type": "string",
+                                        "example": "General check-up"
+                                    },
+                                    "height": {
+                                        "type": "string",
+                                        "example": "170 cm"
+                                    },
+                                    "weight": {
+                                        "type": "string",
+                                        "example": "65 kg"
+                                    },
+                                    "bmi": {
+                                        "type": "string",
+                                        "example": "22.5"
+                                    },
+                                    "temperature": {
+                                        "type": "string",
+                                        "example": "36.7"
+                                    },
+                                    "waist": {
+                                        "type": "string",
+                                        "example": "32"
+                                    },
+                                    "pulse_rate": {
+                                        "type": "string",
+                                        "example": "80"
+                                    },
+                                    "sp02": {
+                                        "type": "string",
+                                        "example": "98%"
+                                    },
+                                    "heart_rate": {
+                                        "type": "string",
+                                        "example": "75"
+                                    },
+                                    "blood_pressure": {
+                                        "type": "string",
+                                        "example": "120/80"
+                                    },
+                                    "respiratory_rate": {
+                                        "type": "string",
+                                        "example": "18"
+                                    },
+                                    "medicine": {
+                                        "type": "string",
+                                        "example": "Paracetamol"
+                                    },
+                                    "LMP": {
+                                        "type": "string",
+                                        "example": "2025-08-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction and vitals added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction and vitals added successfully for existing patient."
+                                        },
+                                        "transaction_number": {
+                                            "type": "string",
+                                            "example": "2025-08-29-00108"
+                                        },
+                                        "patient": {
+                                            "type": "object"
+                                        },
+                                        "transaction": {
+                                            "type": "object"
+                                        },
+                                        "vital": {
+                                            "type": "object"
+                                        },
+                                        "representative": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Patient not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/api/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get all transaction",
+                "operationId": "36c4f10f058f896d56d380eaeca4bfa5",
+                "responses": {
+                    "200": {
+                        "description": "List of transaction"
+                    }
+                }
+            }
+        },
+        "/api/transactions/qualified": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Fetch all the patients are qualified for consultation",
+                "operationId": "c54372d1edf59a729585090e1d89d0f5",
+                "responses": {
+                    "200": {
+                        "description": "List of patients qualified"
+                    }
+                }
+            }
+        },
+        "/api/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get a transaction by ID",
+                "operationId": "85cb0290106400e2cc902601c790d150",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction details fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Qualified"
+                                        },
+                                        "transaction_type": {
+                                            "type": "string",
+                                            "example": "Consultation"
+                                        },
+                                        "transaction_date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "example": "2025-08-29"
+                                        },
+                                        "vital": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 22
+                                                },
+                                                "blood_pressure": {
+                                                    "type": "string",
+                                                    "example": "120/80"
+                                                },
+                                                "pulse_rate": {
+                                                    "type": "string",
+                                                    "example": "75 bpm"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "laboratories": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 33
+                                                    },
+                                                    "laboratory_type": {
+                                                        "type": "string",
+                                                        "example": "Blood Test"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "Pending"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "representative": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "relation": {
+                                                    "type": "string",
+                                                    "example": "Father"
+                                                },
+                                                "contact_number": {
+                                                    "type": "string",
+                                                    "example": "+639123456789"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    }
+                }
+            }
+        },
+        "/api/transactions/add": {
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Add a new transaction and vitals for an existing patient",
+                "operationId": "dc2da74dd509e70f8d889ed10edcd4af",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "patient_id",
+                                    "rep_name",
+                                    "transaction_type",
+                                    "transaction_date",
+                                    "transaction_mode",
+                                    "purpose",
+                                    "height",
+                                    "weight"
+                                ],
+                                "properties": {
+                                    "patient_id": {
+                                        "type": "integer",
+                                        "example": 108
+                                    },
+                                    "rep_name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "rep_relationship": {
+                                        "type": "string",
+                                        "example": "Mother"
+                                    },
+                                    "rep_contact": {
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    },
+                                    "rep_barangay": {
+                                        "type": "string",
+                                        "example": "Central"
+                                    },
+                                    "rep_address": {
+                                        "type": "string",
+                                        "example": "Blk 5 Lot 9"
+                                    },
+                                    "rep_purok": {
+                                        "type": "string",
+                                        "example": "Purok 2"
+                                    },
+                                    "rep_street": {
+                                        "type": "string",
+                                        "example": "Rizal St."
+                                    },
+                                    "rep_province": {
+                                        "type": "string",
+                                        "example": "Davao del Norte"
+                                    },
+                                    "rep_city": {
+                                        "type": "string",
+                                        "example": "Tagum City"
+                                    },
+                                    "transaction_type": {
+                                        "type": "string",
+                                        "example": "Consultation"
+                                    },
+                                    "transaction_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-29"
+                                    },
+                                    "transaction_mode": {
+                                        "type": "string",
+                                        "example": "Walk-in"
+                                    },
+                                    "purpose": {
+                                        "type": "string",
+                                        "example": "General check-up"
+                                    },
+                                    "height": {
+                                        "type": "string",
+                                        "example": "170 cm"
+                                    },
+                                    "weight": {
+                                        "type": "string",
+                                        "example": "65 kg"
+                                    },
+                                    "bmi": {
+                                        "type": "string",
+                                        "example": "22.5"
+                                    },
+                                    "temperature": {
+                                        "type": "string",
+                                        "example": "36.7"
+                                    },
+                                    "waist": {
+                                        "type": "string",
+                                        "example": "32"
+                                    },
+                                    "pulse_rate": {
+                                        "type": "string",
+                                        "example": "80"
+                                    },
+                                    "sp02": {
+                                        "type": "string",
+                                        "example": "98%"
+                                    },
+                                    "heart_rate": {
+                                        "type": "string",
+                                        "example": "75"
+                                    },
+                                    "blood_pressure": {
+                                        "type": "string",
+                                        "example": "120/80"
+                                    },
+                                    "respiratory_rate": {
+                                        "type": "string",
+                                        "example": "18"
+                                    },
+                                    "medicine": {
+                                        "type": "string",
+                                        "example": "Paracetamol"
+                                    },
+                                    "LMP": {
+                                        "type": "string",
+                                        "example": "2025-08-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction and vitals added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction and vitals added successfully for existing patient."
+                                        },
+                                        "transaction_number": {
+                                            "type": "string",
+                                            "example": "2025-08-29-00108"
+                                        },
+                                        "patient": {
+                                            "type": "object"
+                                        },
+                                        "transaction": {
+                                            "type": "object"
+                                        },
+                                        "vital": {
+                                            "type": "object"
+                                        },
+                                        "representative": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Patient not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/api/transactions/update/{id}": {
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update a transaction",
+                "description": "Updates the details of a transaction by its ID.",
+                "operationId": "d7f72f8d703c01e7249818beb59bf82e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transaction to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "transaction_type": {
+                                        "type": "string",
+                                        "example": "Consultation"
+                                    },
+                                    "transaction_mode": {
+                                        "type": "string",
+                                        "example": "Walk-in"
+                                    },
+                                    "transaction_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-29"
+                                    },
+                                    "purpose": {
+                                        "type": "string",
+                                        "example": "Follow-up check-up"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction updated successfully."
+                                        },
+                                        "transaction": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "transaction_type": {
+                                                    "type": "string",
+                                                    "example": "Consultation"
+                                                },
+                                                "transaction_mode": {
+                                                    "type": "string",
+                                                    "example": "Walk-in"
+                                                },
+                                                "transaction_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2025-08-29"
+                                                },
+                                                "purpose": {
+                                                    "type": "string",
+                                                    "example": "Follow-up check-up"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-08-29T07:15:32Z"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-08-29T06:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/transactions/vital/{id}": {
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update an existing vital record",
+                "description": "Update a patient's vital signs by ID",
+                "operationId": "45be56c5a5a0c068ee33b7199fd28a50",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the vital record",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "height": {
+                                        "type": "string",
+                                        "example": "170cm"
+                                    },
+                                    "weight": {
+                                        "type": "string",
+                                        "example": "65kg"
+                                    },
+                                    "bmi": {
+                                        "type": "string",
+                                        "example": "22.5"
+                                    },
+                                    "temperature": {
+                                        "type": "string",
+                                        "example": "36.8"
+                                    },
+                                    "waist": {
+                                        "type": "string",
+                                        "example": "32in"
+                                    },
+                                    "pulse_rate": {
+                                        "type": "string",
+                                        "example": "75"
+                                    },
+                                    "sp02": {
+                                        "type": "string",
+                                        "example": "98%"
+                                    },
+                                    "heart_rate": {
+                                        "type": "string",
+                                        "example": "72"
+                                    },
+                                    "blood_pressure": {
+                                        "type": "string",
+                                        "example": "120/80"
+                                    },
+                                    "respiratory_rate": {
+                                        "type": "string",
+                                        "example": "16"
+                                    },
+                                    "medicine": {
+                                        "type": "string",
+                                        "example": "Paracetamol"
+                                    },
+                                    "LMP": {
+                                        "type": "string",
+                                        "example": "2025-08-20"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Vital updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "vital updated successfully."
+                                        },
+                                        "vital": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "height": {
+                                                    "type": "string",
+                                                    "example": "170cm"
+                                                },
+                                                "weight": {
+                                                    "type": "string",
+                                                    "example": "65kg"
+                                                },
+                                                "bmi": {
+                                                    "type": "string",
+                                                    "example": "22.5"
+                                                },
+                                                "temperature": {
+                                                    "type": "string",
+                                                    "example": "36.8"
+                                                },
+                                                "pulse_rate": {
+                                                    "type": "string",
+                                                    "example": "75"
+                                                },
+                                                "blood_pressure": {
+                                                    "type": "string",
+                                                    "example": "120/80"
+                                                },
+                                                "respiratory_rate": {
+                                                    "type": "string",
+                                                    "example": "16"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vital record not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/transactions/{id}/update/status": {
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update transaction status (Qualified or Unqualified)",
+                "operationId": "a87a22e00d3b6e8e71fd5fb1bc4c0476",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "Qualified"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction updated status successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction updated status successfully."
+                                        },
+                                        "transaction": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Qualified"
+                                                },
+                                                "transaction_type": {
+                                                    "type": "string",
+                                                    "example": "Consultation"
+                                                },
+                                                "transaction_date": {
+                                                    "type": "string",
+                                                    "example": "2025-08-29"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/transactions/representative/{id}": {
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update a representative record",
+                "operationId": "4ca83b8577ac461041f6cab8ef65ea7a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Representative ID",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "rep_name": {
+                                        "type": "string",
+                                        "example": "Juan Dela Cruz"
+                                    },
+                                    "rep_relationship": {
+                                        "type": "string",
+                                        "example": "Brother"
+                                    },
+                                    "rep_contact": {
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    },
+                                    "rep_barangay": {
+                                        "type": "string",
+                                        "example": "San Isidro"
+                                    },
+                                    "rep_address": {
+                                        "type": "string",
+                                        "example": "Purok 2, San Isidro"
+                                    },
+                                    "rep_purok": {
+                                        "type": "string",
+                                        "example": "2"
+                                    },
+                                    "rep_street": {
+                                        "type": "string",
+                                        "example": "Mabini St."
+                                    },
+                                    "rep_province": {
+                                        "type": "string",
+                                        "example": "Davao del Sur"
+                                    },
+                                    "rep_city": {
+                                        "type": "string",
+                                        "example": "Digos City"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Representative updated successfully"
+                    },
+                    "404": {
+                        "description": "Representative not found"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Billing",
+            "description": "Billing"
+        },
+        {
+            "name": "Consultations",
+            "description": "Consultations"
+        },
+        {
+            "name": "Guarantee Letters",
+            "description": "Guarantee Letters"
+        },
+        {
+            "name": "Laboratory",
+            "description": "Laboratory"
+        },
+        {
+            "name": "Medications",
+            "description": "Medications"
+        },
+        {
+            "name": "Patients",
+            "description": "Patients"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transactions"
+        }
+    ]
+}

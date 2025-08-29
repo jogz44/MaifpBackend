@@ -79,4 +79,6 @@ class Transaction extends Model
     {
         return $this->hasMany(Medication_details::class, 'transaction_id');
     }
+
+
 }
