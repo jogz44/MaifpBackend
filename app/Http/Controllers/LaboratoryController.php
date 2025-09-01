@@ -7,6 +7,9 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\New_Consultation;
 use App\Http\Requests\LaboratoryRequest;
+use App\Http\Requests\lib_laboratoryRequest;
+use App\Models\lib_laboratory;
+use Illuminate\Auth\Events\Validated;
 
 class LaboratoryController extends Controller
 {
@@ -25,7 +28,7 @@ class LaboratoryController extends Controller
                 ->whereDoesntHave('laboratories', function ($lab) {
                     $lab->where('status', 'Done');
                 })
-                ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
+                // ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
                 ->with([
                     'patient',
                     'vital',       // fetch vitals of the transaction
@@ -125,4 +128,72 @@ class LaboratoryController extends Controller
             'laboratories' => $labs
         ]);
     }
+
+
+
+    //for library laboratory store
+
+    public function lib_laboratory_store(lib_laboratoryRequest $request)
+    {
+        $validated = $request->validated();
+
+        // Check if laboratory already exists
+        $existing = lib_laboratory::where('lab_name', $validated['lab_name'])->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'already exists',
+                'laboratory' => $existing,
+            ], 200);
+        }
+
+        // Create new if not exists
+        $laboratory = lib_laboratory::create($validated);
+
+        return response()->json([
+            'message' => 'success',
+            'laboratory' => $laboratory,
+        ]);
+    }
+
+
+    public function lib_laboratory_update(lib_laboratoryRequest $request, $lib_laboratory)
+    {
+        $validated = $request->validated();
+
+        $laboratory = lib_laboratory::findOrFail($lib_laboratory);
+
+        $laboratory->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully updated',
+            'data' => $laboratory,
+        ]);
+    }
+
+
+
+
+    public function lib_laboratory_delete($lib_laboratory)
+    {
+
+
+        $laboratory = lib_laboratory::findOrFail($lib_laboratory);
+
+        $laboratory->delete($laboratory);
+
+        return response()->json([
+            'message' => 'successfully delete',
+            'laboratory' => $laboratory,
+        ]);
+    }
+
+    public function lib_laboratory_index(){
+
+        $laboratory = lib_laboratory::all();
+
+        return response()->json($laboratory);
+    }
+
 }

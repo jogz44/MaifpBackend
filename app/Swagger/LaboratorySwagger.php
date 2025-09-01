@@ -94,6 +94,115 @@ namespace App\Swagger;
  *         description="Validation error"
  *     )
  * )
+ *
+ *
+ *
+ *
+ *
+ *
+ * @OA\Get(
+ *     path="/api/laboratory/index/lab_services",
+ *     tags={"Library Laboratory"},
+ *     summary="Fetch all laboratory services",
+ *     description="Retrieves the list of all available laboratory services stored in the library.",
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of laboratory services",
+ *         @OA\JsonContent(type="array", @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="laboratory_name", type="string", example="X-Ray"),
+ *             @OA\Property(property="fee", type="number", format="float", example=500.00)
+ *         ))
+ *     )
+ * )
+ *
+ *
+ * @OA\Post(
+ *     path="/api/laboratory/store/lab_services",
+ *     tags={"Library Laboratory"},
+ *     summary="Store new laboratory service",
+ *     description="Stores a new laboratory service in the library, including name and amount.",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"lab_name","lab_amount"},
+ *             @OA\Property(property="lab_name", type="string", example="MRI Scan"),
+ *             @OA\Property(property="lab_amount", type="number", format="float", example=2500.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Laboratory service stored successfully",
+ *         @OA\JsonContent(type="object",
+ *             @OA\Property(property="message", type="string", example="success"),
+ *             @OA\Property(property="laboratory", type="object",
+ *                 @OA\Property(property="id", type="integer", example=10),
+ *                 @OA\Property(property="lab_name", type="string", example="MRI Scan"),
+ *                 @OA\Property(property="lab_amount", type="number", format="float", example=2500.00)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation error"
+ *     )
+ * )
+ *
+ ** @OA\Post(
+ *     path="/api/laboratory/update/lab_services/{lib_laboratory}",
+ *     tags={"Library Laboratory"},
+ *     summary="Update a laboratory service",
+ *     description="Updates an existing laboratory service in the library.",
+ *     @OA\Parameter(
+ *         name="lib_laboratory",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the laboratory service",
+ *         @OA\Schema(type="integer", example=5)
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="lab_name", type="string", example="Updated X-Ray"),
+ *             @OA\Property(property="lab_amount", type="number", format="float", example=600.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Laboratory service updated successfully"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Laboratory service not found"
+ *     )
+ * )
+ *
+ * @OA\Delete(
+ *   path="/api/laboratory/delete/lab_services/{lib_laboratory}",
+ *     tags={"Library Laboratory"},
+ *     summary="Delete a laboratory service",
+ *     description="Deletes an existing laboratory service from the library.",
+ *     @OA\Parameter(
+ *         name="lib_laboratory",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the laboratory service",
+ *         @OA\Schema(type="integer", example=7)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Laboratory service deleted successfully",
+ *         @OA\JsonContent(type="object",
+ *             @OA\Property(property="message", type="string", example="successfully delete"),
+ *             @OA\Property(property="laboratory", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Laboratory service not found"
+ *     )
+ * )
  */
 
 

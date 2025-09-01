@@ -94,6 +94,102 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ *
+ *
+ * * @OA\Post(
+ *     path="/api/doctor/store",
+ *     tags={"Library Doctor"},
+ *     summary="Create a doctor fee",
+ *     description="Creates a new doctor fee entry in the library.",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="doctor_amount", type="number", format="float", example=500.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Doctor fee created successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="successfully create"),
+ *             @OA\Property(property="doctor_fee", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation error"
+ *     )
+ * )
+ *
+ * @OA\Post(
+ *     path="/api/doctor/update/{id}",
+ *     tags={"Library Doctor"},
+ *     summary="Update a doctor fee",
+ *     description="Updates an existing doctor fee entry.",
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the doctor fee",
+ *         @OA\Schema(type="integer", example=3)
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="doctor_amount", type="number", format="float", example=750.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Doctor fee updated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="successfully update"),
+ *             @OA\Property(property="doctor_fee", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Doctor fee not found"
+ *     )
+ * )
+ *
+ * @OA\Delete(
+ *     path="/api/doctor/delete/{id}",
+ *     tags={"Library Doctor"},
+ *     summary="Delete a doctor fee",
+ *     description="Deletes a doctor fee entry from the library.",
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the doctor fee",
+ *         @OA\Schema(type="integer", example=3)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Doctor fee deleted successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="successfully delete"),
+ *             @OA\Property(property="doctor_fee", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Doctor fee not found"
+ *     )
+ * )
+ *
+ * @OA\Get(
+ *     path="/api/doctor",
+ *     tags={"Library Doctor"},
+ *     summary="Get all doctor fees",
+ *     description="Fetches a list of all doctor fees from the library.",
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of doctor fees",
+ *         @OA\JsonContent(type="array", @OA\Items(type="object"))
+ *     )
+ * )
  */
 
 class ConsultationSwagger {}

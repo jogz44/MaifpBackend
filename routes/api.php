@@ -79,10 +79,24 @@ Route::prefix('medications')->group(function () {
 
 });
 
+
+Route::prefix('doctor')->group(function () {
+    Route::get('/', [NewConsultationController::class, 'lib_doctor_index']);
+
+    Route::post('/store', [NewConsultationController::class, 'lib_doctor_store']);
+    Route::post('/update/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_update']);
+    Route::delete('/delete/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_delete']);
+});
+
 Route::prefix('laboratory')->group(function () {
     Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
     Route::post('/update/{id}', [LaboratoryController::class, 'status']); // store the patient laboratory and amount
     Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
+
+    Route::get('/index/lab_services', [LaboratoryController::class, 'lib_laboratory_index']);
+    Route::post('/store/lab_services',[LaboratoryController::class, 'lib_laboratory_store']);
+    Route::post('/update/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_update']);
+    Route::delete('/delete/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_delete']);
 
 });
 

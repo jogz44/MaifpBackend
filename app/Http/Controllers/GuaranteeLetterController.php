@@ -13,11 +13,12 @@ use App\Http\Requests\GuaranteeLetterRequest;
 
 class GuaranteeLetterController extends Controller
 {
-    
+
     public function index() // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
     {
         $patients = Patient::whereHas('transaction', function ($query) {
-            $query->whereDate('transaction_date', Carbon::today())
+            $query
+            // ->whereDate('transaction_date', Carbon::today())
                 ->where('status', 'Complete');
         })
             ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
@@ -25,7 +26,8 @@ class GuaranteeLetterController extends Controller
             })
             ->with([
                 'transaction' => function ($q) {
-                    $q->whereDate('transaction_date', Carbon::today())
+                    $q
+                    // ->whereDate('transaction_date', Carbon::today())
                         ->where('status', 'Complete');
                 }
             ])
@@ -43,6 +45,36 @@ class GuaranteeLetterController extends Controller
 
         return response()->json($patients);
     }
+
+    // public function index() // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->whereDate('transaction_date', Carbon::today())
+    //             ->where('status', 'Complete');
+    //     })
+    //         ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
+    //             $query->where('status', 'Funded');
+    //         })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->whereDate('transaction_date', Carbon::today())
+    //                     ->where('status', 'Complete');
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+    // }
 
     public function store(GuaranteeLetterRequest $request) // store the guarantee letter then deduc the total_billing of patient on the remainings funds
     {

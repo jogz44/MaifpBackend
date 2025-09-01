@@ -400,6 +400,191 @@
                 }
             }
         },
+        "/api/doctor/store": {
+            "post": {
+                "tags": [
+                    "Library Doctor"
+                ],
+                "summary": "Create a doctor fee",
+                "description": "Creates a new doctor fee entry in the library.",
+                "operationId": "a574f9ea7b168bb92b56734a566847dc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "doctor_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Doctor fee created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully create"
+                                        },
+                                        "doctor_fee": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/doctor/update/{id}": {
+            "post": {
+                "tags": [
+                    "Library Doctor"
+                ],
+                "summary": "Update a doctor fee",
+                "description": "Updates an existing doctor fee entry.",
+                "operationId": "c22dc3faa196c8ee7c1b2647cb4bdedb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the doctor fee",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "doctor_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 750
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Doctor fee updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully update"
+                                        },
+                                        "doctor_fee": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Doctor fee not found"
+                    }
+                }
+            }
+        },
+        "/api/doctor/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Library Doctor"
+                ],
+                "summary": "Delete a doctor fee",
+                "description": "Deletes a doctor fee entry from the library.",
+                "operationId": "94816e8f39deda2404a3da311497ee1d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the doctor fee",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Doctor fee deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully delete"
+                                        },
+                                        "doctor_fee": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Doctor fee not found"
+                    }
+                }
+            }
+        },
+        "/api/doctor": {
+            "get": {
+                "tags": [
+                    "Library Doctor"
+                ],
+                "summary": "Get all doctor fees",
+                "description": "Fetches a list of all doctor fees from the library.",
+                "operationId": "660f0d699a97dbc6181a8212b1acf9fe",
+                "responses": {
+                    "200": {
+                        "description": "List of doctor fees",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/guarantee": {
             "get": {
                 "tags": [
@@ -738,6 +923,217 @@
                     },
                     "422": {
                         "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/index/lab_services": {
+            "get": {
+                "tags": [
+                    "Library Laboratory"
+                ],
+                "summary": "Fetch all laboratory services",
+                "description": "Retrieves the list of all available laboratory services stored in the library.",
+                "operationId": "a5a0f2c711ec5252929393cd2119ad43",
+                "responses": {
+                    "200": {
+                        "description": "List of laboratory services",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "laboratory_name": {
+                                                "type": "string",
+                                                "example": "X-Ray"
+                                            },
+                                            "fee": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 500
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/laboratory/store/lab_services": {
+            "post": {
+                "tags": [
+                    "Library Laboratory"
+                ],
+                "summary": "Store new laboratory service",
+                "description": "Stores a new laboratory service in the library, including name and amount.",
+                "operationId": "1545a2f69ad7db269c5f7ff67024f05e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lab_name",
+                                    "lab_amount"
+                                ],
+                                "properties": {
+                                    "lab_name": {
+                                        "type": "string",
+                                        "example": "MRI Scan"
+                                    },
+                                    "lab_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Laboratory service stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "laboratory": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "lab_name": {
+                                                    "type": "string",
+                                                    "example": "MRI Scan"
+                                                },
+                                                "lab_amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 2500
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/update/lab_services/{lib_laboratory}": {
+            "post": {
+                "tags": [
+                    "Library Laboratory"
+                ],
+                "summary": "Update a laboratory service",
+                "description": "Updates an existing laboratory service in the library.",
+                "operationId": "96cd8cdff8d0b13d073d9c59d20b6964",
+                "parameters": [
+                    {
+                        "name": "lib_laboratory",
+                        "in": "path",
+                        "description": "ID of the laboratory service",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "lab_name": {
+                                        "type": "string",
+                                        "example": "Updated X-Ray"
+                                    },
+                                    "lab_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 600
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Laboratory service updated successfully"
+                    },
+                    "404": {
+                        "description": "Laboratory service not found"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/delete/lab_services/{lib_laboratory}": {
+            "delete": {
+                "tags": [
+                    "Library Laboratory"
+                ],
+                "summary": "Delete a laboratory service",
+                "description": "Deletes an existing laboratory service from the library.",
+                "operationId": "58bdf16b50523514884b5b24844e2c6e",
+                "parameters": [
+                    {
+                        "name": "lib_laboratory",
+                        "in": "path",
+                        "description": "ID of the laboratory service",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 7
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Laboratory service deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully delete"
+                                        },
+                                        "laboratory": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Laboratory service not found"
                     }
                 }
             }
@@ -2127,12 +2523,20 @@
             "description": "Consultations"
         },
         {
+            "name": "Library Doctor",
+            "description": "Library Doctor"
+        },
+        {
             "name": "Guarantee Letters",
             "description": "Guarantee Letters"
         },
         {
             "name": "Laboratory",
             "description": "Laboratory"
+        },
+        {
+            "name": "Library Laboratory",
+            "description": "Library Laboratory"
         },
         {
             "name": "Medications",

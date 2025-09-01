@@ -78,11 +78,53 @@ class BillingController extends Controller
         ]);
     }
 
-    public function index() //fetching the patient have billing
+    // public function index() //fetching the patient have billing
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
+    //             ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+    //             ->where(function ($q) {
+    //                 // Case 1: Transaction with consultation Done
+    //                 $q->whereHas('consultation', function ($con) {
+    //                     $con->where('status', 'Done');
+    //                 })
+    //                     // Case 2: Transaction without consultation but with lab Done
+    //                     ->orWhere(function ($q2) {
+    //                         $q2->whereDoesntHave('consultation')
+    //                             ->whereHas('laboratories', function ($lab) {
+    //                                 $lab->where('status', 'Done');
+    //                             });
+    //                     })
+    //                     // ✅ Case 3: Transaction with medication Done
+    //                     ->orWhereHas('medication', function ($med) {
+    //                         $med->where('status', 'Done');
+    //                     });
+    //             });
+    //     })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
+    //                     ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+    // }
+    public function index() // fetching the patient have billing
     {
         $patients = Patient::whereHas('transaction', function ($query) {
-            $query->whereDate('transaction_date', Carbon::today()) // ✅ only today's transactions
-                ->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+            $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
                 ->where(function ($q) {
                     // Case 1: Transaction with consultation Done
                     $q->whereHas('consultation', function ($con) {
@@ -103,8 +145,7 @@ class BillingController extends Controller
         })
             ->with([
                 'transaction' => function ($q) {
-                    $q->whereDate('transaction_date', Carbon::today()) // ✅ eager load only today's transaction
-                        ->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+                    $q->where('status', '!=', 'Complete'); // ✅ exclude completed here too
                 }
             ])
             ->get([

@@ -3,16 +3,12 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\Laboratory;
 use App\Models\Medication;
-use App\Models\medoratory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Models\New_Consultation;
 use App\Http\Requests\MedicationRequest;
-use App\Http\Requests\medoratoryRequest;
 use App\Models\Medication_details;
-use App\Models\TransactionStatus;
+
 
 class MedicationController extends Controller
 {
@@ -27,7 +23,7 @@ class MedicationController extends Controller
                             $q->where('status', 'Medication');
                         });
                 })
-                ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions
+                // ->whereDate('transaction_date', now()->toDateString()) // ✅ today's transactions
                 ->whereDoesntHave('medication', function ($q) {
                     $q->where('status', 'Done'); // ❌ exclude if medication is Done
                 })
@@ -59,7 +55,7 @@ class MedicationController extends Controller
         }
     }
 
-    public function store(MedicationRequest $request) // 
+    public function store(MedicationRequest $request) //
     {
         $validated = $request->validated();
 

@@ -95,15 +95,30 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
+    // public function assessment()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status','assessment')
+    //             ->whereDate('transaction_date', now()->toDateString());
+    //     })
+    //         ->with(['transaction' => function ($query) {
+    //             $query->where('status','assessment')
+    //                 ->whereDate('transaction_date', now()->toDateString());
+    //         }])
+    //         ->get();
+
+    //     return response()->json($patients);
+    // }
+
     public function assessment()
     {
         $patients = Patient::whereHas('transaction', function ($query) {
-            $query->where('status','assessment')
-                ->whereDate('transaction_date', now()->toDateString());
+            $query->where('status', 'assessment');
+
         })
             ->with(['transaction' => function ($query) {
-                $query->where('status','assessment')
-                    ->whereDate('transaction_date', now()->toDateString());
+                $query->where('status', 'assessment');
+
             }])
             ->get();
 
