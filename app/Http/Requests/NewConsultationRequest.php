@@ -29,7 +29,8 @@ class NewConsultationRequest extends FormRequest
         'consultation_time'=>'nullable',
         'consultation_date' => 'required|date',
         'status' => 'required|in:Done,Processing,Pending,Returned,Medication',
-        
+        // 'amount'=> 'required'
+
         ];
     }
     public function messages(): array

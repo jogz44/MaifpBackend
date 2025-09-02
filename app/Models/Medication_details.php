@@ -14,6 +14,7 @@ class Medication_details extends Model
 
         'transaction_id',
         'item_description',
+        'item_id',
         'patient_id', // the costumeer is the patient_id
         'quantity',
         'unit',

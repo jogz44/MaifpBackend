@@ -10,7 +10,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-use function PHPUnit\Framework\isEmpty;
 
 class ConfigurationsController extends Controller
 {

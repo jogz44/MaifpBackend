@@ -49,13 +49,7 @@ class Transaction extends Model
         return $this->hasOne(New_Consultation::class);
     }
 
-    // public function getTotalBillingAttribute()
-    // {
-    //     $consultationAmount = $this->consultation ? $this->consultation->amount : 0;
-    //     $laboratoryTotal = $this->laboratories()->sum('amount');
 
-    //     return $consultationAmount + $laboratoryTotal;
-    // }
     public function laboratories()
     {
         return $this->hasMany(Laboratory::class, 'transaction_id');
@@ -64,11 +58,6 @@ class Transaction extends Model
     {
         return $this->hasOne(GuaranteeLetter::class, 'transaction_id');
     }
-
-    //     public function medication()
-    //     {
-    //         return $this->hasMany(Medication::class, 'transaction_id');
-    //     }
 
     public function medication()
     {

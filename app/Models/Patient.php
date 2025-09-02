@@ -51,10 +51,10 @@ class Patient extends Model
         return $this->hasOne(Transaction::class)
             ->latestOfMany()
             ->select([
-                'transaction.id',          // fully qualify table
-                'transaction.patient_id',  // avoid ambiguity
-                'transaction.status',
-                'transaction.transaction_date',
+            'transaction.id',          // fully qualify table
+            'transaction.patient_id',  // avoid ambiguity
+            'transaction.status',
+            'transaction.transaction_date',
             'transaction.transaction_type',
             ]);
     }
