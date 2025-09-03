@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Patient;
 use Illuminate\Database\Eloquent\Model;
 
 class New_Consultation extends Model
@@ -23,5 +24,9 @@ class New_Consultation extends Model
     public function laboratories()
     {
         return $this->hasMany(Laboratory::class, 'new_consultation_id');
+    }
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
     }
 }

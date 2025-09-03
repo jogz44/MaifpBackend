@@ -31,20 +31,8 @@ Route::put('transactions/{id}/update/status/', [TransactionController::class, 's
 // Route::get('patients/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
 // Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
+Route::get('activity',[SystemUserController::class,'activity_log']);
 
-Route::prefix('patients')->group(function () {
-    Route::get('/', [PatientController::class, 'index']); // list of patient
-    Route::get('/master_list', [PatientController::class, 'getAllPatientsWithLatestTransaction']); // list of patient
-    Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
-    // Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
-    Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
-    Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
-    Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
-    Route::get('/count/badge', [PatientController::class, 'total_count_badge']); // fetch patient for assessment on the social if this qualified or unqualified
-
-    Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
-
-});
 
 Route::prefix('transactions')->group(function () {
     Route::get('/', [TransactionController::class, 'index']);
@@ -63,12 +51,7 @@ Route::prefix('transactions')->group(function () {
 
 });
 
-Route::prefix('new_consultations')->group(function () {
-    Route::post('/store', [NewConsultationController::class, 'store']); // this route is for the consultation of patient update if the transaction was exist if didnt exist create
-    // Route::get('/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
 
-
-});
 
 Route::prefix('medications')->group(function () {
     Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']);// fetching the patient need to go on the medication  base on the transaction_type and consultation
@@ -79,14 +62,6 @@ Route::prefix('medications')->group(function () {
 
 });
 
-
-Route::prefix('doctor')->group(function () {
-    Route::get('/', [NewConsultationController::class, 'lib_doctor_index']);
-
-    Route::post('/store', [NewConsultationController::class, 'lib_doctor_store']);
-    Route::post('/update/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_update']);
-    Route::delete('/delete/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_delete']);
-});
 
 Route::prefix('laboratory')->group(function () {
     Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
@@ -99,7 +74,6 @@ Route::prefix('laboratory')->group(function () {
     Route::delete('/delete/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_delete']);
 
 });
-
 
 Route::prefix('billing')->group(function () {
     // Route::post('/update/status/{transactionId}', [BillingController::class]);
@@ -129,6 +103,33 @@ Route::get('/role', [SystemUserController::class, 'role']); // Get all roles
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('doctor')->group(function () {
+        Route::get('/', [NewConsultationController::class, 'lib_doctor_index']);
+        Route::post('/store', [NewConsultationController::class, 'lib_doctor_store']);
+        Route::post('/update/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_update']);
+        Route::delete('/delete/{lib_doctor}', [NewConsultationController::class, 'lib_doctor_delete']);
+    });
+    
+    Route::prefix('new_consultations')->group(function () {
+        Route::post('/store', [NewConsultationController::class, 'store']); // this route is for the consultation of patient update if the transaction was exist if didnt exist create
+        // Route::get('/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
+
+
+    });
+    Route::prefix('patients')->group(function () {
+        Route::get('/', [PatientController::class, 'index']); // list of patient
+        Route::get('/master_list', [PatientController::class, 'getAllPatientsWithLatestTransaction']); // list of patient
+        Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
+        // Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
+        Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
+        Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
+        Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+        Route::get('/count/badge', [PatientController::class, 'total_count_badge']); // fetch patient for assessment on the social if this qualified or unqualified
+
+        Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
+
+    });
     Route::post('/user/logout', [SystemUserController::class, 'logoutUser']);
 
 

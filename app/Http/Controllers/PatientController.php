@@ -127,7 +127,8 @@ class PatientController extends Controller
 
     public function storeAll(PatientRequestAll $request)
     {
-        $userId = Auth::id();
+        // $userId = Auth::id();
+        $user = Auth::user();
 
         try {
             // ✅ Patient data
@@ -166,7 +167,7 @@ class PatientController extends Controller
             }
 
             // ✅ Add logged-in user ID
-            $patientData['user_id'] = $userId;
+            // $patientData['user_id'] = $userId;
 
             // ✅ Create new patient
             $patient = Patient::create($patientData);
@@ -223,6 +224,22 @@ class PatientController extends Controller
             $vitalData['transaction_id'] = $transaction->id;
             $vital = Vital::create($vitalData);
 
+            // 📝 Activity Log
+            activity($user->first_name . ' ' . $user->last_name)
+                ->causedBy($user)
+                ->performedOn($patient)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'patient' => $patient->toArray(),
+                    'representative' => $representative->toArray(),
+                    'transaction' => $transaction->toArray(),
+                    'vital' => $vital->toArray(),
+                ])
+                ->log(
+                    "Patient record [{$patient->firstname} {$patient->lastname}] was created "
+
+                );
             return response()->json([
                 'success' => true,
                 'message' => 'Patient, transaction, and vitals created successfully.',
@@ -242,19 +259,42 @@ class PatientController extends Controller
         }
     }
 
-    public function update(PatientRequest $request, $id) // this method is for updating patient
+
+    public function update(PatientRequest $request, $id)
     {
-            $validated = $request->validated();
+        $validated = $request->validated();
 
-           $patient = Patient::findOrFail($id);
-            // Update patient with validated data
-            $patient->update($validated);
-            return response()->json([
-                'success' => true,
-                'message' => 'Patient updated successfully',
-                'patient' => $patient
-            ]);
+        $patient = Patient::findOrFail($id);
 
+        // Save old values before update
+        $oldValues = $patient->getOriginal();
+
+        // Perform update
+        $patient->update($validated);
+
+        $user = Auth::user();
+
+        // 📝 Add activity log
+        activity($user->username)
+            ->causedBy($user) // who updated
+            ->performedOn($patient)  // which patient
+            ->withProperties([
+                'ip' => $request->ip(),
+            'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            'edited_by' => $user
+                ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
+                : ($user->username ?? 'N/A'),
+
+            'old' => $oldValues,
+                'new' => $patient->getChanges(),
+            ])
+            ->log("Patient record [{$patient->firstname} {$patient->lastname}] was updated");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient updated successfully',
+            'patient' => $patient
+        ]);
     }
 
 
@@ -264,14 +304,14 @@ class PatientController extends Controller
 
         // ✅ Count of assessed patients
         $count_assessment = Patient::whereHas('transaction', function ($query) use ($today) {
-            $query->where('status', 'assessment')
-                ->whereDate('transaction_date', $today);
+            $query->where('status', 'assessment');
+                // ->whereDate('transaction_date', $today);
         })->count();
 
         // ✅ Count of qualified consultations (unique patients)
         $count_consultation = Transaction::where('status', 'qualified')
             ->where('transaction_type', 'Consultation')
-            ->whereDate('transaction_date', $today)
+            // ->whereDate('transaction_date', $today)
             ->whereDoesntHave('consultation', function ($query) {
                 $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
             })
@@ -289,7 +329,7 @@ class PatientController extends Controller
             ->whereDoesntHave('laboratories', function ($lab) {
                 $lab->where('status', 'Done');
             })
-            ->whereDate('transaction_date', $today)
+            // ->whereDate('transaction_date', $today)
             ->distinct('patient_id')
             ->count('patient_id');
 
@@ -301,7 +341,7 @@ class PatientController extends Controller
                         $q->where('status', 'Medication');
                     });
             })
-            ->whereDate('transaction_date', $today)
+            // ->whereDate('transaction_date', $today)
             ->whereDoesntHave('medication', function ($q) {
                 $q->where('status', 'Done');
             })
@@ -312,13 +352,14 @@ class PatientController extends Controller
         $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
             $query->where('status', 'Returned');
         })
-            ->whereDate('transaction_date', $today)
+            // ->whereDate('transaction_date', $today)
             ->distinct('patient_id')
             ->count('patient_id');
 
         // ✅ Billing patients
         $count_billing = Patient::whereHas('transaction', function ($query) use ($today) {
-            $query->whereDate('transaction_date', $today)
+            $query
+            // ->whereDate('transaction_date', $today)
                 ->where('status', '!=', 'Complete')
                 ->where(function ($q) {
                     $q->whereHas('consultation', function ($con) {
@@ -342,7 +383,8 @@ class PatientController extends Controller
 
         // ✅ Guarantee letter patients
         $count_guarantee = Patient::whereHas('transaction', function ($query) use ($today) {
-            $query->whereDate('transaction_date', $today)
+            $query
+                // ->whereDate('transaction_date', $today)
                 ->where('status', 'Complete');
         })
             ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {

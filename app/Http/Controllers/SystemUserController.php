@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 
+use Carbon\Carbon;
 use App\Models\role;
 use App\Models\User;
 use App\Models\AuditTrail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +19,23 @@ use Illuminate\Validation\ValidationException;
 
 class SystemUserController extends Controller
 {
-    //
+    // //
+    public function activity_log()
+    {
+        $activity = DB::table('activity_log')
+            ->select('id', 'log_name', 'description', 'properties', 'created_at')
+            ->orderBy('created_at', 'desc') // ✅ sort newest first
+            ->get()
+            ->map(function ($item) {
+                // Decode properties JSON into array
+                $item->properties = json_decode($item->properties, true);
+                return $item;
+            });
+
+        return response()->json($activity);
+    }
+
+
     public function index()
     {
         try {
@@ -319,19 +337,156 @@ class SystemUserController extends Controller
     //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------
 
 
+    // public function login_User(Request $request)
+    // {
+    //     $request->validate([
+    //         'username' => 'required|string',
+    //         'password' => 'required|string',
+    //     ]);
 
+    //     $user = User::where('username', $request->username)->first();
+
+    //     if (!$user || !Hash::check($request->password, $user->password)) {
+    //         return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
+    //     }
+
+    //     if ($user->status !== 'Active') {
+    //         return response()->json(['success' => false, 'message' => 'Your account is deactivated.'], 403);
+    //     }
+
+    //     // delete old tokens
+    //     $user->tokens()->delete();
+
+    //     // new token
+    //     $token = $user->createToken('pharmacy-system')->plainTextToken;
+
+    //     // 📝 Log login event with IP
+    //     activity('auth')
+    //         ->causedBy($user)
+    //         ->withProperties(['ip' => $request->ip()])
+    //         ->log("User {$user->username} logged in");
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Login successful',
+    //         'data' => [
+    //             'user' => $user,
+    //             'token' => $token,
+    //         ]
+    //     ]);
+    // }
+
+    // public function logoutUser(Request $request)
+    // {
+    //     $user = $request->user();
+    //     $user->currentAccessToken()->delete();
+
+    //     // 📝 Log logout event with IP
+    //     activity('auth')
+    //         ->causedBy($user)
+    //         ->withProperties(['ip' => $request->ip()])
+    //         ->log("User {$user->username} logged out");
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Logout successful'
+    //     ]);
+    // }
+
+    // public function login_User(Request $request)
+    // {
+    //     $request->validate([
+    //         'username' => 'required|string',
+    //         'password' => 'required|string',
+
+    //     ]);
+
+    //     // Find user by username
+    //     $user = User::where('username', $request->username)->first();
+
+    //     // Check if user exists and password is correct
+    //     if (!$user || !Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'The provided credentials are incorrect.',
+    //             'errors' => [
+    //                 'username' => ['The provided credentials are incorrect.']
+    //             ]
+    //         ], 401);
+    //     }
+
+    //     // Check if user is active
+    //     if ($user->status !== 'Active') {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Your account has been deactivated. Please contact administrator.',
+    //         ], 403);
+    //     }
+
+    //     // Revoke all existing tokens for this user (optional - for single session)
+    //     $user->tokens()->delete();
+
+    //     // Create new token
+    //     $token = $user->createToken('pharmacy-system')->plainTextToken;
+
+    //     // Prepare user data for response (excluding sensitive fields)
+    //     $userData = [
+    //         'id' => $user->id,
+    //         'first_name' => $user->first_name,
+    //         'last_name' => $user->last_name,
+    //         'middle_name' => $user->middle_name,
+    //         'position' => $user->position,
+    //         'office' => $user->office,
+    //         'status' => $user->status,
+    //         'username' => $user->username,
+    //         'role_id' => $user->role_id,
+    //         'role_name' => $user->role ? $user->role->role_name : 'N/A',
+    //         'created_at' => $user->created_at,
+    //         'full_name' => trim($user->first_name . ' ' . $user->middle_name . ' ' . $user->last_name),
+    //     ];
+
+    //     activity('auth')
+    //         ->causedBy($user)
+    //         ->withProperties(['ip' => $request->ip()])
+    //         ->log("User {$user->username} logged in");
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Login successful',
+    //         'data' => [
+    //             'user' => $userData,
+    //             'token' => $token,
+    //         ]
+    //     ]);
+    // }
+
+     public function logoutUser(Request $request)
+    {
+        // Revoke the current user's token
+         $user = $request->user();
+        $request->user()->currentAccessToken()->delete();
+
+        activity($user->username)
+                ->causedBy($user)
+                ->withProperties(['ip' => $request->ip()])
+                ->log("User {$user->username} logged out");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout successful'
+        ]);
+    }
     public function login_User(Request $request)
     {
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
-
         ]);
 
         // Find user by username
         $user = User::where('username', $request->username)->first();
 
-        // Check if user exists and password is correct
+        // Check credentials
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
@@ -350,13 +505,13 @@ class SystemUserController extends Controller
             ], 403);
         }
 
-        // Revoke all existing tokens for this user (optional - for single session)
+        // Revoke old tokens
         $user->tokens()->delete();
 
-        // Create new token
+        // Create token
         $token = $user->createToken('pharmacy-system')->plainTextToken;
 
-        // Prepare user data for response (excluding sensitive fields)
+        // Prepare response data
         $userData = [
             'id' => $user->id,
             'first_name' => $user->first_name,
@@ -372,6 +527,18 @@ class SystemUserController extends Controller
             'full_name' => trim($user->first_name . ' ' . $user->middle_name . ' ' . $user->last_name),
         ];
 
+        // 📝 Activity Log (store name instead of ID)
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user) // ✅ sets causer_id automatically
+            ->withProperties([
+            'ip' => $request->ip(),
+            'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+
+
+
+        ])
+            ->log("User {$user->first_name} {$user->last_name} logged in from IP {$request->ip()}");
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
@@ -379,17 +546,6 @@ class SystemUserController extends Controller
                 'user' => $userData,
                 'token' => $token,
             ]
-        ]);
-    }
-
-     public function logoutUser(Request $request)
-    {
-        // Revoke the current user's token
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout successful'
         ]);
     }
 

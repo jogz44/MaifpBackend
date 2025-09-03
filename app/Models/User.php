@@ -5,21 +5,25 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\role;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens ;
+    use HasFactory, Notifiable, HasApiTokens, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+
+    protected static $logAttributes = ['name','text'];
+
     protected $fillable = [
         'first_name',
         'last_name',
@@ -31,6 +35,17 @@ class User extends Authenticatable
         'username',
         'password',
     ];
+
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['first_name', 'last_name', 'middle_name', 'position', 'office', 'status', 'role_id', 'username'])
+            ->logOnlyDirty() // logs only changed attributes
+            ->useLogName('user')
+            ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}");
+    }
+
 
 
     protected $hidden = [

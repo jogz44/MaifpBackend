@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Laboratory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\lib_laboratory;
 use App\Models\New_Consultation;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\Validated;
 use App\Http\Requests\LaboratoryRequest;
 use App\Http\Requests\lib_laboratoryRequest;
-use App\Models\lib_laboratory;
-use Illuminate\Auth\Events\Validated;
 
 class LaboratoryController extends Controller
 {
@@ -135,6 +136,7 @@ class LaboratoryController extends Controller
 
     public function lib_laboratory_store(lib_laboratoryRequest $request)
     {
+        $user = Auth::user();
         $validated = $request->validated();
 
         // Check if laboratory already exists
@@ -150,20 +152,48 @@ class LaboratoryController extends Controller
         // Create new if not exists
         $laboratory = lib_laboratory::create($validated);
 
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($laboratory)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log(
+                "Added New Services [" . ($laboratory ? "{$laboratory->lab_name} and  {$laboratory->lab_amount} " : "Unknown") . "]   "
+            );
+
         return response()->json([
             'message' => 'success',
             'laboratory' => $laboratory,
         ]);
     }
 
-
     public function lib_laboratory_update(lib_laboratoryRequest $request, $lib_laboratory)
     {
+        $user = Auth::user();
         $validated = $request->validated();
 
         $laboratory = lib_laboratory::findOrFail($lib_laboratory);
 
+        // Capture old values before update
+        $oldValues = $laboratory->getOriginal();
+
+        // Update record
         $laboratory->update($validated);
+
+        // 📝 Activity Log
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($laboratory)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old' => $oldValues,
+                'new' => $laboratory->getChanges(),
+            ])
+            ->log(
+                "Updated Services [{$laboratory->lab_name}, Amount: {$laboratory->lab_amount}]" );
 
         return response()->json([
             'success' => true,
@@ -175,13 +205,33 @@ class LaboratoryController extends Controller
 
 
 
-    public function lib_laboratory_delete($lib_laboratory)
+
+    public function lib_laboratory_delete($lib_laboratory, Request $request)
     {
 
+        $user = Auth::user();
 
         $laboratory = lib_laboratory::findOrFail($lib_laboratory);
 
         $laboratory->delete($laboratory);
+
+        // 📝 Activity Log for Delete
+        activity('laboratory')
+            ->causedBy($user)
+            ->performedOn($laboratory)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'deleted_by' => $user?->full_name
+                    ?? trim($user?->first_name . ' ' . $user?->last_name)
+                    ?? $user?->username
+                    ?? 'N/A',
+                'deleted_record' => $laboratory,
+            ])
+            ->log(
+                "Laboratory [{$laboratory['lab_name']}, Amount: {$laboratory['lab_amount']}] was deleted by "
+
+            );
 
         return response()->json([
             'message' => 'successfully delete',
