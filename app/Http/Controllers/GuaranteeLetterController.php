@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
+
 use App\Models\Budget;
-use App\Models\Billing;
 use App\Models\Patient;
-use Illuminate\Http\Request;
+use App\Models\Transaction;
 use App\Models\GuaranteeLetter;
-use App\Http\Requests\BillingRequest;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\GuaranteeLetterRequest;
 
 class GuaranteeLetterController extends Controller
 {
-
-    public function index() // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
+    // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
+    public function index()
     {
         $patients = Patient::whereHas('transaction', function ($query) {
             $query
@@ -46,38 +45,10 @@ class GuaranteeLetterController extends Controller
         return response()->json($patients);
     }
 
-    // public function index() // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
-    // {
-    //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->whereDate('transaction_date', Carbon::today())
-    //             ->where('status', 'Complete');
-    //     })
-    //         ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
-    //             $query->where('status', 'Funded');
-    //         })
-    //         ->with([
-    //             'transaction' => function ($q) {
-    //                 $q->whereDate('transaction_date', Carbon::today())
-    //                     ->where('status', 'Complete');
-    //             }
-    //         ])
-    //         ->get([
-    //             'id',
-    //             'firstname',
-    //             'lastname',
-    //             'middlename',
-    //             'ext',
-    //             'birthdate',
-    //             'age',
-    //             'contact_number',
-    //             'barangay'
-    //         ]);
-
-    //     return response()->json($patients);
-    // }
-
-    public function store(GuaranteeLetterRequest $request) // store the guarantee letter then deduc the total_billing of patient on the remainings funds
+    // store the guarantee letter then deduc the total_billing of patient on the remainings funds on the budget
+    public function store(GuaranteeLetterRequest $request)
     {
+        $user = Auth::user();
         $validated = $request->validated();
 
         // Get total funds from all budgets
@@ -94,17 +65,36 @@ class GuaranteeLetterController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => "Not enough funds. Please add more funds before creating this billing. Remaining funds: {$remainingFunds}",
-
-                // 'total_funds' => $totalFunds,
-                // 'remaining_funds' => $remainingFunds,
-            ], 400); // Bad Request
+            ], 400);
         }
 
         // Create the billing record
         $billing = GuaranteeLetter::create($validated);
 
+        // Fetch patient & transaction details
+        $transaction = Transaction::with('patient')->find($billing->transaction_id);
+
         // Update remaining funds after this billing
         $remainingFunds -= $validated['total_billing'];
+
+        // ✅ Activity log
+        if ($transaction && $transaction->patient) {
+            $patientName = $transaction->patient->firstname . ' ' . $transaction->patient->lastname;
+
+            activity($user->first_name . ' ' . $user->last_name)
+                ->causedBy($user)
+                ->performedOn($billing)
+                ->withProperties([
+                    'ip'              => $request->ip(),
+                    'date'            => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'transaction_id'  => $transaction->id,
+                    'patient_id'      => $transaction->patient->id,
+                    'patient_name'    => $patientName,
+                    'billing_amount'  => $billing->total_billing,
+                    'remaining_funds' => $remainingFunds,
+                ])
+                ->log("Successfully Deduc Guarantee Letter for Patient {$patientName} (Transaction ID: {$transaction->id}) with Billing Amount: {$billing->total_billing}");
+        }
 
         return response()->json([
             'success' => true,

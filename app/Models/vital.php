@@ -33,4 +33,8 @@ class vital extends Model
     {
         return $this->belongsTo(Transaction::class);
     }
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
 }

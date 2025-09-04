@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Laboratory extends Model
+class Laboratories_details extends Model
 {
     //
 
-    protected $table ='laboratory';
+    protected $table = 'laboratory_details'; // specify the table name if it doesn't follow Laravel's naming convention
 
     protected $fillable = [
         'transaction_id',
-        'status'
-
+        'new_consultation_id',
+        'laboratory_type',
+        'amount',
+        // 'status',
     ];
 
     public function consultation()

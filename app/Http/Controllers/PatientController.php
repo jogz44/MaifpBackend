@@ -86,13 +86,28 @@ class PatientController extends Controller
     }
 
     // for transaction of the patient
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $patients = Patient::select(['id','lastname','firstname','contact_number',
+        $user = Auth::user();
+        $patient = Patient::select(['id','lastname','firstname','contact_number',
         'middlename','ext','gender','age','ext','birthdate','category','purok','street','barangay','city'])
         ->with('transaction')->find($id);
 
-        return response()->json($patients);
+        // ✅ Patient full name
+        $patientName = trim("{$patient->firstname} {$patient->middlename} {$patient->lastname} {$patient->ext}");
+
+        // ✅ Activity log
+        $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
+
+        activity($actorName)
+            ->causedBy($user)
+            ->performedOn($patient)
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log("Viewed record of Patient: {$patientName} (ID: {$patient->id})");
+        return response()->json($patient);
     }
 
     // public function assessment()
@@ -237,7 +252,7 @@ class PatientController extends Controller
                     'vital' => $vital->toArray(),
                 ])
                 ->log(
-                    "Patient record [{$patient->firstname} {$patient->lastname}] was created "
+                    "Patient record {$patient->firstname} {$patient->lastname} was created "
 
                 );
             return response()->json([
@@ -288,7 +303,7 @@ class PatientController extends Controller
             'old' => $oldValues,
                 'new' => $patient->getChanges(),
             ])
-            ->log("Patient record [{$patient->firstname} {$patient->lastname}] was updated");
+            ->log("Patient record {$patient->firstname} {$patient->lastname} was updated");
 
         return response()->json([
             'success' => true,

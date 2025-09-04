@@ -298,14 +298,14 @@
                 }
             }
         },
-        "/api/new_consultations": {
+        "/api/new_consultations/store": {
             "post": {
                 "tags": [
                     "Consultations"
                 ],
                 "summary": "Store or update a consultation and sync status with laboratories",
                 "description": "Creates a new consultation record or updates it if the transaction_id already exists. Automatically updates amount if status is 'Done' and syncs laboratory statuses based on consultation status.",
-                "operationId": "bb36442e9903e8eba4ecaadef05ea3f1",
+                "operationId": "fcad8cc16eb8ea739caa77bf329ce1b2",
                 "requestBody": {
                     "required": true,
                     "content": {

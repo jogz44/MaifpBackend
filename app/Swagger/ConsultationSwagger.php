@@ -54,7 +54,7 @@ namespace App\Swagger;
  *
  *
  * @OA\Post(
- *     path="/api/new_consultations",
+ *     path="/api/new_consultations/store",
  *     tags={"Consultations"},
  *     summary="Store or update a consultation and sync status with laboratories",
  *     description="Creates a new consultation record or updates it if the transaction_id already exists. Automatically updates amount if status is 'Done' and syncs laboratory statuses based on consultation status.",
@@ -65,8 +65,7 @@ namespace App\Swagger;
  *             required={"transaction_id","status"},
  *             @OA\Property(property="transaction_id", type="integer", example=101, description="ID of the related transaction"),
  *             @OA\Property(property="status", type="string", example="Done", description="Status of the consultation"),
- *             @OA\Property(property="amount", type="number", format="float", example=500, description="Amount for the consultation (auto-set if status is Done)"),
- *             @OA\Property(property="remarks", type="string", example="Patient referred for medication", description="Additional notes or remarks")
+ * 
  *         )
  *     ),
  *     @OA\Response(

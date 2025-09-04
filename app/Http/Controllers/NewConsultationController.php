@@ -17,47 +17,7 @@ use App\Http\Requests\NewConsultationRequest;
 
 class NewConsultationController extends Controller
 {
-    // // this method for qualiafied for consultation and  will fetch this current date
-    // public function qualifiedTransactionsConsultation()
-    // {
-    //     try {
-    //         $patients = Transaction::where('status', 'qualified')
-    //             ->where('transaction_type', 'Consultation')
-    //             ->whereDate('transaction_date', now()->toDateString()) // ✅ only today's transactions
 
-    //             // exclude patients who already have ANY "Done" consultation
-    //             ->whereDoesntHave('consultation', function ($query) {
-    //                 $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
-    //             })
-    //             ->with([
-    //                 'patient',
-    //                 'vital',
-    //                 'consultation',
-    //                 // 'laboratories'
-    //             ])
-    //             ->get()
-    //             ->groupBy('patient_id')
-    //             ->map(function ($group) {
-    //                 $patient = $group->first()->patient;
-
-    //                 // attach transactions to patient
-    //                 $patient->transaction = $group->map(function ($transaction) {
-    //                     return collect($transaction)->except('patient');
-    //                 })->values();
-
-    //                 return $patient;
-    //             })
-    //             ->values();
-
-    //         return response()->json($patients);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to fetch qualified transactions.',
-    //             'error' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
     // this method for qualiafied for consultation and  will fetch this current date
     public function qualifiedTransactionsConsultation()
     {
@@ -100,7 +60,8 @@ class NewConsultationController extends Controller
         }
     }
 
-    public function ReturnConsultation() // fetching the  patient to the return consultation  consultation->laboratory->consultation
+    // fetching the  patient to the return consultation  consultation->laboratory->consultation
+    public function ReturnConsultation()
     {
         try {
             $patients = Transaction::whereHas('consultation', function ($query) {
@@ -187,18 +148,9 @@ class NewConsultationController extends Controller
             ->withProperties([
                 'ip' => $request->ip(),
                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                'created_by' => $user?->full_name
-                    ?? trim($user?->first_name . ' ' . $user?->last_name)
-                    ?? $user?->username
-                    ?? 'N/A',
                 'consultation' => $NewConsultation->toArray(),
             ])
-            ->log(
-                "Consultation record for patient [" .
-                    ($patient ? "{$patient->firstname} {$patient->lastname}" : "Unknown Patient") .
-                    "] was created or updated "
-                    // ($user?->full_name ?? trim($user?->first_name . ' ' . $user?->last_name) ?? $user?->username ?? 'Unknown')
-            );
+            ->log("Consultation record for patient " . ($patient ? "{$patient->firstname} {$patient->lastname}" : "Unknown Patient") . " was updated " );
 
         return response()->json([
             'message' => 'Successfully Saved',
@@ -238,7 +190,7 @@ class NewConsultationController extends Controller
 
     }
 
-
+   // updating the library doctor amount  of doctor
     public function lib_doctor_update(lib_doctorRequest $request, $lib_doctor)
     {
 
@@ -256,12 +208,12 @@ class NewConsultationController extends Controller
                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
             ])
             ->log(
-                "Doctor fee [" . ($doctor ? "{$doctor->doctor_amount}" : "Unknown amount ") . "] was created or update "
+                "Doctor fee ".($doctor ? "{$doctor->doctor_amount}" : "Unknown amount ")." was updated"
             );
         return response()->json($doctor);
     }
 
-
+    //deleting the library doctor
     public function lib_doctor_delete($lib_doctor)
     {
 
@@ -275,6 +227,7 @@ class NewConsultationController extends Controller
         ]);
     }
 
+    // fetching the library doctor fee
     public function lib_doctor_index()
     {
 

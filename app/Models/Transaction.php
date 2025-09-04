@@ -49,11 +49,16 @@ class Transaction extends Model
         return $this->hasOne(New_Consultation::class);
     }
 
-
     public function laboratories()
     {
         return $this->hasMany(Laboratory::class, 'transaction_id');
     }
+    public function laboratories_details()
+    {
+        return $this->hasMany(Laboratories_details::class, 'transaction_id');
+    }
+
+
     public function guaranteeLetter()
     {
         return $this->hasOne(GuaranteeLetter::class, 'transaction_id');

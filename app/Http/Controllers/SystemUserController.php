@@ -463,13 +463,12 @@ class SystemUserController extends Controller
      public function logoutUser(Request $request)
     {
         // Revoke the current user's token
-         $user = $request->user();
+        $user = Auth::user();
         $request->user()->currentAccessToken()->delete();
-
-        activity($user->username)
+        activity($user->first_name . ' ' . $user->last_name)
                 ->causedBy($user)
                 ->withProperties(['ip' => $request->ip()])
-                ->log("User {$user->username} logged out");
+                ->log("{$user->username} logged out");
 
         return response()->json([
             'success' => true,
@@ -533,11 +532,8 @@ class SystemUserController extends Controller
             ->withProperties([
             'ip' => $request->ip(),
             'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
-
-
-
         ])
-            ->log("User {$user->first_name} {$user->last_name} logged in from IP {$request->ip()}");
+            ->log(" {$user->first_name} {$user->last_name} logged in");
 
         return response()->json([
             'success' => true,

@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Representative;
 use App\Http\Requests\VitalRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\TransactionRequest;
 use App\Http\Requests\AddTransactionRequest;
@@ -20,22 +21,21 @@ class TransactionController extends Controller
     // Add methods for handling transactions here
     // For example, you might have methods to create, update, delete, and fetch transactions
 
-    public function assessment()
-    {
-        $patients = Patient::whereHas('transaction', function ($query) {
-            $query->where('status','assessment')
-                ->whereDate('transaction_date', now()->toDateString());
-        })
-            ->with(['transaction' => function ($query) {
-                $query->where('status','assessment')
-                    ->whereDate('transaction_date', now()->toDateString());
-            }])
-            ->get();
+    // public function assessment()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status','assessment')
+    //             ->whereDate('transaction_date', now()->toDateString());
+    //     })
+    //         ->with(['transaction' => function ($query) {
+    //             $query->where('status','assessment')
+    //                 ->whereDate('transaction_date', now()->toDateString());
+    //         }])
+    //         ->get();
 
-        return response()->json($patients);
-    }
+    //     return response()->json($patients);
+    // }
 
-    
     public function index()
     {
 
@@ -44,67 +44,202 @@ class TransactionController extends Controller
 
      }
 
-    public function show($id)
+    // public function show($id)
+    // {
+
+    //     $user = Auth::user(); // Get the authenticated user
+    //     // Logic to fetch a transaction by ID
+    //     $transaction = Transaction::with(['vital','laboratories','representative'])->find($id);
+
+    //     return response()->json($transaction);
+
+    // }
+
+    public function show($id, Request $request)
     {
-        // Logic to fetch a transaction by ID
-        $transaction = Transaction::with(['vital','laboratories','representative'])->find($id);
+        $user = Auth::user();
+        $transaction = Transaction::with(['vital', 'laboratories_details', 'representative', 'patient'])
+            ->findOrFail($id);
+
+        // ✅ Get patient name if linked
+        $patientName = $transaction->patient
+            ? trim("{$transaction->patient->firstname} {$transaction->patient->middlename} {$transaction->patient->lastname} {$transaction->patient->ext}")
+            : 'Unknown Patient';
+
+        // ✅ Actor name
+        $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
+
+        // ✅ Log activity
+        activity($actorName)
+            ->causedBy($user)
+            ->performedOn($transaction)
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log("Viewed transaction record (ID: {$transaction->id}) for Patient: {$patientName}");
 
         return response()->json($transaction);
-
     }
 
     public function rep_update(RepresentativeRequest $request, $id) // this function is for the updating or edit the Representative
     {
+         $user = Auth::user(); // Get the authenticated user
         // Logic to update a transaction
         $validated =  $request->validated();
 
-        $transaction = Representative::findOrFail($id);
-        $transaction->update($validated);
+        $rep = Representative::findOrFail($id);
+
+        $oldData = $rep->toArray(); // 👈 old values before update
+        $rep->update($validated);
+        $newData = $rep->toArray(); // 👈 new values after update
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($rep)
+            ->withProperties([
+                'ip'      => $request->ip(),
+                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'     => $oldData,
+                'new'     => $newData,
+                'changes' => $validated,
+            ])
+            ->log("Updated Representative [{$rep->rep_name}]");
 
         return response()->json([
             'message' => 'Representative updated successfully.',
-            'transaction' => $transaction
+            'representative' => $rep
         ]);
     }
 
     // this method is for updating transaction
     public function update(TransactionRequest $request, $id)
     {
+        $user= Auth::user(); // Get the authenticated user
         // Logic to update a transaction
         $validated =  $request->validated();
 
         $transaction = Transaction::findOrFail($id);
+
+        $oldData = $transaction->toArray();
         $transaction->update($validated);
+        $newData = $transaction->toArray();
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($transaction)
+            ->withProperties([
+                'ip'      => $request->ip(),
+                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'     => $oldData,
+                'new'     => $newData,
+                'changes' => $validated,
+            ])
+            ->log("Updated Transaction ID: {$transaction->id}");
+
 
         return response()->json([
             'message' => 'Transaction updated successfully.',
             'transaction' => $transaction]);
     }
 
-    // this method is for updating vital signs
+    // // this method is for updating vital signs
+    // public function vital_update(VitalRequest $request, $id)
+    // {
+    //     $user = Auth::user(); // Get the authenticated user
+
+    //     // Logic to update a transaction
+    //     $validated =  $request->validated();
+
+    //     $vital = vital::findOrFail($id);
+
+    //     $oldData = $vital->toArray();
+    //     $vital->update($validated);
+    //     $newData = $vital->toArray();
+
+    //     activity($user->first_name . ' ' . $user->last_name)
+    //         ->causedBy($user)
+    //         ->performedOn($vital)
+    //         ->withProperties([
+    //             'ip'      => $request->ip(),
+    //             'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+    //             'old'     => $oldData,
+    //             'new'     => $newData,
+    //             'changes' => $validated,
+    //         ])
+    //         ->log("Updated Vital Signs for Patient ID: {$vital->patient}");
+
+    //     return response()->json([
+    //         'message' => 'vital updated successfully.',
+    //         'vital' => $vital
+    //     ]);
+    // }
+
     public function vital_update(VitalRequest $request, $id)
     {
-        // Logic to update a transaction
-        $validated =  $request->validated();
+        $user = Auth::user();
+        $validated = $request->validated();
 
-        $vital = vital::findOrFail($id);
+        $vital = Vital::with('patient')->findOrFail($id); // 👈 load patient
+
+        $oldData = $vital->toArray();
         $vital->update($validated);
+        $newData = $vital->fresh()->toArray(); // 👈 refresh after update
+
+        $patientName = $vital->patient
+            ? $vital->patient->firstname . ' ' . $vital->patient->lastname
+            : 'Unknown Patient';
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($vital)
+            ->withProperties([
+                'ip'      => $request->ip(),
+                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'     => $oldData,
+                'new'     => $newData,
+                'changes' => $validated,
+            ])
+            ->log("Updated Vital Signs for Patient {$patientName}");
 
         return response()->json([
-            'message' => 'vital updated successfully.',
-            'vital' => $vital
+            'message' => 'Vital updated successfully.',
+            'vital'   => $vital
         ]);
     }
 
     // this method is for updating transaction status if the patient are qualified or unqualified
     public function status_update(Request $request, $id)
     {
+        $user = Auth::user();
         // Logic to update a transaction
         $validated =  $request->validate([
             'status' => 'sometimes|required|string|max:255',
         ]);
-        $transaction = Transaction::findOrFail($id);
+        $transaction = Transaction::with('patient')->findOrFail($id);
+
+        $oldData = $transaction->toArray();
         $transaction->update($validated);
+        $newData = $transaction->toArray();
+
+
+        // ✅ Get patient name
+        $patientName = $transaction->patient
+            ? $transaction->patient->firstname . ' ' . $transaction->patient->lastname
+            : 'Unknown Patient';
+
+        // ✅ Log activity with patient name
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($transaction)
+            ->withProperties([
+                'ip'      => $request->ip(),
+                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'     => $oldData,
+                'new'     => $newData,
+                'changes' => $validated,
+            ])
+            ->log("Updated patient transaction status to {$validated['status']} for Patient: {$patientName}");
 
         return response()->json([
             'message' => 'Transaction updated status successfully.',
@@ -113,10 +248,21 @@ class TransactionController extends Controller
     }
 
     //deleting the AllTransactions Data
-    public function deleteAllTransactions()
+    public function deleteAllTransactions(Request $request)
     {
+
+        $user = Auth::user();
+
         try {
             Patient::query()->delete();
+
+            activity($user->first_name . ' ' . $user->last_name)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip'   => $request->ip(),
+                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                ])
+                ->log("Deleted ALL Transactions & Patients");
 
             return response()->json([
                 'success' => true,
@@ -134,6 +280,7 @@ class TransactionController extends Controller
 
     public function addTransactionAndVitals(AddTransactionRequest $request) // this is methiod for adding transaction and vitals for existing patient
     {
+
         try {
             // ✅ Validate all incoming data except existence check
             $validated = $request->validated();
@@ -193,6 +340,23 @@ class TransactionController extends Controller
                 'medicine' => $validated['medicine'] ?? 'NA',
                 'LMP' => $validated['LMP'] ?? 'NA',
             ]);
+
+            // ✅ Add activity log
+            $user = Auth::user();
+            $actorName = $user ? $user->first_name . ' ' . $user->last_name : 'System';
+            $patientName = $patient->firstname . ' ' . $patient->lastname;
+
+            activity($actorName)
+                ->causedBy($user)
+                ->performedOn($transaction)
+                ->withProperties([
+                    'ip'   => $request->ip(),
+                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'transaction' => $transaction->toArray(),
+                    'vital'       => $vital->toArray(),
+                    'representative' => $representative->toArray(),
+                ])
+                ->log("Created new transaction {$transaction->transaction_number} and vitals for Patient: {$patientName}");
 
             return response()->json([
                 'success' => true,

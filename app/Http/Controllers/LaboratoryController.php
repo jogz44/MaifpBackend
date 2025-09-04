@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Validated;
 use App\Http\Requests\LaboratoryRequest;
 use App\Http\Requests\lib_laboratoryRequest;
+use App\Models\Laboratories_details;
 
 class LaboratoryController extends Controller
 {
@@ -25,9 +26,9 @@ class LaboratoryController extends Controller
                             $q->where('status', 'Processing');
                         });
                 })
-                // ❌ Exclude transactions that already have laboratories with status = 'Done'
+                //  Exclude transactions that already have laboratories with status = 'Done'
                 ->whereDoesntHave('laboratories', function ($lab) {
-                    $lab->where('status', 'Done');
+                $lab->whereIn('status', ['Done', 'Returned', 'Pending']);
                 })
                 // ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
                 ->with([
@@ -60,32 +61,70 @@ class LaboratoryController extends Controller
         }
     }
 
-    // this method for the status on the laboratory that have connected on the consultation for the patient
-    public function status(Request $request, $transactionId)
+    // // this method for the status on the laboratory that have connected on the consultation for the patient
+    // public function status(Request $request, $transactionId)
+    // {
+
+    //     // validate request
+    //     $validated = $request->validate([
+    //         'status' => 'required|in:Done,Returned,Pending'
+    //     ]);
+
+    //     // find all labs by transaction_id
+    //     $labs = Laboratory::where('transaction_id', $transactionId)->get();
+
+    //     if ($labs->isEmpty()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'No laboratories found for this transaction.'
+    //         ], 404);
+    //     }
+
+    //     // update all labs
+    //     foreach ($labs as $lab) {
+    //         $lab->update($validated);
+
+    //         // If lab is Returned, also update related consultation
+    //         if ($lab->status === 'Returned' && $lab->new_consultation_id) {
+    //             $consultation = New_Consultation::find($lab->new_consultation_id);
+
+    //             if ($consultation) {
+    //                 $consultation->status = 'Returned';
+    //                 $consultation->save();
+    //             }
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'All laboratories under this transaction updated successfully.',
+    //         'data' => $labs
+    //     ]);
+    // }
+
+
+    // this method for updating the status on the laboratory that is connected to the consultation for the patient
+    public function Laboratory_status(Request $request)
     {
         // validate request
         $validated = $request->validate([
-            'status' => 'required|in:Done,Returned,Pending'
+            'status' => 'required|in:Done,Returned',
+            'transaction_id' => 'required|exists:transaction,id',
         ]);
 
-        // find all labs by transaction_id
-        $labs = Laboratory::where('transaction_id', $transactionId)->get();
+        // Update or create the main laboratory record
+        $lab = Laboratory::updateOrCreate(
+            ['transaction_id' => $validated['transaction_id']], // condition
+            ['status' => $validated['status']]                  // update values
+        );
 
-        if ($labs->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No laboratories found for this transaction.'
-            ], 404);
-        }
+        // ✅ Also update all laboratory_details linked to this transaction
+        $labDetails = Laboratories_details::where('transaction_id', $validated['transaction_id'])->get();
 
-        // update all labs
-        foreach ($labs as $lab) {
-            $lab->update($validated);
-
-            // If lab is Returned, also update related consultation
-            if ($lab->status === 'Returned' && $lab->new_consultation_id) {
-                $consultation = New_Consultation::find($lab->new_consultation_id);
-
+        foreach ($labDetails as $detail) {
+            // If Returned, update related consultation
+            if ($validated['status'] === 'Returned' && $detail->new_consultation_id) {
+                $consultation = New_Consultation::find($detail->new_consultation_id);
                 if ($consultation) {
                     $consultation->status = 'Returned';
                     $consultation->save();
@@ -95,13 +134,18 @@ class LaboratoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'All laboratories under this transaction updated successfully.',
-            'data' => $labs
+            'message' => 'Laboratory status under this transaction updated successfully.',
+            'data' => $lab
         ]);
     }
 
-    public function store(LaboratoryRequest $request) //  this method is for saving the laboratory of the patient will his transaction with amount
+
+
+    //  this method is for saving the laboratory of the patient with his transaction with amount
+    public function store(LaboratoryRequest $request)
     {
+        $user = Auth::user();
+
         $validated = $request->validated();
 
         // Check if transaction has consultation
@@ -115,14 +159,31 @@ class LaboratoryController extends Controller
         $labs = [];
 
         foreach ($validated['laboratories'] as $labData) {
-            $labs[] = Laboratory::create([
+            $labs[] = Laboratories_details::create([
                 'transaction_id' => $validated['transaction_id'],
                 'new_consultation_id' => $newConsultationId, // set only if exists
                 'laboratory_type' => $labData['laboratory_type'],
                 'amount' => $labData['amount'],
-                'status' => $labData['status'] ?? 'Pending',
+                // 'status' => $labData['status'] ?? 'Pending',
             ]);
         }
+
+        // Prepare log details
+        $labDetails = collect($labs)->map(function ($lab) {
+            return "{$lab->laboratory_type} (₱{$lab->amount})";
+        })->implode(', ');
+
+        // Log activity
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($transaction) // better to log on the transaction
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'labs' => $labs
+            ])
+            ->log("Added new laboratory services: {$labDetails}");
+
 
         return response()->json([
             'message' => 'Laboratories stored successfully',
@@ -130,10 +191,7 @@ class LaboratoryController extends Controller
         ]);
     }
 
-
-
     //for library laboratory store
-
     public function lib_laboratory_store(lib_laboratoryRequest $request)
     {
         $user = Auth::user();
@@ -159,9 +217,7 @@ class LaboratoryController extends Controller
                 'ip' => $request->ip(),
                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
             ])
-            ->log(
-                "Added New Services [" . ($laboratory ? "{$laboratory->lab_name} and  {$laboratory->lab_amount} " : "Unknown") . "]   "
-            );
+            ->log("Added New Services ".($laboratory ? "{$laboratory->lab_name} and  {$laboratory->lab_amount}" : "Unknown"));
 
         return response()->json([
             'message' => 'success',
@@ -169,6 +225,7 @@ class LaboratoryController extends Controller
         ]);
     }
 
+    // updating the library laboratory amount and type of services of laboratory
     public function lib_laboratory_update(lib_laboratoryRequest $request, $lib_laboratory)
     {
         $user = Auth::user();
@@ -192,8 +249,7 @@ class LaboratoryController extends Controller
                 'old' => $oldValues,
                 'new' => $laboratory->getChanges(),
             ])
-            ->log(
-                "Updated Services [{$laboratory->lab_name}, Amount: {$laboratory->lab_amount}]" );
+            ->log("Updated Services {$laboratory->lab_name}, Amount: {$laboratory->lab_amount}");
 
         return response()->json([
             'success' => true,
@@ -202,10 +258,7 @@ class LaboratoryController extends Controller
         ]);
     }
 
-
-
-
-
+    //deleting the library laboratory
     public function lib_laboratory_delete($lib_laboratory, Request $request)
     {
 
@@ -216,20 +269,16 @@ class LaboratoryController extends Controller
         $laboratory->delete($laboratory);
 
         // 📝 Activity Log for Delete
-        activity('laboratory')
+        activity($user->first_name . ' ' . $user->last_name)
             ->causedBy($user)
             ->performedOn($laboratory)
             ->withProperties([
                 'ip' => $request->ip(),
                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                'deleted_by' => $user?->full_name
-                    ?? trim($user?->first_name . ' ' . $user?->last_name)
-                    ?? $user?->username
-                    ?? 'N/A',
                 'deleted_record' => $laboratory,
             ])
             ->log(
-                "Laboratory [{$laboratory['lab_name']}, Amount: {$laboratory['lab_amount']}] was deleted by "
+                "Laboratory {$laboratory['lab_name']}, Amount: {$laboratory['lab_amount']} was deleted"
 
             );
 
@@ -239,6 +288,7 @@ class LaboratoryController extends Controller
         ]);
     }
 
+     // this method is for fetching all the laboratory services in the library
     public function lib_laboratory_index(){
 
         $laboratory = lib_laboratory::all();
