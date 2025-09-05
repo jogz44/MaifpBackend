@@ -4,56 +4,105 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use App\Models\Transaction;
+use App\Models\vw_patient_billing;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 
 class BillingController extends Controller
 {
-    // //
+    //
 
-    public function index() // fetching the patient have billing
+
+    // public function index() // fetching the patient have billing
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
+    //             ->where(function ($q) {
+    //                 // Case 1: Transaction with consultation Done
+    //                 $q->whereHas('consultation', function ($con) {
+    //                     $con->where('status', 'Done');
+    //                 })
+    //                     // Case 2: Transaction without consultation but with lab Done
+    //                     ->orWhere(function ($q2) {
+    //                         $q2->whereDoesntHave('consultation')
+    //                             ->whereHas('laboratories', function ($lab) {
+    //                                 $lab->where('status', 'Done');
+    //                             });
+    //                     })
+    //                     // ✅ Case 3: Transaction with medication Done
+    //                     ->orWhereHas('medication', function ($med) {
+    //                         $med->where('status', 'Done');
+    //                     });
+    //             });
+    //     })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q->where('status', '!=', 'Complete'); // ✅ exclude completed here too
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+    // }
+    public function index()
     {
-        $patients = Patient::whereHas('transaction', function ($query) {
-            $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
-                ->where(function ($q) {
-                    // Case 1: Transaction with consultation Done
-                    $q->whereHas('consultation', function ($con) {
-                        $con->where('status', 'Done');
-                    })
-                        // Case 2: Transaction without consultation but with lab Done
-                        ->orWhere(function ($q2) {
-                            $q2->whereDoesntHave('consultation')
-                                ->whereHas('laboratories', function ($lab) {
-                                    $lab->where('status', 'Done');
-                                });
-                        })
-                        // ✅ Case 3: Transaction with medication Done
-                        ->orWhereHas('medication', function ($med) {
-                            $med->where('status', 'Done');
-                        });
-                });
-        })
-            ->with([
-                'transaction' => function ($q) {
-                    $q->where('status', '!=', 'Complete'); // ✅ exclude completed here too
-                }
-            ])
-            ->get([
-                'id',
-                'firstname',
-                'lastname',
-                'middlename',
-                'ext',
-                'birthdate',
-                'age',
-                'contact_number',
-                'barangay'
-            ]);
+        try {
+            $records = vw_patient_billing::all();
 
-        return response()->json($patients);
+            $grouped = $records->groupBy('patient_id')->map(function ($items) {
+                $first = $items->first();
+
+                return [
+                    'id'             => $first->patient_id,
+                    'firstname'      => $first->firstname,
+                    'lastname'       => $first->lastname,
+                    'middlename'     => $first->middlename,
+                    'ext'            => $first->ext,
+                    'birthdate'      => $first->birthdate,
+                    'age'            => $first->age,
+                    'contact_number' => $first->contact_number,
+                    'barangay'       => $first->barangay,
+
+                    'transaction' => $items->map(function ($row) {
+                        return [
+                            'id'                 => $row->transaction_id,
+                            'transaction_number' => $row->transaction_number,
+                            'patient_id'         => $row->patient_id,
+                            'transaction_type'   => $row->transaction_type,
+                            'status'             => $row->transaction_status,
+                            'transaction_date'   => $row->transaction_date,
+                            'transaction_mode'   => $row->transaction_mode,
+                            'purpose'            => $row->purpose,
+                            'created_at'         => $row->transaction_created_at,
+                            'updated_at'         => $row->transaction_updated_at,
+                            'representative_id'  => $row->representative_id ?? null,
+                        ];
+                    })->values()
+                ];
+            })->values();
+
+            return response()->json($grouped);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch patient billing.',
+                'error'   => $th->getMessage()
+            ], 500);
+        }
     }
-
+    
     // fetching the billing of the patient base on his transaction id
     public function billing($transactionId, Request $request)
     {

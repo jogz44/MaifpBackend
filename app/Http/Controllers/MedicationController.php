@@ -6,12 +6,19 @@ use Carbon\Carbon;
 use App\Models\Medication;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Http\Requests\MedicationRequest;
 use App\Models\Medication_details;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\MedicationRequest;
 
 
 class MedicationController extends Controller
 {
+
+    public function index_view()
+    {
+        $data = DB::table('vw_patient_medication')->get();
+        return response()->json($data);
+    }
     // this method is for Medication will fetch the patient need to Medication
     public function qualifiedTransactionsMedication()
     {
@@ -54,6 +61,86 @@ class MedicationController extends Controller
             ], 500);
         }
     }
+
+    // public function qualifiedTransactionsMedication()
+    // {
+    //     try {
+    //         // Base query with joins
+    //         $transactions = DB::table('transaction as t')
+    //             ->leftJoin('patient as p', 'p.id', '=', 't.patient_id')
+    //             ->leftJoin('new_consultation as c', 'c.transaction_id', '=', 't.id')
+    //             ->leftJoin('medication as m', 'm.transaction_id', '=', 't.id')
+    //             ->select(
+    //                 't.id as transaction_id',
+    //                 't.patient_id',
+    //                 't.transaction_type',
+    //                 't.status as transaction_status',
+    //                 't.transaction_date',
+    //                 'c.id as consultation_id',
+    //                 'c.status as consultation_status',
+    //                 'm.id as medication_id',
+    //                 'm.status as medication_status',
+    //                 'p.id as patient_id',
+    //                 'p.firstname',
+    //                 'p.lastname',
+    //                 'p.middlename',
+    //                 'p.ext',
+    //                 'p.birthdate',
+    //                 'p.contact_number',
+    //                 'p.age',
+    //                 'p.gender'
+    //             )
+    //             ->where('t.status', 'qualified')
+    //             ->where(function ($query) {
+    //                 $query->where('t.transaction_type', 'Medication')
+    //                     ->orWhere('c.status', 'Medication');
+    //             })
+    //             ->where(function ($query) {
+    //                 $query->whereNull('m.id')
+    //                     ->orWhere('m.status', '<>', 'Done'); // exclude "Done"
+    //             })
+    //             ->orderBy('t.patient_id')
+    //             ->get();
+
+    //         // Group by patient
+    //         $grouped = $transactions->groupBy('patient_id')->map(function ($group) {
+    //             $patient = [
+    //                 'id'            => $group->first()->patient_id,
+    //                 'firstname'     => $group->first()->firstname,
+    //                 'lastname'      => $group->first()->lastname,
+    //                 'middlename'    => $group->first()->middlename,
+    //                 'ext'           => $group->first()->ext,
+    //                 'birthdate'     => $group->first()->birthdate,
+    //                 'contact_number' => $group->first()->contact_number,
+    //                 'age'           => $group->first()->age,
+    //                 'gender'        => $group->first()->gender,
+    //             ];
+
+    //             $patient['transaction'] = $group->map(function ($row) {
+    //                 return [
+    //                     'transaction_id'    => $row->transaction_id,
+    //                     'transaction_type'  => $row->transaction_type,
+    //                     'transaction_status' => $row->transaction_status,
+    //                     'transaction_date'  => $row->transaction_date,
+    //                     'consultation_id'   => $row->consultation_id,
+    //                     'consultation_status' => $row->consultation_status,
+    //                     'medication_id'     => $row->medication_id,
+    //                     'medication_status' => $row->medication_status,
+    //                 ];
+    //             })->values();
+
+    //             return $patient;
+    //         })->values();
+
+    //         return response()->json($grouped);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to fetch qualified transactions.',
+    //             'error' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function store(MedicationRequest $request) // store the medations of the patient with his transaction id
     {

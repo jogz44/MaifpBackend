@@ -23,38 +23,45 @@ namespace App\Swagger;
  *     )
  * )
  *
- * * @OA\Post(
- *     path="/api/laboratory/update/{id}",
+ ** @OA\Post(
+ *     path="/status",
+ *     summary="Update Laboratory Status",
+ *     description="This endpoint updates the status of a laboratory record linked to a consultation based on the given transaction ID." status will be accpect only Returned and Done,
+ *     operationId="updateLaboratoryStatus",
  *     tags={"Laboratory"},
- *     summary="Update status of laboratories under a transaction",
- *     description="Updates the status (Pending, Done, Returned) of all laboratories associated with a given transaction.
- *                  If status is 'Returned', the linked consultation will also be updated to Returned.",
- *     @OA\Parameter(
- *         name="transactionId",
- *         in="path",
- *         required=true,
- *         description="ID of the transaction",
- *         @OA\Schema(type="integer", example=101)
- *     ),
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"status"},
- *             @OA\Property(property="status", type="string", enum={"Done","Returned","Pending"}, example="Returned")
+ *             required={"status","transaction_id"},
+ *             @OA\Property(property="status", type="string", enum={"Done","Returned"}, example="Returned", description="Status of the laboratory"),
+ *             @OA\Property(property="transaction_id", type="integer", example=1, description="Transaction ID associated with the laboratory")
  *         )
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Laboratory statuses updated successfully",
- *         @OA\JsonContent(type="object")
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="No laboratories found for this transaction"
+ *         description="Laboratory status updated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Laboratory status under this transaction updated successfully."),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="id", type="integer", example=10),
+ *                 @OA\Property(property="transaction_id", type="integer", example=1),
+ *                 @OA\Property(property="status", type="string", example="Returned"),
+ *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-09-05T10:20:30.000000Z"),
+ *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-09-05T10:10:00.000000Z")
+ *             )
+ *         )
  *     ),
  *     @OA\Response(
  *         response=422,
- *         description="Validation error"
+ *         description="Validation Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+ *             @OA\Property(property="errors", type="object",
+ *                 @OA\Property(property="status", type="array", @OA\Items(type="string", example="The status field is required.")),
+ *                 @OA\Property(property="transaction_id", type="array", @OA\Items(type="string", example="The transaction id field is required."))
+ *             )
+ *         )
  *     )
  * )
  *

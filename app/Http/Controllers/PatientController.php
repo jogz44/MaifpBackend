@@ -19,6 +19,7 @@ use App\Http\Requests\PatientRequest;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\PatientRequestAll;
 use App\Http\Requests\AddTransactionRequest;
+use App\Models\vw_patient_assessment;
 use Illuminate\Validation\ValidationException;
 
 
@@ -35,40 +36,6 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
-    // public function index()
-    // {
-    //     $patients = Patient::orderby('created_at','desc')->get();
-
-    //     return response()->json($patients);
-    // }
-
-
-    // public function getAllPatientsWithLatestTransaction()
-    // {
-    //     $patients = Patient::with([
-    //         'latestTransaction.consultation:id,transaction_id,status',
-    //         'latestTransaction.laboratories:id,transaction_id,status',
-    //         'latestTransaction.medication:id,transaction_id,status'
-    //     ])->get();
-
-    //     return response()->json($patients);
-    // }
-
-
-    // public function getAllPatientsWithLatestTransaction()//master_list
-    // {
-    //     $patients = Patient::select('id', 'firstname', 'lastname', 'gender', 'age')
-    //     ->with([
-    //         'latestTransaction.consultation:id,transaction_id,status',
-    //         'latestTransaction.laboratories:id,transaction_id,status',
-    //         'latestTransaction.medication:id,transaction_id,status'
-    //     ])
-    //         ->withMax('transaction', 'transaction_date') // add latest transaction date as virtual column
-    //         ->orderByDesc('transaction_max_transaction_date') // sort patients by latest transaction date
-    //         ->get();
-
-    //     return response()->json($patients);
-    // }
 
     public function getAllPatientsWithLatestTransaction()
     {
@@ -110,35 +77,79 @@ class PatientController extends Controller
         return response()->json($patient);
     }
 
+
     // public function assessment()
     // {
     //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status','assessment')
-    //             ->whereDate('transaction_date', now()->toDateString());
+    //         $query->where('status', 'assessment');
+
     //     })
     //         ->with(['transaction' => function ($query) {
-    //             $query->where('status','assessment')
-    //                 ->whereDate('transaction_date', now()->toDateString());
+    //             $query->where('status', 'assessment');
+
     //         }])
     //         ->get();
 
     //     return response()->json($patients);
     // }
 
+
+
     public function assessment()
     {
-        $patients = Patient::whereHas('transaction', function ($query) {
-            $query->where('status', 'assessment');
+        // Fetch data from the view
+        $rows = vw_patient_assessment::all();
 
-        })
-            ->with(['transaction' => function ($query) {
-                $query->where('status', 'assessment');
+        // Group by patient_id
+        $grouped = $rows->groupBy('patient_id');
 
-            }])
-            ->get();
+        // Transform into desired structure
+        $patients = $grouped->map(function ($items) {
+            $patient = $items->first(); // patient details (same for all rows)
+
+            return [
+                "id" => $patient->patient_id,
+                "firstname" => $patient->firstname,
+                "lastname" => $patient->lastname,
+                "middlename" => $patient->middlename,
+                "ext" => $patient->ext,
+                "birthdate" => $patient->birthdate,
+                "contact_number" => $patient->contact_number,
+                "age" => $patient->age,
+                "gender" => $patient->gender,
+                "is_not_tagum" => $patient->is_not_tagum,
+                "street" => $patient->street,
+                "purok" => $patient->purok,
+                "barangay" => $patient->barangay,
+                "city" => $patient->city,
+                "province" => $patient->province,
+                "category" => $patient->category,
+                "is_pwd" => $patient->is_pwd,
+                "is_solo" => $patient->is_solo,
+                "user_id" => $patient->user_id ?? null,
+                "created_at" => $patient->created_at ?? null,
+                "updated_at" => $patient->updated_at ?? null,
+                "transaction" => $items->map(function ($t) {
+                    return [
+                        "id" => $t->id,
+                        "transaction_number" => $t->transaction_number ?? null,
+                        "patient_id" => $t->patient_id,
+                        "transaction_type" => $t->transaction_type,
+                        "status" => $t->status,
+                        "transaction_date" => $t->transaction_date,
+                        "transaction_mode" => $t->transaction_mode ?? null,
+                        "purpose" => $t->purpose ?? null,
+                        "created_at" => $t->created_at ?? null,
+                        "updated_at" => $t->updated_at ?? null,
+                        "representative_id" => $t->representative_id ?? null,
+                    ];
+                })->values()
+            ];
+        })->values();
 
         return response()->json($patients);
     }
+
 
     public function storeAll(PatientRequestAll $request)
     {
