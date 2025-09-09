@@ -53,8 +53,10 @@ class Transaction extends Model
     {
         return $this->hasMany(Laboratory::class, 'transaction_id');
     }
+
     public function laboratories_details()
     {
+
         return $this->hasMany(Laboratories_details::class, 'transaction_id');
     }
 

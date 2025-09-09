@@ -81,6 +81,99 @@ class TransactionController extends Controller
 
         return response()->json($transaction);
     }
+    // public function show($id, Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     $transaction = Transaction::with([
+    //         'vital',
+    //         'laboratories',
+    //         'laboratories_details',
+    //         'representative',
+    //         'patient',
+    //         'consultation',
+    //         'medication'
+    //     ])->findOrFail($id);
+
+    //     // ✅ Get patient name if linked
+    //     $patientName = $transaction->patient
+    //         ? trim("{$transaction->patient->firstname} {$transaction->middlename} {$transaction->lastname} {$transaction->ext}")
+    //         : 'Unknown Patient';
+
+    //     // ✅ Actor name
+    //     $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
+
+    //     // ✅ Log activity
+    //     activity($actorName)
+    //         ->causedBy($user)
+    //         ->performedOn($transaction)
+    //         ->withProperties([
+    //             'ip'   => $request->ip(),
+    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+    //         ])
+    //         ->log("Viewed transaction record (ID: {$transaction->id}) for Patient: {$patientName}");
+
+    //     // ✅ Build response with status fields
+    //     $response = [
+    //         'transaction' => $transaction,
+    //         // 'statuses' => [
+    //         //     'consultation_status' => $transaction->consultation->status ?? null,
+    //         //     'laboratory_status'   => optional($transaction->laboratories->first())->status, // ✅ only first lab
+    //         //     'medication_status'   => $transaction->medication->status ?? null,
+    //         // ]
+    //     ];
+
+    //     return response()->json($response);
+    // }
+
+
+    public function hideButton($id, Request $request)
+    {
+        $user = Auth::user();
+        $transaction = Transaction::with([
+            'vital',
+            'laboratories_details',
+            'representative',
+            'patient',
+            'consultation',
+        ])->findOrFail($id);
+
+        // ✅ Check consultation status
+        $consultationStatus = $transaction->consultation ? $transaction->consultation->status : null;
+
+        $hideButtons = $consultationStatus && $consultationStatus !== 'Returned';
+
+        // ✅ Get patient name if linked
+        $patientName = $transaction->patient
+            ? trim("{$transaction->patient->firstname} {$transaction->middlename} {$transaction->lastname} {$transaction->ext}")
+            : 'Unknown Patient';
+
+        // ✅ Actor name
+        $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
+
+        // ✅ Log activity
+        activity($actorName)
+            ->causedBy($user)
+            ->performedOn($transaction)
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log("Viewed transaction record (ID: {$transaction->id}) for Patient: {$patientName}");
+
+        // ✅ Custom response with flags
+        return response()->json([
+            'transaction' => $transaction,
+            'buttons' => [
+                'medication'   => !$hideButtons,
+                'laboratories' => !$hideButtons,
+                'done'         => !$hideButtons,
+            ],
+        ]);
+    }
+
+
+
 
     public function rep_update(RepresentativeRequest $request, $id) // this function is for the updating or edit the Representative
     {

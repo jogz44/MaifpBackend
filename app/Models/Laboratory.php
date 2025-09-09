@@ -20,4 +20,8 @@ class Laboratory extends Model
     {
         return $this->belongsTo(New_Consultation::class, 'new_consultation_id');
     }
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class, 'transaction_id');
+    }
 }
