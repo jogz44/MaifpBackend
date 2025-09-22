@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vw_patient_guarantee_letter', function (Blueprint $table) {
+        Schema::create('assistances_funds', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('assistance_id');
+            $table->string('fund_source');
+            $table->decimal('fund_amount', 10, 2)->nullable();
             $table->timestamps();
+            $table->foreign('assistance_id')->references('id')->on('assistances')->cascadeOnDelete();
         });
     }
 
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vw_patient_guarantee_letter');
+        Schema::dropIfExists('assistances_funds');
     }
 };

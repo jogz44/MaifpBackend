@@ -36,7 +36,7 @@ class LaboratoryRequest extends FormRequest
     public function messages(): array
     {
     return [
-            'transaction_id.exists' => 'The selected budget_id does not exist.',
+            'transaction_id.exists' => 'The selected transaction_id does not exist.',
 
         ];
     }

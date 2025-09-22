@@ -102,7 +102,7 @@ class BillingController extends Controller
             ], 500);
         }
     }
-    
+
     // fetching the billing of the patient base on his transaction id
     public function billing($transactionId, Request $request)
     {
@@ -113,7 +113,10 @@ class BillingController extends Controller
             'laboratories_details:id,transaction_id,laboratory_type,amount',
             'medication:id,transaction_id,status',
             'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
-            'representative:id,rep_name,rep_relationship,rep_address'
+            'representative:id,rep_name,rep_relationship,rep_address',
+            'assistance.funds:id,assistance_id,fund_source,fund_amount'
+
+
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;
@@ -213,6 +216,22 @@ class BillingController extends Controller
                     'address'       => $transaction->representative->rep_address,
                 ]
                 : null,
+            'assistance' => $transaction->assistance ? [
+                'id' => $transaction->assistance->id,
+                // 'consultation_amount' => $transaction->assistance->consultation_amount,
+                // 'laboratory_total'    => $transaction->assistance->laboratory_total,
+                // 'medication_total'    => $transaction->assistance->medication_total,
+                // 'total_billing'       => $transaction->assistance->total_billing,
+                // 'discount'            => $transaction->assistance->discount,
+                // 'final_billing'       => $transaction->assistance->final_billing,
+                'funds' => $transaction->assistance->funds->map(function ($fund) {
+                    return [
+                        'id'          => $fund->id,
+                        'fund_source' => $fund->fund_source,
+                        'fund_amount' => $fund->fund_amount,
+                    ];
+                }),
+            ] : null,
         ]);
     }
 

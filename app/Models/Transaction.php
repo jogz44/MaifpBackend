@@ -76,5 +76,9 @@ class Transaction extends Model
         return $this->hasMany(Medication_details::class, 'transaction_id');
     }
 
+    public function assistance()
+    {
+        return $this->hasOne(Assistances::class, 'transaction_id');
+    }
 
 }

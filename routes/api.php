@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\AssistanceController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UnitController;
@@ -26,6 +28,8 @@ use App\Http\Controllers\UserCredentialsController;
 use App\Http\Controllers\IndicatorLibraryController;
 use App\Http\Controllers\DailyTransactionsController;
 use App\Http\Controllers\RequisitionIssuanceSlipController;
+
+Route::post('assistance/store',[AssistanceController::class,'store']);
 
 Route::get('transaction/{id}', [TransactionController::class, 'hideButton']); // fetching the transaction on his vital
 Route::post('medications/status', [MedicationController::class, 'status']); // updating the status of the  transaction_id if Done
