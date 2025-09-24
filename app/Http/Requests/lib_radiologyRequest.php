@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class lib_laboratoryRequest extends FormRequest
+class lib_radiologyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +23,9 @@ class lib_laboratoryRequest extends FormRequest
     {
         return [
             //
-            'lab_name' => 'required|string|max:255',
-            'lab_amount' => 'required|numeric',
+            'item_description' => 'required|string|max:255',
             'service_fee' => 'required|numeric',
-            'total_amount' => 'required|numeric',
+            'amount'  => 'required|numeric',
         ];
     }
 }

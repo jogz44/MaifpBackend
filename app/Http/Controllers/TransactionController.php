@@ -21,21 +21,6 @@ class TransactionController extends Controller
     // Add methods for handling transactions here
     // For example, you might have methods to create, update, delete, and fetch transactions
 
-    // public function assessment()
-    // {
-    //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status','assessment')
-    //             ->whereDate('transaction_date', now()->toDateString());
-    //     })
-    //         ->with(['transaction' => function ($query) {
-    //             $query->where('status','assessment')
-    //                 ->whereDate('transaction_date', now()->toDateString());
-    //         }])
-    //         ->get();
-
-    //     return response()->json($patients);
-    // }
-
     public function index()
     {
 
@@ -43,17 +28,6 @@ class TransactionController extends Controller
     return response()->json($transaction);
 
      }
-
-    // public function show($id)
-    // {
-
-    //     $user = Auth::user(); // Get the authenticated user
-    //     // Logic to fetch a transaction by ID
-    //     $transaction = Transaction::with(['vital','laboratories','representative'])->find($id);
-
-    //     return response()->json($transaction);
-
-    // }
 
     public function show($id, Request $request)
     {
@@ -81,50 +55,6 @@ class TransactionController extends Controller
 
         return response()->json($transaction);
     }
-    // public function show($id, Request $request)
-    // {
-    //     $user = Auth::user();
-
-    //     $transaction = Transaction::with([
-    //         'vital',
-    //         'laboratories',
-    //         'laboratories_details',
-    //         'representative',
-    //         'patient',
-    //         'consultation',
-    //         'medication'
-    //     ])->findOrFail($id);
-
-    //     // ✅ Get patient name if linked
-    //     $patientName = $transaction->patient
-    //         ? trim("{$transaction->patient->firstname} {$transaction->middlename} {$transaction->lastname} {$transaction->ext}")
-    //         : 'Unknown Patient';
-
-    //     // ✅ Actor name
-    //     $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
-
-    //     // ✅ Log activity
-    //     activity($actorName)
-    //         ->causedBy($user)
-    //         ->performedOn($transaction)
-    //         ->withProperties([
-    //             'ip'   => $request->ip(),
-    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //         ])
-    //         ->log("Viewed transaction record (ID: {$transaction->id}) for Patient: {$patientName}");
-
-    //     // ✅ Build response with status fields
-    //     $response = [
-    //         'transaction' => $transaction,
-    //         // 'statuses' => [
-    //         //     'consultation_status' => $transaction->consultation->status ?? null,
-    //         //     'laboratory_status'   => optional($transaction->laboratories->first())->status, // ✅ only first lab
-    //         //     'medication_status'   => $transaction->medication->status ?? null,
-    //         // ]
-    //     ];
-
-    //     return response()->json($response);
-    // }
 
 
     public function hideButton($id, Request $request)
@@ -237,36 +167,6 @@ class TransactionController extends Controller
     }
 
     // // this method is for updating vital signs
-    // public function vital_update(VitalRequest $request, $id)
-    // {
-    //     $user = Auth::user(); // Get the authenticated user
-
-    //     // Logic to update a transaction
-    //     $validated =  $request->validated();
-
-    //     $vital = vital::findOrFail($id);
-
-    //     $oldData = $vital->toArray();
-    //     $vital->update($validated);
-    //     $newData = $vital->toArray();
-
-    //     activity($user->first_name . ' ' . $user->last_name)
-    //         ->causedBy($user)
-    //         ->performedOn($vital)
-    //         ->withProperties([
-    //             'ip'      => $request->ip(),
-    //             'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //             'old'     => $oldData,
-    //             'new'     => $newData,
-    //             'changes' => $validated,
-    //         ])
-    //         ->log("Updated Vital Signs for Patient ID: {$vital->patient}");
-
-    //     return response()->json([
-    //         'message' => 'vital updated successfully.',
-    //         'vital' => $vital
-    //     ]);
-    // }
 
     public function vital_update(VitalRequest $request, $id)
     {

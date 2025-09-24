@@ -22,11 +22,10 @@ namespace App\Swagger;
  *         description="Failed to fetch qualified laboratory transactions"
  *     )
  * )
- *
- ** @OA\Post(
+ * @OA\Post(
  *     path="/status",
  *     summary="Update Laboratory Status",
- *     description="This endpoint updates the status of a laboratory record linked to a consultation based on the given transaction ID." status will be accpect only Returned and Done,
+ *     description="This endpoint updates the status of a laboratory record linked to a consultation based on the given transaction ID. Status will only accept 'Returned' or 'Done'.",
  *     operationId="updateLaboratoryStatus",
  *     tags={"Laboratory"},
  *     @OA\RequestBody(
@@ -64,7 +63,7 @@ namespace App\Swagger;
  *         )
  *     )
  * )
- *
+
  *
  * * @OA\Post(
  *     path="/api/Laboratory/store",

@@ -10,7 +10,7 @@
     },
     "servers": [
         {
-            "url": "http://10.0.1.35:8000",
+            "url": "http://192.168.8.182:8000",
             "description": "Local development server"
         }
     ],
@@ -749,6 +749,287 @@
                 }
             }
         },
+        "/api/laboratory/exam/index": {
+            "get": {
+                "tags": [
+                    "Laboratory Examination"
+                ],
+                "summary": "Get all laboratory examinations",
+                "description": "Fetches all available laboratory examinations from the library.",
+                "operationId": "c577ddc43ca792a5b9126135ca668939",
+                "responses": {
+                    "200": {
+                        "description": "List of laboratory examinations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "item_id": {
+                                                "type": "string",
+                                                "example": "LAB001"
+                                            },
+                                            "item_description": {
+                                                "type": "string",
+                                                "example": "Complete Blood Count"
+                                            },
+                                            "service_fee": {
+                                                "type": "number",
+                                                "example": 500
+                                            },
+                                            "amount": {
+                                                "type": "number",
+                                                "example": 600
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "example": "2025-09-24T12:34:56Z"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "example": "2025-09-24T12:34:56Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/laboratory/exam/store": {
+            "post": {
+                "tags": [
+                    "Laboratory Examination"
+                ],
+                "summary": "Create a new laboratory examination",
+                "description": "Stores a new laboratory examination record in the library.",
+                "operationId": "5a01bdc28f25b7d223484f27b213e740",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "item_id",
+                                    "item_description",
+                                    "service_fee",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string",
+                                        "example": "LAB002"
+                                    },
+                                    "item_description": {
+                                        "type": "string",
+                                        "example": "Urinalysis"
+                                    },
+                                    "service_fee": {
+                                        "type": "number",
+                                        "example": 300
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 350
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Laboratory examination created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "item_id": {
+                                            "type": "string",
+                                            "example": "LAB002"
+                                        },
+                                        "item_description": {
+                                            "type": "string",
+                                            "example": "Urinalysis"
+                                        },
+                                        "service_fee": {
+                                            "type": "number",
+                                            "example": 300
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "example": 350
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "example": "2025-09-24T13:00:00Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "example": "2025-09-24T13:00:00Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/laboratory/exam/update/{lib_laboratory_examination_id}": {
+            "post": {
+                "tags": [
+                    "Laboratory Examination"
+                ],
+                "summary": "Update an existing laboratory examination",
+                "description": "Updates a laboratory examination record by ID.",
+                "operationId": "8cb020fbb78a2b2e467b63ad67f79d1e",
+                "parameters": [
+                    {
+                        "name": "lib_laboratory_examination_id",
+                        "in": "path",
+                        "description": "ID of the laboratory examination",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "item_id",
+                                    "item_description",
+                                    "service_fee",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string",
+                                        "example": "LAB003"
+                                    },
+                                    "item_description": {
+                                        "type": "string",
+                                        "example": "Fecalysis"
+                                    },
+                                    "service_fee": {
+                                        "type": "number",
+                                        "example": 400
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 450
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Laboratory examination updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "item_id": {
+                                            "type": "string",
+                                            "example": "LAB003"
+                                        },
+                                        "item_description": {
+                                            "type": "string",
+                                            "example": "Fecalysis"
+                                        },
+                                        "service_fee": {
+                                            "type": "number",
+                                            "example": 400
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "example": 450
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "example": "2025-09-24T14:10:00Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Laboratory examination not found"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/exam/delete/{lib_laboratory_examination_id}": {
+            "delete": {
+                "tags": [
+                    "Laboratory Examination"
+                ],
+                "summary": "Delete a laboratory examination",
+                "description": "Deletes a laboratory examination record by ID.",
+                "operationId": "a3ad30b5e3a2164653259b6e22675635",
+                "parameters": [
+                    {
+                        "name": "lib_laboratory_examination_id",
+                        "in": "path",
+                        "description": "ID of the laboratory examination",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Laboratory examination deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Laboratory examination not found"
+                    }
+                }
+            }
+        },
         "/api/laboratory": {
             "get": {
                 "tags": [
@@ -783,7 +1064,7 @@
                     "Laboratory"
                 ],
                 "summary": "Update Laboratory Status",
-                "description": "This endpoint updates the status of a laboratory record linked to a consultation based on the given transaction ID.",
+                "description": "This endpoint updates the status of a laboratory record linked to a consultation based on the given transaction ID. Status will only accept 'Returned' or 'Done'.",
                 "operationId": "updateLaboratoryStatus",
                 "requestBody": {
                     "required": true,
@@ -1825,6 +2106,238 @@
                 }
             }
         },
+        "/api/laboratory/radiology/index": {
+            "get": {
+                "tags": [
+                    "Radiology"
+                ],
+                "summary": "Fetch all radiology services",
+                "description": "Retrieves all radiology services stored in the library.",
+                "operationId": "7b9b468b45c2df725ad5c961098e1375",
+                "responses": {
+                    "200": {
+                        "description": "List of radiology services",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "item_description": {
+                                                "type": "string",
+                                                "example": "Chest X-Ray"
+                                            },
+                                            "service_fee": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 550
+                                            },
+                                            "amount": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 550
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/laboratory/radiology/store": {
+            "post": {
+                "tags": [
+                    "Radiology"
+                ],
+                "summary": "Store new radiology service",
+                "description": "Stores a new radiology service in the library.",
+                "operationId": "4867cc14d47d9cf1329b9d66288d6c45",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "item_description",
+                                    "service_fee",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "item_description": {
+                                        "type": "string",
+                                        "example": "Chest X-Ray"
+                                    },
+                                    "service_fee": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 550
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 550
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Radiology service stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "radiology": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "item_description": {
+                                                    "type": "string",
+                                                    "example": "Chest X-Ray"
+                                                },
+                                                "service_fee": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 550
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 550
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/radiology/update/{lib_rad_id}": {
+            "post": {
+                "tags": [
+                    "Radiology"
+                ],
+                "summary": "Update a radiology service",
+                "description": "Updates an existing radiology service in the library.",
+                "operationId": "7a4eb3b61f62e016dd671ca296dd95a6",
+                "parameters": [
+                    {
+                        "name": "lib_rad_id",
+                        "in": "path",
+                        "description": "ID of the radiology service",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "item_description": {
+                                        "type": "string",
+                                        "example": "Updated Chest X-Ray"
+                                    },
+                                    "service_fee": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 600
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 600
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Radiology service updated successfully"
+                    },
+                    "404": {
+                        "description": "Radiology service not found"
+                    }
+                }
+            }
+        },
+        "/api/laboratory/radiology/delete/{lib_rad_id}": {
+            "delete": {
+                "tags": [
+                    "Radiology"
+                ],
+                "summary": "Delete a radiology service",
+                "description": "Deletes an existing radiology service from the library.",
+                "operationId": "ada88c0dbbf2e32ddd85869c3ae74f20",
+                "parameters": [
+                    {
+                        "name": "lib_rad_id",
+                        "in": "path",
+                        "description": "ID of the radiology service",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Radiology service deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully deleted"
+                                        },
+                                        "radiology": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Radiology service not found"
+                    }
+                }
+            }
+        },
         "/api/transactions": {
             "get": {
                 "tags": [
@@ -2564,6 +3077,10 @@
     },
     "tags": [
         {
+            "name": "Radiology",
+            "description": "API Endpoints for Radiology Library"
+        },
+        {
             "name": "Billing",
             "description": "Billing"
         },
@@ -2578,6 +3095,10 @@
         {
             "name": "Guarantee Letters",
             "description": "Guarantee Letters"
+        },
+        {
+            "name": "Laboratory Examination",
+            "description": "Laboratory Examination"
         },
         {
             "name": "Laboratory",

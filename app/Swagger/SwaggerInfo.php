@@ -13,7 +13,7 @@ namespace App\Swagger;
  * )
  *
  * @OA\Server(
- *      url="http://10.0.1.35:8000",
+ *      url="http://192.168.8.182:8000",
  *      description="Local development server"
  * )
  */

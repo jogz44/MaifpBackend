@@ -188,12 +188,12 @@ class SystemUserController extends Controller
                 'user' => $user
             ]);
 
-            AuditTrail::create([
-                'action' => 'Updated User',
-                'table_name' => 'users',
-                'user_id' => $user->id,
-                'changes' => 'Updated user information',
-            ]);
+            // AuditTrail::create([
+            //     'action' => 'Updated User',
+            //     'table_name' => 'users',
+            //     'user_id' => $user->id,
+            //     'changes' => 'Updated user information',
+            // ]);
 
         } catch (ValidationException $ve) {
             return response()->json([
@@ -335,106 +335,6 @@ class SystemUserController extends Controller
 
 
     //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------
-
-
-
-    //     public function login_User(Request $request)
-    //     {
-    //         $request->validate([
-    //             'username' => 'required|string',
-    //             'password' => 'required|string',
-    //         ]);
-
-    //         // Find user by username
-    //         $user = User::where('username', $request->username)->first();
-
-    //         // Check credentials
-    //         if (!$user || !Hash::check($request->password, $user->password)) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'The provided credentials are incorrect.',
-    //                 'errors' => [
-    //                     'username' => ['The provided credentials are incorrect.']
-    //                 ]
-    //             ], 401);
-    //         }
-
-    //         // Check if user is active
-    //         if ($user->status !== 'Active') {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Your account has been deactivated. Please contact administrator.',
-    //             ], 403);
-    //         }
-
-    //         // Revoke old tokens
-    //         $user->tokens()->delete();
-
-    //         // Create token
-    //         $token = $user->createToken('pharmacy-system')->plainTextToken;
-
-    //         // Prepare response data
-    //         $userData = [
-    //             'id' => $user->id,
-    //             'first_name' => $user->first_name,
-    //             'last_name' => $user->last_name,
-    //             'middle_name' => $user->middle_name,
-    //             'position' => $user->position,
-    //             'office' => $user->office,
-    //             'status' => $user->status,
-    //             'username' => $user->username,
-    //             'role_id' => $user->role_id,
-    //             'role_name' => $user->role ? $user->role->role_name : 'N/A',
-    //             'created_at' => $user->created_at,
-    //             'full_name' => trim($user->first_name . ' ' . $user->middle_name . ' ' . $user->last_name),
-    //         ];
-
-    //         // 📝 Activity Log (store name instead of ID)
-    //         activity($user->first_name . ' ' . $user->last_name)
-    //             ->causedBy($user) // ✅ sets causer_id automatically
-    //             ->withProperties([
-    //             'ip' => $request->ip(),
-    //             'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //         ])
-    //             ->log(" {$user->first_name} {$user->last_name} logged in");
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Login successful',
-    //             'data' => [
-    //                 'user' => $userData,
-    //                 'token' => $token,
-    //             ]
-    //         ]);
-    //     }
-    //     public function logoutUser(Request $request)
-    //     {
-    //         // Revoke the current user's token
-    //         $user = $request->user();
-    //         $request->user()->currentAccessToken()->delete();
-    //         activity($user->first_name . ' ' . $user->last_name)
-    //             ->causedBy($user)
-    //             ->withProperties(['ip' => $request->ip()])
-    //             ->log("{$user->username} logged out");
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Logout successful'
-    //         ]);
-    //     }
-    //     /**
-    //      * Get authenticated user profile
-    //      */
-    //     public function getAuthenticatedUser(Request $request)
-    //     {
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => [
-    //                 'user' => $request->user()
-    //             ]
-    //         ]);
-    //     }
-    // }
 
     public function login_User(Request $request)
     {

@@ -81,4 +81,9 @@ class Transaction extends Model
         return $this->hasOne(Assistances::class, 'transaction_id');
     }
 
+    public function funds()
+    {
+        return $this->hasMany(AssistancesFunds::class, 'assistance_id');
+    }
+
 }

@@ -20,6 +20,7 @@ class Assistances extends Model
         'final_billing',
         'fund_source',
         'fund_amount',
+        'status'
     ];
 
 
@@ -27,5 +28,14 @@ class Assistances extends Model
     public function funds()
     {
         return $this->hasMany(AssistancesFunds::class, 'assistance_id');
+    }
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
     }
 }

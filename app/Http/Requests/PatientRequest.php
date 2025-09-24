@@ -23,8 +23,8 @@ class PatientRequest extends FormRequest
     {
         return [
             //
-            'firstname' => 'sometimes|required|string|max:255',
-            'lastname' => 'sometimes|required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
             'middlename' => 'sometimes|nullable|string|max:255',
             'ext' => 'sometimes|nullable|string|max:255',
             'birthdate' => 'sometimes|required|date',
@@ -32,12 +32,28 @@ class PatientRequest extends FormRequest
             'age' => 'sometimes|integer',
             'gender' => 'sometimes|required|string|max:11',
             'is_not_tagum' => 'sometimes|boolean',
+
             'street' => 'sometimes|nullable|string|max:255',
             'purok'  => 'sometimes|nullable|string|max:255',
             'barangay' => 'sometimes|required|string|max:255',
             'city' => 'sometimes|nullable|string|max:255',
             'province' => 'sometimes|nullable|string|max:255',
+
+            'permanent_street' => 'sometimes|nullable|string|max:255',
+            'permanent_purok'  => 'sometimes|nullable|string|max:255',
+            'permanent_barangay' => 'sometimes|required|string|max:255',
+            'permanent_city' => 'sometimes|nullable|string|max:255',
+            'permanent_province' => 'sometimes|nullable|string|max:255',
+
             'category' => 'sometimes|required|in:Child,Adult,Senior',
+            'philsys_id' => 'sometimes|nullable|string|max:12',
+            'philhealth_id'  => 'sometimes|nullable|string|max:12',
+            'place_of_birth' => 'sometimes|nullable|string',
+            'civil_status' => 'sometimes|nullable|string',
+            'religion' => 'sometimes|nullable|string',
+            'education' => 'sometimes|nullable|string',
+            'occupation' => 'sometimes|nullable|string',
+            'income' => 'sometimes|nullable|string',
             'is_pwd' => 'sometimes|boolean',
             'is_solo' => 'sometimes|boolean',
             'user_id' => 'sometimes|required|exists:users,id'

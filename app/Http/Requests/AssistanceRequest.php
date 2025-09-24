@@ -31,6 +31,7 @@ class AssistanceRequest extends FormRequest
             'total_billing' => 'nullable|numeric',
             'discount' => 'nullable|numeric',
             'final_billing' => 'nullable|numeric',
+            'status' => 'required|in:Complete',
 
             'assistances' => 'required|array|min:1',
             'assistances.*.fund_source' => 'required|string',

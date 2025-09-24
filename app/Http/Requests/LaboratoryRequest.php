@@ -29,6 +29,8 @@ class LaboratoryRequest extends FormRequest
             'laboratories' => 'required|array|min:1',
             'laboratories.*.laboratory_type' => 'required|string|max:255',
             'laboratories.*.amount' => 'required|numeric',
+            'laboratories.*.service_fee' => 'required|numeric',
+            'laboratories.*.total_amount' => 'required|numeric',
             // 'laboratories.*.status' => 'nullable|in:Pending,Returned,Done',
         ];
     }

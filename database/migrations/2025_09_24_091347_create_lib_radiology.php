@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
-         Schema::create('lib_meds_info',function (Blueprint $table){
-
+        Schema::create('lib_radiology', function (Blueprint $table) {
             $table->id();
-            $table-> string('generic_name')->required();
-            $table-> string('brand_name')->required();
+            $table->string('item_description')->nullable();
+            $table->decimal('service_fee', 15, 2)->nullable();
+            $table->decimal('amount', 15, 2)->nullable();
             $table->timestamps();
-
         });
     }
 
@@ -27,7 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
-        schema::dropIfExists('lib_meds_info');
+        Schema::dropIfExists('lib_radiology');
     }
 };

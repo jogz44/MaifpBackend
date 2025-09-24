@@ -15,6 +15,8 @@ class Laboratories_details extends Model
         'new_consultation_id',
         'laboratory_type',
         'amount',
+        'service_fee',
+        'total_amount'
         // 'status',
     ];
 

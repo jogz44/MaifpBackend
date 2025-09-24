@@ -9,42 +9,89 @@ use App\Models\Transaction;
 use App\Models\GuaranteeLetter;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\GuaranteeLetterRequest;
+use App\Models\Assistances;
+use App\Models\vw_guarantee_patients;
 
 class GuaranteeLetterController extends Controller
 {
     // fetching the patient have complete status on the transaction this method is on the guarantee letter fetch the patient
-    public function index()
+    // public function index()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query
+    //         // ->whereDate('transaction_date', Carbon::today())
+    //             ->where('status', 'Complete');
+    //     })
+    //         ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
+    //             $query->where('status', 'Funded');
+    //         })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q
+    //                 // ->whereDate('transaction_date', Carbon::today())
+    //                     ->where('status', 'Complete');
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+
+
+
+    // }
+
+    public function index() //
     {
-        $patients = Patient::whereHas('transaction', function ($query) {
-            $query
-            // ->whereDate('transaction_date', Carbon::today())
-                ->where('status', 'Complete');
-        })
-            ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
-                $query->where('status', 'Funded');
-            })
-            ->with([
-                'transaction' => function ($q) {
-                    $q
-                    // ->whereDate('transaction_date', Carbon::today())
-                        ->where('status', 'Complete');
-                }
-            ])
-            ->get([
-                'id',
-                'firstname',
-                'lastname',
-                'middlename',
-                'ext',
-                'birthdate',
-                'age',
-                'contact_number',
-                'barangay'
-            ]);
+        $patients = Assistances::with('patient:id,firstname,lastname,middlename,ext,birthdate,contact_number,barangay',
+        'transaction:id,transaction_type',
+        )->get();
 
         return response()->json($patients);
     }
 
+
+
+    // public function index()
+    // {
+    //     $patients = Patient::whereHas('transaction', function ($query) {
+    //         $query
+    //             // ->whereDate('transaction_date', Carbon::today())
+    //             ->where('status', 'Complete');
+    //     })
+    //         ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
+    //             $query->where('status', 'Funded');
+    //         })
+    //         ->with([
+    //             'transaction' => function ($q) {
+    //                 $q
+    //                     // ->whereDate('transaction_date', Carbon::today())
+    //                     ->where('status', 'Complete');
+    //             }
+    //         ])
+    //         ->get([
+    //             'id',
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'age',
+    //             'contact_number',
+    //             'barangay'
+    //         ]);
+
+    //     return response()->json($patients);
+    // }
     // store the guarantee letter then deduc the total_billing of patient on the remainings funds on the budget
     public function store(GuaranteeLetterRequest $request)
     {

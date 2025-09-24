@@ -12,221 +12,17 @@ use App\Models\Laboratories_details;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Validated;
 use App\Http\Requests\LaboratoryRequest;
+use App\Http\Requests\lib_laboratory_examinationRequest;
 use App\Http\Requests\lib_laboratoryRequest;
+use App\Http\Requests\lib_radiologyRequest;
+use App\Models\Lib_lab_examination;
+use App\Models\lib_radiology;
 use App\Models\vw_patient_consultation_return;
 use App\Models\vw_patient_laboratory;
 
 class LaboratoryController extends Controller
 {
-    // this method is for laboratory will fetch the patient need to laboratory
-    // public function qualifiedTransactionsLaboratory()
-    // {
-    //     try {
-    //         $transactions = Transaction::where('status', 'qualified')
-    //             ->where(function ($query) {
-    //                 $query->where('transaction_type', 'Laboratory')
-    //                     ->orWhereHas('consultation', function ($q) {
-    //                         $q->where('status', 'Processing');
-    //                     });
-    //             })
-    //             //  Exclude transactions that already have laboratories with status = 'Done'
-    //             ->whereDoesntHave('laboratories', function ($lab) {
-    //             $lab->whereIn('status', ['Done', 'Returned', 'Pending']);
-    //             })
-    //             // ->whereDate('transaction_date', now()->toDateString()) // ✅ per transaction date (today)
-    //             ->with([
-    //                 'patient',
-    //                 'vital',       // fetch vitals of the transaction
-    //                 'consultation',
-    //                 'laboratories' // fetch laboratories
-    //             ])
-    //             ->get()
-    //             ->groupBy('patient_id')
-    //             ->map(function ($group) {
-    //                 $patient = $group->first()->patient;
-
-    //                 // attach transactions to patient
-    //                 $patient->transaction = $group->map(function ($transaction) {
-    //                     return collect($transaction)->except('patient');
-    //                 })->values();
-
-    //                 return $patient;
-    //             })
-    //             ->values();
-
-    //         return response()->json($transactions);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to fetch qualified transactions.',
-    //             'error' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
-    // public function qualifiedTransactionsLaboratory()
-    // {
-    //     try {
-    //         $rows = DB::table('transaction as t')
-    //             ->join('patient as p', 'p.id', '=', 't.patient_id')
-    //             ->leftJoin('vital as v', 'v.transaction_id', '=', 't.id')
-    //             ->leftJoin('new_consultation as c', 'c.transaction_id', '=', 't.id')
-    //             ->leftJoin('laboratory as l', 'l.transaction_id', '=', 't.id')
-    //             ->select(
-    //                 // Patient fields
-    //                 'p.id as patient_id',
-    //                 'p.firstname',
-    //                 'p.lastname',
-    //                 'p.middlename',
-    //                 'p.ext',
-    //                 'p.birthdate',
-    //                 'p.contact_number',
-    //                 'p.age',
-    //                 'p.gender',
-    //                 'p.is_not_tagum',
-    //                 'p.street',
-    //                 'p.purok',
-    //                 'p.barangay',
-    //                 'p.city',
-    //                 'p.province',
-    //                 'p.category',
-    //                 'p.is_pwd',
-    //                 'p.is_solo',
-    //                 'p.user_id',
-    //                 'p.created_at as patient_created_at',
-    //                 'p.updated_at as patient_updated_at',
-
-    //                 // Transaction fields
-    //                 't.id as transaction_id',
-    //                 't.transaction_number',
-    //                 't.transaction_type',
-    //                 't.status as transaction_status',
-    //                 't.transaction_date',
-    //                 't.transaction_mode',
-    //                 't.purpose',
-    //                 't.created_at as transaction_created_at',
-    //                 't.updated_at as transaction_updated_at',
-    //                 't.representative_id',
-
-    //                 // Consultation fields
-    //                 'c.id as consultation_id',
-    //                 'c.status as consultation_status',
-
-    //                 // Vital fields
-    //                 'v.id as vital_id',
-    //                 'v.height',
-    //                 'v.weight',
-    //                 'v.bmi',
-    //                 'v.pulse_rate',
-    //                 'v.temperature',
-    //                 'v.sp02',
-    //                 'v.heart_rate',
-    //                 'v.blood_pressure',
-    //                 'v.respiratory_rate',
-    //                 'v.medicine',
-    //                 'v.LMP',
-
-    //                 // Laboratory fields
-    //                 'l.id as laboratory_id',
-    //                 'l.status as laboratory_status',
-    //                 'l.created_at as laboratory_created_at',
-    //                 'l.updated_at as laboratory_updated_at'
-    //             )
-    //             ->where('t.status', 'qualified')
-    //             ->where(function ($query) {
-    //                 $query->where('t.transaction_type', 'Laboratory')
-    //                     ->orWhere('c.status', 'Processing');
-    //             })
-    //             // exclude transactions that already have labs with status Done/Returned/Pending
-    //             ->whereNotExists(function ($sub) {
-    //                 $sub->select(DB::raw(1))
-    //                     ->from('laboratory as l2')
-    //                     ->whereRaw('l2.transaction_id = t.id')
-    //                     ->whereIn('l2.status', ['Done', 'Returned', 'Pending']);
-    //             })
-    //             // ->whereDate('t.transaction_date', now()->toDateString()) // ✅ if you want only today's
-    //             ->orderBy('p.id')
-    //             ->get();
-
-    //         // Group by patient
-    //         $grouped = $rows->groupBy('patient_id')->map(function ($group) {
-    //             $first = $group->first();
-
-    //             return [
-    //                 'id'             => $first->patient_id,
-    //                 'firstname'      => $first->firstname,
-    //                 'lastname'       => $first->lastname,
-    //                 'middlename'     => $first->middlename,
-    //                 'ext'            => $first->ext,
-    //                 'birthdate'      => $first->birthdate,
-    //                 'contact_number' => $first->contact_number,
-    //                 'age'            => $first->age,
-    //                 'gender'         => $first->gender,
-    //                 'is_not_tagum'   => $first->is_not_tagum,
-    //                 'street'         => $first->street,
-    //                 'purok'          => $first->purok,
-    //                 'barangay'       => $first->barangay,
-    //                 'city'           => $first->city,
-    //                 'province'       => $first->province,
-    //                 'category'       => $first->category,
-    //                 'is_pwd'         => $first->is_pwd,
-    //                 'is_solo'        => $first->is_solo,
-    //                 'user_id'        => $first->user_id,
-    //                 'created_at'     => $first->patient_created_at,
-    //                 'updated_at'     => $first->patient_updated_at,
-
-    //                 'transaction' => $group->map(function ($t) {
-    //                     return [
-    //                         'id'                 => $t->transaction_id,
-    //                         'transaction_number' => $t->transaction_number,
-    //                         'transaction_type'   => $t->transaction_type,
-    //                         'status'             => $t->transaction_status,
-    //                         'transaction_date'   => $t->transaction_date,
-    //                         'transaction_mode'   => $t->transaction_mode,
-    //                         'purpose'            => $t->purpose,
-    //                         'created_at'         => $t->transaction_created_at,
-    //                         'updated_at'         => $t->transaction_updated_at,
-    //                         'representative_id'  => $t->representative_id,
-
-    //                         'consultation' => $t->consultation_id ? [
-    //                             'id'     => $t->consultation_id,
-    //                             'status' => $t->consultation_status,
-    //                         ] : null,
-
-    //                         'vital' => $t->vital_id ? [
-    //                             'id'              => $t->vital_id,
-    //                             'height'          => $t->height,
-    //                             'weight'          => $t->weight,
-    //                             'bmi'             => $t->bmi,
-    //                             'pulse_rate'      => $t->pulse_rate,
-    //                             'temperature'     => $t->temperature,
-    //                             'sp02'            => $t->sp02,
-    //                             'heart_rate'      => $t->heart_rate,
-    //                             'blood_pressure'  => $t->blood_pressure,
-    //                             'respiratory_rate' => $t->respiratory_rate,
-    //                             'medicine'        => $t->medicine,
-    //                             'LMP'             => $t->LMP,
-    //                         ] : null,
-
-    //                         'laboratory' => $t->laboratory_id ? [
-    //                             'id'         => $t->laboratory_id,
-    //                             'status'     => $t->laboratory_status,
-    //                             'created_at' => $t->laboratory_created_at,
-    //                             'updated_at' => $t->laboratory_updated_at,
-    //                         ] : null,
-    //                     ];
-    //                 })->values()
-    //             ];
-    //         })->values();
-
-    //         return response()->json($grouped);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to fetch qualified laboratory transactions.',
-    //             'error'   => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
+    
     public function qualifiedTransactionsLaboratory()
     {
         try {
@@ -307,49 +103,6 @@ class LaboratoryController extends Controller
         }
     }
 
-   
-
-    // // this method for the status on the laboratory that have connected on the consultation for the patient
-    // public function status(Request $request, $transactionId)
-    // {
-
-    //     // validate request
-    //     $validated = $request->validate([
-    //         'status' => 'required|in:Done,Returned,Pending'
-    //     ]);
-
-    //     // find all labs by transaction_id
-    //     $labs = Laboratory::where('transaction_id', $transactionId)->get();
-
-    //     if ($labs->isEmpty()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'No laboratories found for this transaction.'
-    //         ], 404);
-    //     }
-
-    //     // update all labs
-    //     foreach ($labs as $lab) {
-    //         $lab->update($validated);
-
-    //         // If lab is Returned, also update related consultation
-    //         if ($lab->status === 'Returned' && $lab->new_consultation_id) {
-    //             $consultation = New_Consultation::find($lab->new_consultation_id);
-
-    //             if ($consultation) {
-    //                 $consultation->status = 'Returned';
-    //                 $consultation->save();
-    //             }
-    //         }
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'All laboratories under this transaction updated successfully.',
-    //         'data' => $labs
-    //     ]);
-    // }
-
 
     // this method for updating the status on the laboratory that is connected to the consultation for the patient
     public function Laboratory_status(Request $request)
@@ -412,6 +165,8 @@ class LaboratoryController extends Controller
                 'new_consultation_id' => $newConsultationId, // set only if exists
                 'laboratory_type' => $labData['laboratory_type'],
                 'amount' => $labData['amount'],
+                'service_fee' => $labData['service_fee'],
+                'total_amount' => $labData['total_amount'],
                 // 'status' => $labData['status'] ?? 'Pending',
             ]);
         }
@@ -544,4 +299,76 @@ class LaboratoryController extends Controller
         return response()->json($laboratory);
     }
 
+
+
+
+    // lib laboratory examination
+    // ✅ Store
+    public function lib_lab_store(lib_laboratory_examinationRequest $request)
+    {
+        $validated = $request->validated();
+        $lib = Lib_lab_examination::create($validated);
+
+        return response()->json($lib);
+    }
+
+    // ✅ Index
+    public function lib_lab_index()
+    {
+        $lib = Lib_lab_examination::all();
+
+        return response()->json($lib);
+    }
+
+    // ✅ Update
+    public function lib_lab_update(lib_laboratory_examinationRequest $request, $lib_laboratory_examination_id)
+    {
+        $validated = $request->validated();
+        $lib = Lib_lab_examination::findOrFail($lib_laboratory_examination_id);
+        $lib->update($validated);
+
+        return response()->json($lib);
+    }
+
+    // ✅ Delete
+    public function lib_lab_delete($lib_laboratory_examination_id)
+    {
+        $lib = Lib_lab_examination::findOrFail($lib_laboratory_examination_id);
+        $lib->delete(); // ❌ no need to pass $lib, just call ->delete()
+
+        return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    //lib_radiology
+
+    public function lib_rad_index(){
+
+        $lib = lib_radiology::all();
+
+        return response()->json($lib);
+    }
+
+    public function lib_rad_store(lib_radiologyRequest $request)
+    {
+        $validated = $request->validated();
+        $lib = lib_radiology::create($validated);
+
+        return response()->json($lib);
+    }
+
+    public function lib_rad_update(lib_radiologyRequest $request ,$lib_rad_id)
+    {
+        $validated = $request->validated();
+        $lib = lib_radiology::findOrFail($lib_rad_id);
+        $lib->update($validated);
+        return response()->json($lib);
+    }
+
+    public function lib_rad_delete($lib_rad_id)
+    {
+
+        $lib = lib_radiology::findOrFail($lib_rad_id);
+        $lib->delete();
+        return response()->json($lib);
+    }
 }

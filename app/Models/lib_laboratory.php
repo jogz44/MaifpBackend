@@ -14,6 +14,8 @@ class lib_laboratory extends Model
     protected $fillable =[
         'lab_name',
         'lab_amount',
+        'service_fee',
+        'total_amount'
 
     ];
 

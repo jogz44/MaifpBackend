@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class AssistancesFunds extends Model
 {
     //
-
-
     protected $fillable = [
         'assistance_id',
         'fund_source',

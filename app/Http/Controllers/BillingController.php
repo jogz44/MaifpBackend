@@ -12,95 +12,12 @@ use Illuminate\Support\Facades\Auth;
 
 class BillingController extends Controller
 {
-    //
 
+    public function index(){
 
-    // public function index() // fetching the patient have billing
-    // {
-    //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status', '!=', 'Complete') // ✅ exclude completed transactions
-    //             ->where(function ($q) {
-    //                 // Case 1: Transaction with consultation Done
-    //                 $q->whereHas('consultation', function ($con) {
-    //                     $con->where('status', 'Done');
-    //                 })
-    //                     // Case 2: Transaction without consultation but with lab Done
-    //                     ->orWhere(function ($q2) {
-    //                         $q2->whereDoesntHave('consultation')
-    //                             ->whereHas('laboratories', function ($lab) {
-    //                                 $lab->where('status', 'Done');
-    //                             });
-    //                     })
-    //                     // ✅ Case 3: Transaction with medication Done
-    //                     ->orWhereHas('medication', function ($med) {
-    //                         $med->where('status', 'Done');
-    //                     });
-    //             });
-    //     })
-    //         ->with([
-    //             'transaction' => function ($q) {
-    //                 $q->where('status', '!=', 'Complete'); // ✅ exclude completed here too
-    //             }
-    //         ])
-    //         ->get([
-    //             'id',
-    //             'firstname',
-    //             'lastname',
-    //             'middlename',
-    //             'ext',
-    //             'birthdate',
-    //             'age',
-    //             'contact_number',
-    //             'barangay'
-    //         ]);
+        $billing  = vw_patient_billing::all();
 
-    //     return response()->json($patients);
-    // }
-    public function index()
-    {
-        try {
-            $records = vw_patient_billing::all();
-
-            $grouped = $records->groupBy('patient_id')->map(function ($items) {
-                $first = $items->first();
-
-                return [
-                    'id'             => $first->patient_id,
-                    'firstname'      => $first->firstname,
-                    'lastname'       => $first->lastname,
-                    'middlename'     => $first->middlename,
-                    'ext'            => $first->ext,
-                    'birthdate'      => $first->birthdate,
-                    'age'            => $first->age,
-                    'contact_number' => $first->contact_number,
-                    'barangay'       => $first->barangay,
-
-                    'transaction' => $items->map(function ($row) {
-                        return [
-                            'id'                 => $row->transaction_id,
-                            'transaction_number' => $row->transaction_number,
-                            'patient_id'         => $row->patient_id,
-                            'transaction_type'   => $row->transaction_type,
-                            'status'             => $row->transaction_status,
-                            'transaction_date'   => $row->transaction_date,
-                            'transaction_mode'   => $row->transaction_mode,
-                            'purpose'            => $row->purpose,
-                            'created_at'         => $row->transaction_created_at,
-                            'updated_at'         => $row->transaction_updated_at,
-                            'representative_id'  => $row->representative_id ?? null,
-                        ];
-                    })->values()
-                ];
-            })->values();
-
-            return response()->json($grouped);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch patient billing.',
-                'error'   => $th->getMessage()
-            ], 500);
-        }
+        return response()->json($billing);
     }
 
     // fetching the billing of the patient base on his transaction id
@@ -115,8 +32,6 @@ class BillingController extends Controller
             'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
             'representative:id,rep_name,rep_relationship,rep_address',
             'assistance.funds:id,assistance_id,fund_source,fund_amount'
-
-
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;

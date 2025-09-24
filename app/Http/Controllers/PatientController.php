@@ -44,7 +44,7 @@ class PatientController extends Controller
                 'latestTransaction.consultation:id,transaction_id,status',
                 'latestTransaction.laboratories:id,transaction_id,status',
                 'latestTransaction.medication:id,transaction_id,status',
-            'latestTransaction.guaranteeLetter:id,transaction_id,status',
+            // 'latestTransaction.guaranteeLetter:id,transaction_id,status',
 
             ])
             ->get();
@@ -57,7 +57,22 @@ class PatientController extends Controller
     {
         $user = Auth::user();
         $patient = Patient::select(['id','lastname','firstname','contact_number',
-        'middlename','ext','gender','age','ext','birthdate','category','purok','street','barangay','city'])
+        'middlename','ext','gender','age','ext','birthdate','category','purok','street','barangay','city',
+            'philsys_id',
+            'philhealth_id',
+            'place_of_birth',
+            'civil_status',
+            'religion',
+            'education',
+            'occupation',
+            'income',
+
+            'pernament_street',
+            'pernament_purok',
+            'pernament_barangay',
+            'pernament_city',
+            'pernament_province',
+        ])
         ->with('transaction')->find($id);
 
         // ✅ Patient full name
@@ -95,6 +110,7 @@ class PatientController extends Controller
 
 
 
+
     public function assessment()
     {
         // Fetch data from the view
@@ -124,8 +140,24 @@ class PatientController extends Controller
                 "city" => $patient->city,
                 "province" => $patient->province,
                 "category" => $patient->category,
+                "philsys_id" =>$patient->philsys_id,
+                "philhealth_id"  => $patient->philhealth_id,
+                "place_of_birth"  => $patient->place_of_birth,
+                "civil_status"  => $patient->civil_status,
+                "religion"  => $patient->religion,
+                "education"  => $patient->education,
+                "occupation"  => $patient->occupation,
+                "income"  => $patient->income,
                 "is_pwd" => $patient->is_pwd,
                 "is_solo" => $patient->is_solo,
+
+
+                "pernament_street" => $patient->pernament_street,
+                "pernament_purok" => $patient->pernament_purok,
+                "pernament_barangay" => $patient->pernament_barangay,
+                "pernament_city" => $patient->pernament_city,
+                "pernament_province" => $patient->pernament_province,
+
                 "user_id" => $patient->user_id ?? null,
                 "created_at" => $patient->created_at ?? null,
                 "updated_at" => $patient->updated_at ?? null,
@@ -150,6 +182,15 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
+        // public function assessment()
+        // {
+        //     // Fetch data from the view
+        //     $rows = vw_patient_assessment::all();
+
+
+        //     return response()->json($rows);
+
+        // }
 
     public function storeAll(PatientRequestAll $request)
     {
@@ -174,8 +215,23 @@ class PatientController extends Controller
                 'city',
                 'province',
                 'category',
+                'philsys_id',
+                'philhealth_id',
+                'place_of_birth',
+                'civil_status',
+                'religion',
+                'education',
+                'occupation',
+                'income',
                 'is_pwd',
-                'is_solo'
+                'is_solo',
+
+                'permanent_street',
+                'permanent_purok',
+                'permanent_barangay',
+                'permanent_city',
+                'permanent_province',
+
             ]);
 
             // ✅ Check if patient already exists
@@ -207,7 +263,7 @@ class PatientController extends Controller
                 'rep_purok',
                 'rep_street',
                 'rep_city',
-                 'rep_province'
+                'rep_province'
             ]);
 
             $representative = Representative::create($representativeData);
@@ -326,10 +382,10 @@ class PatientController extends Controller
 
     public function total_count_badge()
     {
-        $today = now()->toDateString();
+
 
         // ✅ Count of assessed patients
-        $count_assessment = Patient::whereHas('transaction', function ($query) use ($today) {
+        $count_assessment = Patient::whereHas('transaction', function ($query) {
             $query->where('status', 'assessment');
                 // ->whereDate('transaction_date', $today);
         })->count();
@@ -383,41 +439,27 @@ class PatientController extends Controller
             ->count('patient_id');
 
         // ✅ Billing patients
-        $count_billing = Patient::whereHas('transaction', function ($query) use ($today) {
-            $query
-            // ->whereDate('transaction_date', $today)
-                ->where('status', '!=', 'Complete')
-                ->where(function ($q) {
-                    $q->whereHas('consultation', function ($con) {
-                        $con->where('status', 'Done');
+        $count_billing = Transaction::where('status', '!=', 'Complete')
+            ->where(function ($q) {
+                $q->whereHas('consultation', function ($con) {
+                    $con->where('status', 'Done');
+                })
+                    ->orWhere(function ($q2) {
+                        $q2->whereDoesntHave('consultation')
+                            ->whereHas('laboratories', function ($lab) {
+                                $lab->where('status', 'Done');
+                            });
                     })
-                        ->orWhere(function ($q2) {
-                            $q2->whereDoesntHave('consultation')
-                                ->whereHas('laboratories', function ($lab) {
-                                    $lab->where('status', 'Done');
-                                });
-
-                        })
-                    // ✅ Case 3: Transaction with medication Done
                     ->orWhereHas('medication', function ($med) {
                         $med->where('status', 'Done');
                     });
-                });
-        })
-            ->distinct('id')
-            ->count('id');
-
-        // ✅ Guarantee letter patients
-        $count_guarantee = Patient::whereHas('transaction', function ($query) use ($today) {
-            $query
-                // ->whereDate('transaction_date', $today)
-                ->where('status', 'Complete');
-        })
-            ->whereDoesntHave('transaction.guaranteeLetter', function ($query) {
-                $query->where('status', 'Funded');
             })
-            ->distinct('id')
-            ->count('id');
+            ->count(); // counts transactions, not patients
+        // // ✅ Guarantee letter patients
+        $count_guarantee = Patient::whereHas('transaction', function ($query) {
+            $query
+                ->where('status', 'Complete');
+        }) ->count();
 
         return response()->json([
             'totalAssessedCount'   => $count_assessment,
@@ -429,5 +471,6 @@ class PatientController extends Controller
             'totalGLCount'         => $count_guarantee,
         ]);
     }
+
 
 }

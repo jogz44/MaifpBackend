@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::table('tbl_daily_transactions', function (Blueprint $table) {
-
-            $table->enum('status', ['Pending'])->default('Pending');
-
+        Schema::table('lib_laboratory', function (Blueprint $table) {
+            $table->decimal('service_fee',15,2)->nullable()->after('lab_amount');
+            $table->decimal('total_amount',15,2)->nullable()->after('service_fee');
         });
-
     }
 
     /**
@@ -24,11 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
-        Schema::table('tbl_daily_transactions', function (Blueprint $table) {
-            // Rollback: remove added columns
-            $table->dropColumn('status');
+        Schema::table('lib_laboratory', function (Blueprint $table) {
+            $table->dropColumn(['service_fee','total_amount']);
         });
     }
-
 };

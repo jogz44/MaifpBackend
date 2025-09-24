@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
-        Schema::create('tbl_auditlogs', function (Blueprint $table) {
+        Schema::create('lib_laboratory_examination', function (Blueprint $table) {
             $table->id();
-            $table->string('action');
-            $table->string('table_name');
-            $table->unsignedBigInteger('user_id');
-            $table->string('changes');
+            $table->string('item_id')->nullable();
+            $table->string('item_description')->nullable();
+            $table->decimal('service_fee',15,2)->nullable();
+            $table->decimal('amount',15,2)->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_auditlogs');
+        Schema::dropIfExists('lib_laboratory_examination');
     }
 };

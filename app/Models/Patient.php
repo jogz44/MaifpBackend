@@ -28,7 +28,22 @@ class Patient extends Model
         'barangay',
         'city',
         'province',
+
+        'permanent_street',
+        'permanent_purok',
+        'permanent_barangay',
+        'permanent_city',
+        'permanent_province',
+
         'category',
+        'philsys_id',
+        'philhealth_id',
+        'place_of_birth',
+        'civil_status',
+        'religion',
+        'education',
+        'occupation',
+        'income',
         'is_pwd',
         'is_solo',
         'user_id'
@@ -37,6 +52,10 @@ class Patient extends Model
     public function transaction()
     {
         return $this->hasMany(Transaction::class);
+    }
+    public function assistance()
+    {
+        return $this->hasMany(Assistances::class);
     }
     // public function medication()
     // {

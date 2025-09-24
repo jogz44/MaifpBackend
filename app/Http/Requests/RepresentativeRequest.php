@@ -23,7 +23,7 @@ class RepresentativeRequest extends FormRequest
     {
         return [
             //
-            'rep_name' => 'sometimes|required|string|max:255',
+            'rep_name' => 'sometimes|nullable|string|max:255',
             'rep_relationship' => 'sometimes|nullable|string|max:255',
             'rep_contact' => 'sometimes|nullable|string|max:255',
             'rep_barangay' => 'sometimes|nullable|string|max:255',

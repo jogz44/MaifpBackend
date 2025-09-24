@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
-        Schema::create('lib_unit',function (Blueprint $table){
-
-            $table->id();
-            $table-> string('description')->required();
-            $table-> string('symbol')->required();
-            $table->timestamps();
-
-
+        Schema::table('assistances', function (Blueprint $table) {
+            //
+            $table->enum('status', ['Complete'])->nullable()->after('final_billing');
         });
     }
 
@@ -28,7 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
-        schema::dropIfExists('lib_unit');
+        Schema::table('assistances', function (Blueprint $table) {
+            //
+            $table->dropColumn(['status']);
+        });
     }
 };
