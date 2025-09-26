@@ -20,15 +20,22 @@ class Assistances extends Model
         'final_billing',
         'fund_source',
         'fund_amount',
-        'status'
+        'status',
+        'laboratories_details',
+        'medication',
+        'gl_number'
     ];
 
-
+    protected $casts = [
+        'medication' => 'array',
+        'laboratories_details' => 'array',
+    ];
 
     public function funds()
     {
         return $this->hasMany(AssistancesFunds::class, 'assistance_id');
     }
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);
@@ -37,5 +44,15 @@ class Assistances extends Model
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);
+    }
+
+    public function medications()
+    {
+        return $this->hasMany(Medication::class, );
+    }
+
+    public function laboratories_details()
+    {
+        return $this->hasMany(laboratories_Details::class, );
     }
 }

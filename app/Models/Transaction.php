@@ -61,6 +61,19 @@ class Transaction extends Model
     }
 
 
+    public function radiologies_details()
+    {
+
+        return $this->hasMany(lab_radiology_details::class, 'transaction_id');
+    }
+
+
+    public function examination_details()
+    {
+
+        return $this->hasMany(lab_examination_details::class, 'transaction_id');
+    }
+
     public function guaranteeLetter()
     {
         return $this->hasOne(GuaranteeLetter::class, 'transaction_id');

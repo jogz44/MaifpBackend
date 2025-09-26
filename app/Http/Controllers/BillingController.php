@@ -27,7 +27,9 @@ class BillingController extends Controller
         $transaction = Transaction::with([
             'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category',
             'consultation:id,transaction_id,amount',
-            'laboratories_details:id,transaction_id,laboratory_type,amount',
+            'laboratories_details:id,transaction_id,laboratory_type,total_amount',
+            'radiologies_details:id,transaction_id,item_description,selling_price,total_amount',
+            'examination_details:id,transaction_id,item_id,item_description,selling_price,total_amount',
             'medication:id,transaction_id,status',
             'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
             'representative:id,rep_name,rep_relationship,rep_address',
@@ -35,7 +37,9 @@ class BillingController extends Controller
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;
-        $laboratoryTotal    = $transaction->laboratories_details->sum('amount');
+        $laboratoryTotal    = $transaction->laboratories_details->sum('total_amount');
+        $radiologyTotal    = $transaction->radiologies_details->sum('total_amount');
+        $examinationTotal    = $transaction->examination_details->sum('total_amount');
 
         //  Medication calculation (quantity × amount)
         $medicationTotal = 0;
@@ -58,7 +62,7 @@ class BillingController extends Controller
             $medicationTotal = $medicationDetails->sum('total');
         }
 
-        $totalBilling = $consultationAmount + $laboratoryTotal + $medicationTotal;
+        $totalBilling = $consultationAmount + $laboratoryTotal + $medicationTotal+ $radiologyTotal+ $examinationTotal;
 
         //  Apply 20% discount if Senior OR PWD
         $discount = 0;
@@ -110,6 +114,7 @@ class BillingController extends Controller
             'transaction_date'    => $transaction->transaction_date,
             'consultation_amount' => $consultationAmount,
             'laboratory_total'    => $laboratoryTotal,
+            'radiology_total'    => $radiologyTotal,
             'medication_total'    => $medicationTotal,
             'total_billing'       => $totalBilling,   // before discount
             'discount'            => $discount,       // ✅ show discount amount
@@ -118,8 +123,30 @@ class BillingController extends Controller
                 return [
                     'id'              => $lab->id,
                     'laboratory_type' => $lab->laboratory_type,
-                    'amount'          => $lab->amount,
-                    'status'          => $lab->status,
+                    'total_amount' => $lab->total_amount,
+                    // 'status'          => $lab->status,
+                ];
+            }),
+            'radiologies_details'        => $transaction->radiologies_details->map(function ($rad) {
+                return [
+                    'id'              => $rad->id,
+                    'item_description' => $rad->item_description,
+                    // 'selling_price' => $rad->selling_price,
+                    // 'service_fee' => $rad->service_fee,
+                    'total_amount' =>  $rad->total_amount,
+
+                ];
+            }),
+
+            'examination_details'        => $transaction->examination_details->map(function ($exam) {
+                return [
+                    'id'              => $exam->id,
+                    'item_id' => $exam->item_id,
+                    'item_description' => $exam->item_description,
+                    // 'selling_price' => $rad->selling_price,
+                    // 'service_fee' => $rad->service_fee,
+                    'total_amount' =>  $exam->total_amount,
+
                 ];
             }),
             'medication'          => $medicationDetails,

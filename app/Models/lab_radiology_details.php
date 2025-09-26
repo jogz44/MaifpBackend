@@ -4,14 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class lib_radiology extends Model
+class lab_radiology_details extends Model
 {
     //
 
-    protected $table = 'lib_radiology';
+    protected $table = 'lab_radiology_details';
+
 
     protected $fillable = [
 
+        'transaction_id',
+        'new_consultation_id',
         'item_description',
         'service_fee',
         'total_amount',

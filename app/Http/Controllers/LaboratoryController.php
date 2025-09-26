@@ -15,14 +15,20 @@ use App\Http\Requests\LaboratoryRequest;
 use App\Http\Requests\lib_laboratory_examinationRequest;
 use App\Http\Requests\lib_laboratoryRequest;
 use App\Http\Requests\lib_radiologyRequest;
+use App\Http\Requests\Mammogram_examination_Request;
+use App\Http\Requests\UltraSoundRequest;
+use App\Models\lab_examination_details;
+use App\Models\lab_radiology_details;
 use App\Models\Lib_lab_examination;
+use App\Models\lib_mammogram_examination;
 use App\Models\lib_radiology;
+use App\Models\lib_ultra_sound;
 use App\Models\vw_patient_consultation_return;
 use App\Models\vw_patient_laboratory;
 
 class LaboratoryController extends Controller
 {
-    
+
     public function qualifiedTransactionsLaboratory()
     {
         try {
@@ -143,13 +149,63 @@ class LaboratoryController extends Controller
 
 
     //  this method is for saving the laboratory of the patient with his transaction with amount
+    // public function store(LaboratoryRequest $request)
+    // {
+    //     $user = Auth::user();
+
+    //     $validated = $request->validated();
+
+    //     // Check if transaction has consultation
+    //     $transaction = \App\Models\Transaction::with('consultation')
+    //         ->findOrFail($validated['transaction_id']);
+
+    //     $newConsultationId = $transaction->consultation
+    //         ? $transaction->consultation->id
+    //         : null;
+
+    //     $labs = [];
+
+    //     foreach ($validated['laboratories'] as $labData) {
+    //         $labs[] = Laboratories_details::create([
+    //             'transaction_id' => $validated['transaction_id'],
+    //             'new_consultation_id' => $newConsultationId, // set only if exists
+    //             'laboratory_type' => $labData['laboratory_type'],
+    //             'amount' => $labData['amount'],
+    //             'service_fee' => $labData['service_fee'],
+    //             'total_amount' => $labData['total_amount'],
+    //             // 'status' => $labData['status'] ?? 'Pending',
+    //         ]);
+    //     }
+
+    //     // Prepare log details
+    //     $labDetails = collect($labs)->map(function ($lab) {
+    //         return "{$lab->laboratory_type} (₱{$lab->amount})";
+    //     })->implode(', ');
+
+    //     // Log activity
+    //     activity($user->first_name . ' ' . $user->last_name)
+    //         ->causedBy($user)
+    //         ->performedOn($transaction) // better to log on the transaction
+    //         ->withProperties([
+    //             'ip'   => $request->ip(),
+    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+    //             'labs' => $labs
+    //         ])
+    //         ->log("Added new laboratory services: {$labDetails}");
+
+
+    //     return response()->json([
+    //         'message' => 'Laboratories stored successfully',
+    //         'laboratories' => $labs
+    //     ]);
+    // }
+
+
     public function store(LaboratoryRequest $request)
     {
-        $user = Auth::user();
-
+        // $user = Auth::user();
         $validated = $request->validated();
 
-        // Check if transaction has consultation
         $transaction = \App\Models\Transaction::with('consultation')
             ->findOrFail($validated['transaction_id']);
 
@@ -157,42 +213,65 @@ class LaboratoryController extends Controller
             ? $transaction->consultation->id
             : null;
 
-        $labs = [];
+        $savedRecords = [];
 
-        foreach ($validated['laboratories'] as $labData) {
-            $labs[] = Laboratories_details::create([
-                'transaction_id' => $validated['transaction_id'],
-                'new_consultation_id' => $newConsultationId, // set only if exists
-                'laboratory_type' => $labData['laboratory_type'],
-                'amount' => $labData['amount'],
-                'service_fee' => $labData['service_fee'],
-                'total_amount' => $labData['total_amount'],
-                // 'status' => $labData['status'] ?? 'Pending',
-            ]);
+        // ✅ Save Laboratories
+        if (!empty($validated['laboratories'])) {
+            foreach ($validated['laboratories'] as $labData) {
+                $savedRecords['laboratories'][] = Laboratories_details::create([
+                    'transaction_id'      => $validated['transaction_id'],
+                    'new_consultation_id' => $newConsultationId,
+                    'laboratory_type'     => $labData['laboratory_type'],
+                    'amount'              => $labData['amount'],
+                    'service_fee'         => $labData['service_fee'],
+                    'total_amount'        => $labData['total_amount'],
+                ]);
+            }
+        }
+
+        // ✅ Save Radiologies
+        if (!empty($validated['radiologies'])) {
+            foreach ($validated['radiologies'] as $radData) {
+                $savedRecords['radiologies'][] = lab_radiology_details::create([
+                    'transaction_id'      => $validated['transaction_id'],
+                    'new_consultation_id' => $newConsultationId,
+                    'item_description'    => $radData['item_description'],
+                    'selling_price'       => $radData['selling_price'],
+                    'service_fee'         => $radData['service_fee'],
+                    'total_amount'        => $radData['total_amount'],
+                ]);
+            }
+        }
+
+        // ✅ Save Examinations
+        if (!empty($validated['examination'])) {
+            foreach ($validated['examination'] as $examData) {
+                $savedRecords['examination'][] = lab_examination_details::create([
+                    'transaction_id'      => $validated['transaction_id'],
+                    'new_consultation_id' => $newConsultationId,
+                    'item_id'             => $examData['item_id'],
+                    'item_description'    => $examData['item_description'],
+                    'selling_price'       => $examData['selling_price'],
+                    'service_fee'         => $examData['service_fee'],
+                    'total_amount'        => $examData['total_amount'],
+                ]);
+            }
         }
 
         // Prepare log details
-        $labDetails = collect($labs)->map(function ($lab) {
-            return "{$lab->laboratory_type} (₱{$lab->amount})";
-        })->implode(', ');
-
-        // Log activity
-        activity($user->first_name . ' ' . $user->last_name)
-            ->causedBy($user)
-            ->performedOn($transaction) // better to log on the transaction
-            ->withProperties([
-                'ip'   => $request->ip(),
-                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                'labs' => $labs
-            ])
-            ->log("Added new laboratory services: {$labDetails}");
+        // $labDetails = collect($savedRecords)->map(function ($lab) { return "{$lab->laboratory_type} (₱{$lab->amount})";
+        // })->implode(', '); // Log activity
+        // activity($user->first_name . ' ' . $user->last_name) ->causedBy($user) ->performedOn($transaction) // better to log on the transaction
+        //  ->withProperties([ 'ip' => $request->ip(), 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'), 'labs' => $savedRecords ])
+        //  ->log("Added new laboratory services: {$labDetails}");
 
 
         return response()->json([
-            'message' => 'Laboratories stored successfully',
-            'laboratories' => $labs
+            'message' => 'Records stored successfully',
+            'data'    => $savedRecords,
         ]);
     }
+
 
     //for library laboratory store
     public function lib_laboratory_store(lib_laboratoryRequest $request)
@@ -371,4 +450,75 @@ class LaboratoryController extends Controller
         $lib->delete();
         return response()->json($lib);
     }
+
+    //  lib ultra sound
+    public function lib_ultra_sound_index()
+    {
+
+        $lib = lib_ultra_sound::all();
+
+        return response()->json($lib);
+    }
+
+    public function lib_ultra_sound_store(UltraSoundRequest $request)
+    {
+        $validated = $request->validated();
+        $lib = lib_ultra_sound::create($validated);
+
+        return response()->json($lib);
+    }
+
+    public function lib_ultra_sound_update(UltraSoundRequest $request, $lib_ultra_sound_id)
+    {
+        $validated = $request->validated();
+        $lib = lib_ultra_sound::findOrFail($lib_ultra_sound_id);
+        $lib->update($validated);
+        return response()->json($lib);
+    }
+
+    public function lib_ultra_sound_delete($lib_ultra_sound_id)
+    {
+
+        $lib = lib_ultra_sound::findOrFail($lib_ultra_sound_id);
+        $lib->delete();
+        return response()->json($lib);
+    }
+
+
+    // Lib Mammogram examination
+
+
+    public function lib_mammogram_index()
+    {
+
+        $lib = lib_mammogram_examination::all();
+
+        return response()->json($lib);
+    }
+
+    public function lib_mammogram_store(Mammogram_examination_Request $request)
+    {
+        $validated = $request->validated();
+        $lib = lib_mammogram_examination::create($validated);
+
+        return response()->json($lib);
+    }
+
+    public function lib_mammogram_update(Mammogram_examination_Request $request, $lib_mammogram_id)
+    {
+        $validated = $request->validated();
+        $lib = lib_mammogram_examination::findOrFail($lib_mammogram_id);
+        $lib->update($validated);
+        return response()->json($lib);
+    }
+
+    public function lib_mammogram_delete($lib_mammogram_id)
+    {
+
+        $lib = lib_mammogram_examination::findOrFail($lib_mammogram_id);
+        $lib->delete();
+        return response()->json($lib);
+    }
+
+
 }

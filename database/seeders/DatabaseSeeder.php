@@ -25,6 +25,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             PatientTransactionVitalSeeder::class, // ✅ add this
+           LibLaboratorySeeder::class,
+            DoctorfeeSeeder::class,
+            LibRadiologySeeder::class,
 
         ]);
     }

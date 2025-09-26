@@ -28,6 +28,7 @@ return new class extends Migration
     {
         Schema::table('patient', function (Blueprint $table) {
             //
+            $table->dropColumn(['permanent_street', 'permanent_purok', 'permanent_barangay', 'permanent_city', 'permanent_province']);
         });
     }
 };

@@ -25,7 +25,8 @@ class lib_radiologyRequest extends FormRequest
             //
             'item_description' => 'required|string|max:255',
             'service_fee' => 'required|numeric',
-            'amount'  => 'required|numeric',
+            'total_amount'  => 'required|numeric',
+            'selling_price' => 'required|numeric',
         ];
     }
 }

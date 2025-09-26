@@ -38,7 +38,7 @@ class AddTransactionRequest extends FormRequest
             'transaction_type' => 'required|string|max:255',
             'transaction_date' => 'required|string|max:255',
             'transaction_mode' => 'required|string|max:255',
-            'purpose' => 'required|string|max:255',
+            'purpose' => 'nullable|string|max:255',
 
             // Vital signs fields
             'height' => 'required|string|max:255',

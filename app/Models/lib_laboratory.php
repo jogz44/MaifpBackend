@@ -19,4 +19,9 @@ class lib_laboratory extends Model
 
     ];
 
+    // protected $casts = [
+    //     'selling_price' => 'decimal:2',
+    //     'total_amount' => 'decimal:2',
+    // ];
+
 }

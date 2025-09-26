@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class lib_laboratory_examinationRequest extends FormRequest
+class UltraSoundRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,11 +23,11 @@ class lib_laboratory_examinationRequest extends FormRequest
     {
         return [
             //
-            'item_id' => 'required|string|max:9',
-            'item_description' => 'required|string|max:255',
-            'service_fee' => 'required|numeric',
-            'total_amount'  => 'required|numeric',
-            'selling_price' => 'required|numeric',
+
+            'body_parts' => 'required|string|max:255',
+            'rate' =>  'required|numeric',
+            'service_fee' =>  'required|numeric',
+            'total_amount' =>  'required|numeric',
         ];
     }
 }

@@ -20,6 +20,12 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\PatientRequestAll;
 use App\Http\Requests\AddTransactionRequest;
 use App\Models\vw_patient_assessment;
+use App\Models\vw_patient_billing;
+use App\Models\vw_patient_consultation;
+use App\Models\vw_patient_consultation_return;
+use App\Models\vw_patient_laboratory;
+use App\Models\vw_patient_medication;
+use App\Models\vw_transaction_complete;
 use Illuminate\Validation\ValidationException;
 
 
@@ -67,11 +73,11 @@ class PatientController extends Controller
             'occupation',
             'income',
 
-            'pernament_street',
-            'pernament_purok',
-            'pernament_barangay',
-            'pernament_city',
-            'pernament_province',
+            'permanent_street',
+            'permanent_purok',
+            'permanent_barangay',
+            'permanent_city',
+            'permanent_province',
         ])
         ->with('transaction')->find($id);
 
@@ -380,86 +386,119 @@ class PatientController extends Controller
     }
 
 
+    // public function total_count_badge()
+    // {
+
+
+    //     // ✅ Count of assessed patients
+    //     $count_assessment = Patient::whereHas('transaction', function ($query) {
+    //         $query->where('status', 'assessment');
+    //             // ->whereDate('transaction_date', $today);
+    //     })->count();
+
+    //     // ✅ Count of qualified consultations (unique patients)
+    //     $count_consultation = Transaction::where('status', 'qualified')
+    //         ->where('transaction_type', 'Consultation')
+    //         // ->whereDate('transaction_date', $today)
+    //         ->whereDoesntHave('consultation', function ($query) {
+    //             $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
+    //         })
+    //         ->distinct('patient_id')
+    //         ->count('patient_id');
+
+    //     // ✅ Laboratory count (unique patients)
+    //     $count_laboratory = Transaction::where('status', 'qualified')
+    //         ->where(function ($query) {
+    //             $query->where('transaction_type', 'Laboratory')
+    //                 ->orWhereHas('consultation', function ($q) {
+    //                     $q->where('status', 'Processing');
+    //                 });
+    //         })
+    //         ->whereDoesntHave('laboratories', function ($lab) {
+    //             $lab->where('status', 'Done');
+    //         })
+    //         // ->whereDate('transaction_date', $today)
+    //         ->distinct('patient_id')
+    //         ->count('patient_id');
+
+    //     // ✅ Medication count (unique patients)
+    //     $count_medication = Transaction::where('status', 'qualified')
+    //         ->where(function ($query) {
+    //             $query->where('transaction_type', 'Medication')
+    //                 ->orWhereHas('consultation', function ($q) {
+    //                     $q->where('status', 'Medication');
+    //                 });
+    //         })
+    //         // ->whereDate('transaction_date', $today)
+    //         ->whereDoesntHave('medication', function ($q) {
+    //             $q->where('status', 'Done');
+    //         })
+    //         ->distinct('patient_id')
+    //         ->count('patient_id');
+
+    //     // ✅ Returned consultations
+    //     $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
+    //         $query->where('status', 'Returned');
+    //     })
+    //         // ->whereDate('transaction_date', $today)
+    //         ->distinct('patient_id')
+    //         ->count('patient_id');
+
+    //     // ✅ Billing patients
+    //     $count_billing = Transaction::where('status', '!=', 'Complete')
+    //         ->where(function ($q) {
+    //             $q->whereHas('consultation', function ($con) {
+    //                 $con->where('status', 'Done');
+    //             })
+    //                 ->orWhere(function ($q2) {
+    //                     $q2->whereDoesntHave('consultation')
+    //                         ->whereHas('laboratories', function ($lab) {
+    //                             $lab->where('status', 'Done');
+    //                         });
+    //                 })
+    //                 ->orWhereHas('medication', function ($med) {
+    //                     $med->where('status', 'Done');
+    //                 });
+    //         })
+    //         ->count(); // counts transactions, not patients
+    //     // // ✅ Guarantee letter patients
+    //     $count_guarantee = Patient::whereHas('transaction', function ($query) {
+    //         $query
+    //             ->where('status', 'Complete');
+    //     }) ->count();
+
+    //     return response()->json([
+    //         'totalAssessedCount'   => $count_assessment,
+    //         'totalQualifiedCount'  => $count_consultation,
+    //         'totalLaboratoryCount' => $count_laboratory,
+    //         'totalMedicationCount' => $count_medication,
+    //         'totalReturnedCount'   => $count_return_consultation,
+    //         'totalBillingCount'    => $count_billing,
+    //         'totalGLCount'         => $count_guarantee,
+    //     ]);
+    // }
     public function total_count_badge()
     {
-
-
-        // ✅ Count of assessed patients
-        $count_assessment = Patient::whereHas('transaction', function ($query) {
-            $query->where('status', 'assessment');
-                // ->whereDate('transaction_date', $today);
-        })->count();
+        // ✅ Count of assessed patients (unique)
+        $count_assessment = vw_patient_assessment::distinct('patient_id')->count('patient_id');
 
         // ✅ Count of qualified consultations (unique patients)
-        $count_consultation = Transaction::where('status', 'qualified')
-            ->where('transaction_type', 'Consultation')
-            // ->whereDate('transaction_date', $today)
-            ->whereDoesntHave('consultation', function ($query) {
-                $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
-            })
-            ->distinct('patient_id')
-            ->count('patient_id');
+        $count_consultation = vw_patient_consultation::distinct('patient_id')->count('patient_id');
 
         // ✅ Laboratory count (unique patients)
-        $count_laboratory = Transaction::where('status', 'qualified')
-            ->where(function ($query) {
-                $query->where('transaction_type', 'Laboratory')
-                    ->orWhereHas('consultation', function ($q) {
-                        $q->where('status', 'Processing');
-                    });
-            })
-            ->whereDoesntHave('laboratories', function ($lab) {
-                $lab->where('status', 'Done');
-            })
-            // ->whereDate('transaction_date', $today)
-            ->distinct('patient_id')
-            ->count('patient_id');
+        $count_laboratory = vw_patient_laboratory::distinct('patient_id')->count('patient_id');
 
         // ✅ Medication count (unique patients)
-        $count_medication = Transaction::where('status', 'qualified')
-            ->where(function ($query) {
-                $query->where('transaction_type', 'Medication')
-                    ->orWhereHas('consultation', function ($q) {
-                        $q->where('status', 'Medication');
-                    });
-            })
-            // ->whereDate('transaction_date', $today)
-            ->whereDoesntHave('medication', function ($q) {
-                $q->where('status', 'Done');
-            })
-            ->distinct('patient_id')
-            ->count('patient_id');
+        $count_medication = vw_patient_medication::distinct('patient_id')->count('patient_id');
 
-        // ✅ Returned consultations
-        $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
-            $query->where('status', 'Returned');
-        })
-            // ->whereDate('transaction_date', $today)
-            ->distinct('patient_id')
-            ->count('patient_id');
+        // ✅ Returned consultations (unique patients)
+        $count_return_consultation = vw_patient_consultation_return::distinct('patient_id')->count('patient_id');
 
-        // ✅ Billing patients
-        $count_billing = Transaction::where('status', '!=', 'Complete')
-            ->where(function ($q) {
-                $q->whereHas('consultation', function ($con) {
-                    $con->where('status', 'Done');
-                })
-                    ->orWhere(function ($q2) {
-                        $q2->whereDoesntHave('consultation')
-                            ->whereHas('laboratories', function ($lab) {
-                                $lab->where('status', 'Done');
-                            });
-                    })
-                    ->orWhereHas('medication', function ($med) {
-                        $med->where('status', 'Done');
-                    });
-            })
-            ->count(); // counts transactions, not patients
-        // // ✅ Guarantee letter patients
-        $count_guarantee = Patient::whereHas('transaction', function ($query) {
-            $query
-                ->where('status', 'Complete');
-        }) ->count();
+        // ✅ Billing patients (unique)
+        $count_billing = vw_patient_billing::distinct('patient_id')->count('patient_id');
+
+        // ✅ Guarantee letter patients (unique)
+        $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
 
         return response()->json([
             'totalAssessedCount'   => $count_assessment,
@@ -471,6 +510,4 @@ class PatientController extends Controller
             'totalGLCount'         => $count_guarantee,
         ]);
     }
-
-
 }

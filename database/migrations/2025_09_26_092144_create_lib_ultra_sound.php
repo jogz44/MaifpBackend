@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lib_radiology', function (Blueprint $table) {
+        Schema::create('lib_ultra_sound', function (Blueprint $table) {
             $table->id();
-            $table->string('item_description')->nullable();
-            $table->decimal('selling_price', 15, 2)->nullable();
-            $table->decimal('service_fee', 15, 2)->nullable();
-            $table->decimal('total_amount', 15, 2)->nullable();
+            $table->string('body_parts')->nullable();
+            $table->decimal('rate',15,2)->nullable();
+            $table->decimal('service_fee',15,2)->nullable();
+            $table->decimal('total_amount',15,2)->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lib_radiology');
+        Schema::dropIfExists('lib_ultra_sound');
     }
 };

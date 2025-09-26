@@ -9,7 +9,7 @@ class GuaranteeLetter extends Model
 {
     //
 
-    protected $table = 'guarantees';
+    protected $table = 'guarantee_letter';
 
     protected $fillable = [
         'patient_id',
@@ -18,12 +18,23 @@ class GuaranteeLetter extends Model
         'laboratory_total',
         'medication_total',
         'total_billing',
-        'status'
+        'discount',
+        'final_billing',
+        'laboratories_details',
+        'medication'
+
+        // 'status'
     ];
 
     public function transaction()
     {
         return $this->belongsTo(Transaction::class, 'transaction_id');
     }
+
+    public function funds()
+    {
+        return $this->hasMany(AssistancesFunds::class, 'assistance_id');
+    }
+
 
 }

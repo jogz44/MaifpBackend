@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lib_laboratory_examination', function (Blueprint $table) {
+        Schema::create('lab_radiology_details', function (Blueprint $table) {
             $table->id();
-            $table->string('item_id')->nullable();
+            $table->foreignId('transaction_id')->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('new_consultation_id')->nullable()->constrained('new_consultation')->onDelete('cascade');
             $table->string('item_description')->nullable();
-            $table->decimal('selling_price',15,2)->nullable();
+            $table->decimal('selling_price', 15, 2)->nullable();
             $table->decimal('service_fee', 15, 2)->nullable();
             $table->decimal('total_amount', 15, 2)->nullable();
             $table->timestamps();
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lib_laboratory_examination');
+        Schema::dropIfExists('lab_radiology_details');
     }
 };

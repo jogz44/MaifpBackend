@@ -13,6 +13,10 @@ class AssistancesFunds extends Model
         'fund_amount',
     ];
 
+    protected $casts =[
+        'fund_amount' => 'decimal:2',
+    ];
+
     public function assistance()
     {
         return $this->belongsTo(Assistances::class, 'assistance_id');

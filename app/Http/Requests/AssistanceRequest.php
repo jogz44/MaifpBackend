@@ -31,11 +31,25 @@ class AssistanceRequest extends FormRequest
             'total_billing' => 'nullable|numeric',
             'discount' => 'nullable|numeric',
             'final_billing' => 'nullable|numeric',
-            'status' => 'required|in:Complete',
+            // 'status' => 'required|in:Complete',
 
             'assistances' => 'required|array|min:1',
             'assistances.*.fund_source' => 'required|string',
-            'assistances.*.fund_amount' => 'nullable|numeric'
+            'assistances.*.fund_amount' => 'nullable|numeric',
+
+
+            'medication' => 'nullable|array',
+            'medication.*.item_description' => 'nullable|string',
+            'medication.*.quantity' => 'nullable|integer',
+            'medication.*.unit' => 'nullable|string',
+            'medication.*.amount' => 'nullable|numeric',
+            'medication.*.total' => 'nullable|numeric',
+            'medication.*.transaction_date' => 'nullable|date',
+
+            'laboratories_details' => 'nullable|array',
+            'laboratories_details.*.laboratory_type' => 'nullable|string',
+            // 'laboratories_details.*.amount' => 'nullable|numeric',
+            'laboratories_details.*.total_amount' => 'nullable|numeric',
 
 
         ];

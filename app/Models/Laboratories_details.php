@@ -24,4 +24,5 @@ class Laboratories_details extends Model
     {
         return $this->belongsTo(New_Consultation::class, 'new_consultation_id');
     }
+
 }

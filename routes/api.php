@@ -10,14 +10,49 @@ use App\Http\Controllers\SystemUserController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ConfigurationsController;
 use App\Http\Controllers\GuaranteeLetterController;
+use App\Http\Controllers\MAIFIPReportController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\UserCredentialsController;
 
-Route::prefix('assistance')->group(function (){
-    Route::post('/store', [AssistanceController::class, 'store']);
+Route::prefix('assistance')->group(function (){ // guarantee
     Route::get('/', [AssistanceController::class, 'index']);
+    Route::post('/store', [AssistanceController::class, 'store']);
     Route::get('/funds', [AssistanceController::class, 'funds']);
 });
+
+Route::prefix('report')->group(function () { // report
+    Route::post('/store', [MAIFIPReportController::class, 'report']);
+    Route::get('/', [MAIFIPReportController::class, 'report_index']);
+
+});
+
+
+Route::prefix('laboratory')->group(function () {
+    Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
+    // lib examination
+    Route::get('/exam/index', [LaboratoryController::class, 'lib_lab_index']); // store the patient laboratory and amount
+    Route::post('/exam/store', [LaboratoryController::class, 'lib_lab_store']); // store the patient laboratory and amount
+    Route::post('/exam/update/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_update']); // store the patient laboratory and amount
+    Route::delete('/exam/delete/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_delete']); // store the patient laboratory and amount
+    // lib radiology
+    Route::get('/radiology/index', [LaboratoryController::class, 'lib_rad_index']); // store the patient laboratory and amount
+    Route::post('/radiology/store', [LaboratoryController::class, 'lib_rad_store']); // store the patient laboratory and amount
+    Route::post('/radiology/update/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_update']); // store the patient laboratory and amount
+    Route::delete('/radiology/delete/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_delete']); // store the patient laboratory and amount
+    // lib ultra sound
+    Route::get('/ultrasound/index', [LaboratoryController::class, 'lib_ultra_sound_index']); // store the patient laboratory and amount
+    Route::post('/ultrasound/store', [LaboratoryController::class, 'lib_ultra_sound_store']); // store the patient laboratory and amount
+    Route::post('/ultrasound/update/{lib_ultra_sound_id}', [LaboratoryController::class, 'lib_ultra_sound_update']); // store the patient laboratory and amount
+    Route::delete('/ultrasound/delete/{lib_ultra_sound_id}', [LaboratoryController::class, 'lib_ultra_sound_delete']); // store the patient laboratory and amount
+    // lib mammogram
+    Route::get('/mammogram/index', [LaboratoryController::class, 'lib_mammogram_index']); // store the patient laboratory and amount
+    Route::post('/mammogram/store', [LaboratoryController::class, 'lib_mammogram_store']); // store the patient laboratory and amount
+    Route::post('/mammogram/update/{lib_mammogram_id}', [LaboratoryController::class, 'lib_mammogram_update']); // store the patient laboratory and amount
+    Route::delete('/mammogram/delete/{lib_mammogram_id}', [LaboratoryController::class, 'lib_mammogram_delete']); // store the patient laboratory and amount
+
+});
+
+// Route::get('/view', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
 
 Route::post('medications/status', [MedicationController::class, 'status']); // updating the status of the  transaction_id if Done
 // Route::post('transactions/{id}/update/status/', [TransactionController::class, 'status_update']);
@@ -36,6 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('guarantee')->group(function () {
         // Route::post('/update/status/{transactionId}', [BillingController::class]);
         Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter
+        Route::get('/{transactionId}', [GuaranteeLetterController::class, 'guaranteeLetter']); //  fetch the patient on the guarantee letter
+        Route::post('/{transactionId}', [GuaranteeLetterController::class, 'update']); //  fetch the patient on the guarantee letter
+        Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'update_status']); //  fetch the patient on the guarantee letter
+
     });
 
     Route::prefix('transactions')->group(function () {
@@ -55,6 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('medications')->group(function () {
+        Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
+
         // Route::get('/', [MedicationController::class, 'qualifiedTransactionsMedication']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
         Route::post('/store', [MedicationController::class, 'store']);
         // Route::post('/status', [MedicationController::class, 'status']); // updating the status of the  transaction_id if Done
@@ -64,21 +105,22 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('laboratory')->group(function () {
-        Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
+        // Route::post('/store', [LaboratoryController::class, 'store']); // store the patient laboratory and amount
         Route::post('/status', [LaboratoryController::class, 'laboratory_status']); // store the patient laboratory and amount
         Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
         Route::get('/index/lab_services', [LaboratoryController::class, 'lib_laboratory_index']);
         Route::post('/store/lab_services', [LaboratoryController::class, 'lib_laboratory_store']);
         Route::post('/update/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_update']);
         Route::delete('/delete/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_delete']);
-        Route::get('/exam/index', [LaboratoryController::class, 'lib_lab_index']); // store the patient laboratory and amount
-        Route::post('/exam/store', [LaboratoryController::class, 'lib_lab_store']); // store the patient laboratory and amount
-        Route::post('/exam/update/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_update']); // store the patient laboratory and amount
-        Route::delete('/exam/delete/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_delete']); // store the patient laboratory and amount
-        Route::get('/radiology/index', [LaboratoryController::class, 'lib_rad_index']); // store the patient laboratory and amount
-        Route::post('/radiology/store', [LaboratoryController::class, 'lib_rad_store']); // store the patient laboratory and amount
-        Route::post('/radiology/update/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_update']); // store the patient laboratory and amount
-        Route::delete('/radiology/delete/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_delete']); // store the patient laboratory and amount
+        // Route::get('/exam/index', [LaboratoryController::class, 'lib_lab_index']); // store the patient laboratory and amount
+        // Route::post('/exam/store', [LaboratoryController::class, 'lib_lab_store']); // store the patient laboratory and amount
+        // Route::post('/exam/update/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_update']); // store the patient laboratory and amount
+        // Route::delete('/exam/delete/{lib_laboratory_examination_id}', [LaboratoryController::class, 'lib_lab_delete']); // store the patient laboratory and amount
+
+        // Route::get('/radiology/index', [LaboratoryController::class, 'lib_rad_index']); // store the patient laboratory and amount
+        // Route::post('/radiology/store', [LaboratoryController::class, 'lib_rad_store']); // store the patient laboratory and amount
+        // Route::post('/radiology/update/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_update']); // store the patient laboratory and amount
+        // Route::delete('/radiology/delete/{lib_rad_id}', [LaboratoryController::class, 'lib_rad_delete']); // store the patient laboratory and amount
 
     });
 

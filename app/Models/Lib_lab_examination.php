@@ -12,9 +12,17 @@ class Lib_lab_examination extends Model
 
     protected $fillable = [
 
+
         'item_id',
         'item_description',
         'service_fee',
-        'amount'
+        'total_amount',
+        'selling_price'
+    ];
+
+    protected $casts = [
+        'selling_price' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'service_fee' => 'decimal:2',
     ];
 }

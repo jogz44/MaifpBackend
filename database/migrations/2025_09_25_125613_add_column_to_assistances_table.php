@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::table('assistances', function (Blueprint $table) {
             //
-            $table->enum('status', ['Complete'])->nullable()->after('final_billing');
+            $table->string('gl_number')->nullable()->after('id');
+            $table->json('laboratories_details')->nullable()->after('transaction_id');
+            $table->json('medication')->nullable()->after('laboratories_details');
         });
     }
 
@@ -24,7 +26,6 @@ return new class extends Migration
     {
         Schema::table('assistances', function (Blueprint $table) {
             //
-            $table->dropColumn(['status']);
         });
     }
 };
