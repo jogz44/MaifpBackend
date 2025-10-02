@@ -60,6 +60,18 @@ class Transaction extends Model
         return $this->hasMany(Laboratories_details::class, 'transaction_id');
     }
 
+    public function ultrasound_details()
+    {
+
+        return $this->hasMany(lab_ultrasound_details::class, 'transaction_id');
+    }
+
+    public function mammogram_details()
+    {
+
+        return $this->hasMany(lab_mammogram_details::class, 'transaction_id');
+    }
+
 
     public function radiologies_details()
     {

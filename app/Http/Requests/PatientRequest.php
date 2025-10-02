@@ -46,8 +46,8 @@ class PatientRequest extends FormRequest
             'permanent_province' => 'sometimes|nullable|string|max:255',
 
             'category' => 'sometimes|required|in:Child,Adult,Senior',
-            'philsys_id' => 'sometimes|nullable|string|max:12',
-            'philhealth_id'  => 'sometimes|nullable|string|max:12',
+            'philsys_id' => 'sometimes|nullable|string|',
+            'philhealth_id'  => 'sometimes|nullable|string|',
             'place_of_birth' => 'sometimes|nullable|string',
             'civil_status' => 'sometimes|nullable|string',
             'religion' => 'sometimes|nullable|string',

@@ -13,7 +13,12 @@ class Assistances extends Model
         'patient_id',
         'transaction_id',
         'consultation_amount',
-        'laboratory_total',
+        // 'laboratory_total',
+        'radiology_total',
+        'examination_total',
+        'ultrasound_total',
+        'mammogram_total',
+
         'medication_total',
         'total_billing',
         'discount',
@@ -21,7 +26,12 @@ class Assistances extends Model
         'fund_source',
         'fund_amount',
         'status',
-        'laboratories_details',
+        // 'laboratories_details',
+        'ultrasound_details',
+        'mammogram_details',
+        'examination_details',
+        'radiology_details',
+
         'medication',
         'gl_number'
     ];

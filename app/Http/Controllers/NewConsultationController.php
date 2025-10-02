@@ -187,40 +187,45 @@ class NewConsultationController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
 
-        // If status is Done, set amount = 500
-        // if (isset($validated['status']) && $validated['status'] === 'Done') {
-
-        //     $doctor = lib_doctor::where('id','doctor_amount')->firts();
-
-        //     $validated['amount'] = $doctor;
-        // }
-
         // If status is Done, fetch doctor_amount
         if (isset($validated['status']) && $validated['status'] === 'Done') {
-            $doctor = lib_doctor::first(); // or lib_doctor::find($validated['doctor_id']);
+            $doctor = lib_doctor::first();
             if ($doctor) {
                 $validated['amount'] = $doctor->doctor_amount;
             }
         }
 
-        // ✅ Update if transaction_id exists, otherwise create
+        // Update if transaction_id exists, otherwise create
         $NewConsultation = New_Consultation::updateOrCreate(
             ['transaction_id' => $validated['transaction_id']], // match condition
             $validated                                          // values to update
         );
 
-        // 🔄 Update related Laboratory status
+        // // Update related Laboratory status
+        // if ($NewConsultation && isset($validated['status'])) {
+        //     if ($validated['status'] === 'Medication') {
+        //         // When consultation status is Medication → lab status becomes Done
+        //         Laboratory::where('transaction_id', $validated['transaction_id'])
+        //             ->update(['status' => 'Done']);
+        //     } else {
+        //         // otherwise, just mirror the consultation status
+        //         Laboratory::where('transaction_id', $validated['transaction_id'])
+        //             ->update(['status' => $validated['status']]);
+        //     }
+        // }
+
         if ($NewConsultation && isset($validated['status'])) {
-            if ($validated['status'] === 'Medication') {
-                // ✅ When consultation status is Medication → lab status becomes Done
-                Laboratory::where('transaction_id', $validated['transaction_id'])
-                    ->update(['status' => 'Done']);
-            } else {
-                // otherwise, just mirror the consultation status
-                Laboratory::where('transaction_id', $validated['transaction_id'])
-                    ->update(['status' => $validated['status']]);
-            }
+            $statusToSet = ($validated['status'] === 'Medication') ? 'Done' : $validated['status'];
+
+            // Update laboratory by transaction_id
+            Laboratory::where('transaction_id', $validated['transaction_id'])
+                ->update(['status' => $statusToSet]);
+
+            // Update laboratory by new_consultation_id
+            Laboratory::where('new_consultation_id', $NewConsultation->id)
+                ->update(['status' => $statusToSet]);
         }
+
         // 📝 Activity Log
         $patient = $NewConsultation->patient ?? null;
 

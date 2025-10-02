@@ -34,15 +34,17 @@ return new class extends Migration
         (`patient` `p`
         JOIN `transaction` `t` ON ((`t`.`patient_id` = `p`.`id`)))
     WHERE
-        ((`t`.`status` <> 'Complete')
-            AND (EXISTS( SELECT
+        ((`t`.`status` <> 'Funded')
+            AND (((`t`.`status` <> 'Complete')
+            AND EXISTS( SELECT
                 1
             FROM
                 `new_consultation` `c`
             WHERE
                 ((`c`.`transaction_id` = `t`.`id`)
-                    AND (`c`.`status` = 'Done')))
-            OR (EXISTS( SELECT
+                    AND (`c`.`status` = 'Done'))))
+            OR ((`t`.`status` <> 'Complete')
+            AND EXISTS( SELECT
                 1
             FROM
                 `new_consultation` `c2`
@@ -56,14 +58,15 @@ return new class extends Migration
             WHERE
                 ((`l`.`transaction_id` = `t`.`id`)
                     AND (`l`.`status` = 'Done'))))
-            OR EXISTS( SELECT
+            OR ((`t`.`status` <> 'Complete')
+            AND EXISTS( SELECT
                 1
             FROM
                 `medication` `m`
             WHERE
                 ((`m`.`transaction_id` = `t`.`id`)
-                    AND (`m`.`status` = 'Done')))))
-            ORDER BY `p`.`id`
+                    AND (`m`.`status` = 'Done'))))))
+    ORDER BY `p`.`id`
         ");
     }
 

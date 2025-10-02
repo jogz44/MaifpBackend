@@ -21,6 +21,10 @@ class New_Consultation extends Model
         'status',
     ];
 
+    protected $casts= [
+        'amount' => 'decimal:2'
+    ];
+
     public function laboratories()
     {
         return $this->hasMany(Laboratory::class, 'new_consultation_id');

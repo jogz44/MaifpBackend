@@ -12,6 +12,7 @@ class Laboratory extends Model
 
     protected $fillable = [
         'transaction_id',
+        'new_consultation_id',
         'status'
 
     ];

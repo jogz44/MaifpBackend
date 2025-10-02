@@ -26,17 +26,21 @@ class AssistanceRequest extends FormRequest
             'transaction_id' => 'required|exists:transaction,id',
 
             'consultation_amount' => 'nullable|numeric',
-            'laboratory_total' => 'nullable|numeric',
+            // 'laboratory_total' => 'nullable|numeric',
             'medication_total' => 'nullable|numeric',
             'total_billing' => 'nullable|numeric',
             'discount' => 'nullable|numeric',
             'final_billing' => 'nullable|numeric',
             // 'status' => 'required|in:Complete',
 
+            'radiology_total' => 'nullable|numeric',
+            'examination_total' => 'nullable|numeric',
+            'ultrasound_total' => 'nullable|numeric',
+            'mammogram_total' => 'nullable|numeric',
+
             'assistances' => 'required|array|min:1',
             'assistances.*.fund_source' => 'required|string',
             'assistances.*.fund_amount' => 'nullable|numeric',
-
 
             'medication' => 'nullable|array',
             'medication.*.item_description' => 'nullable|string',
@@ -46,10 +50,29 @@ class AssistanceRequest extends FormRequest
             'medication.*.total' => 'nullable|numeric',
             'medication.*.transaction_date' => 'nullable|date',
 
-            'laboratories_details' => 'nullable|array',
-            'laboratories_details.*.laboratory_type' => 'nullable|string',
-            // 'laboratories_details.*.amount' => 'nullable|numeric',
-            'laboratories_details.*.total_amount' => 'nullable|numeric',
+            // 'laboratories_details' => 'nullable|array',
+            // 'laboratories_details.*.laboratory_type' => 'nullable|string',
+            // // 'laboratories_details.*.amount' => 'nullable|numeric',
+            // 'laboratories_details.*.total_amount' => 'nullable|numeric',
+
+            'ultrasound_details' => 'nullable|array',
+            'ultrasound_details.*.body_parts' => 'nullable|string',
+            // 'ultrasound_details.*.rate' => 'nullable|numeric',
+            // 'ultrasound_details.*.service_fee' => 'nullable|numeric',
+            'ultrasound_details.*.total_amount' => 'nullable|numeric',
+
+            'mammogram_details' => 'nullable|array',
+            'mammogram_details.*.procedure' => 'nullable|string',
+            'mammogram_details.*.total_amount' => 'nullable|numeric',
+
+            'radiology_details' => 'nullable|array',
+            'radiology_details.*.item_description' => 'nullable|string',
+            'radiology_details.*.total_amount' => 'nullable|numeric',
+
+            'examination_details' => 'nullable|array',
+            'examination_details.*.item_description' => 'nullable|string',
+            'examination_details.*.total_amount' => 'nullable|numeric',
+
 
 
         ];

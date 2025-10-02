@@ -14,6 +14,52 @@ class AddTransactionRequest extends FormRequest
         return true;
     }
 
+    public function prepareForValidation()
+    {
+        // All fields that should default to "NA" if empty
+        $defaults = [
+          
+            // Representative
+            'rep_name',
+            'rep_relationship',
+            'rep_contact',
+            'rep_barangay',
+            'rep_address',
+            'rep_purok',
+            'rep_street',
+            'rep_province',
+            'rep_city',
+
+            // Transaction
+            'transaction_type',
+            'transaction_mode',
+            'transaction_date',
+            'purpose',
+
+            // Vital
+            'height',
+            'weight',
+            'bmi',
+            'temperature',
+            'waist',
+            'pulse_rate',
+            'sp02',
+            'heart_rate',
+            'blood_pressure',
+            'respiratory_rate',
+            'medicine',
+            'LMP'
+        ];
+
+        $data = [];
+
+        foreach ($defaults as $field) {
+            $data[$field] = $this->input($field) ?: 'NA';
+        }
+
+        $this->merge($data);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -41,8 +87,8 @@ class AddTransactionRequest extends FormRequest
             'purpose' => 'nullable|string|max:255',
 
             // Vital signs fields
-            'height' => 'required|string|max:255',
-            'weight' => 'required|string|max:255',
+            'height' => 'nullable|string|max:255',
+            'weight' => 'nullable|string|max:255',
             'bmi' => 'nullable|string|max:255',
             'temperature' => 'nullable|string|max:255',
             'waist' => 'nullable|string|max:255',

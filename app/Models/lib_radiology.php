@@ -21,5 +21,6 @@ class lib_radiology extends Model
     protected $casts = [
         'selling_price' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'service_fee' => 'decimal:2',
     ];
 }

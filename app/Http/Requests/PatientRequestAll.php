@@ -19,12 +19,82 @@ class PatientRequestAll extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    public function prepareForValidation()
+    {
+        // All fields that should default to "NA" if empty
+        $defaults = [
+            // Patient
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'gender',
+            // 'is_not_tagum',
+            'street',
+            'purok',
+            'barangay',
+            'city',
+            'province',
+            'permanent_street',
+            'permanent_purok',
+            'permanent_barangay',
+            'permanent_city',
+            'permanent_province',
+            'category',
+            'philsys_id',
+            'philhealth_id',
+            'place_of_birth',
+            'civil_status',
+            'religion',
+            'education',
+            'occupation',
+            'income',
+            // 'is_pwd',
+            // 'is_solo',
+            'user_id',
 
-    public function prepareForValidation(){
+            // Representative
+            'rep_name',
+            'rep_relationship',
+            'rep_contact',
+            'rep_barangay',
+            'rep_address',
+            'rep_purok',
+            'rep_street',
+            'rep_province',
+            'rep_city',
 
-        $this->merge([
-            'street' => $this->input('street') ?: 'NA', // ✅ if street is null/empty → NA
-        ]);
+            // Transaction
+            'transaction_type',
+            'transaction_mode',
+            'transaction_date',
+            'purpose',
+
+            // Vital
+            'height',
+            'weight',
+            'bmi',
+            'temperature',
+            'waist',
+            'pulse_rate',
+            'sp02',
+            'heart_rate',
+            'blood_pressure',
+            'respiratory_rate',
+            'medicine',
+            'LMP'
+        ];
+
+        $data = [];
+
+        foreach ($defaults as $field) {
+            $data[$field] = $this->input($field) ?: 'NA';
+        }
+
+        $this->merge($data);
     }
 
     public function rules(): array

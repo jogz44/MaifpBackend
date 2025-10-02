@@ -27,9 +27,13 @@ class BillingController extends Controller
         $transaction = Transaction::with([
             'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category',
             'consultation:id,transaction_id,amount',
-            'laboratories_details:id,transaction_id,laboratory_type,total_amount',
+
+            // 'laboratories_details:id,transaction_id,laboratory_type,total_amount',
             'radiologies_details:id,transaction_id,item_description,selling_price,total_amount',
+            'ultrasound_details:id,transaction_id,body_parts,rate,service_fee,total_amount',
+            'mammogram_details:id,transaction_id,procedure,rate,service_fee,total_amount',
             'examination_details:id,transaction_id,item_id,item_description,selling_price,total_amount',
+
             'medication:id,transaction_id,status',
             'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
             'representative:id,rep_name,rep_relationship,rep_address',
@@ -37,9 +41,11 @@ class BillingController extends Controller
         ])->findOrFail($transactionId);
 
         $consultationAmount = $transaction->consultation?->amount ?? 0;
-        $laboratoryTotal    = $transaction->laboratories_details->sum('total_amount');
+        // $laboratoryTotal    = $transaction->laboratories_details->sum('total_amount');
         $radiologyTotal    = $transaction->radiologies_details->sum('total_amount');
         $examinationTotal    = $transaction->examination_details->sum('total_amount');
+        $ultrasoundTotal    = $transaction->ultrasound_details->sum('total_amount');
+        $mammogramTotal    = $transaction->mammogram_details->sum('total_amount');
 
         //  Medication calculation (quantity × amount)
         $medicationTotal = 0;
@@ -62,7 +68,7 @@ class BillingController extends Controller
             $medicationTotal = $medicationDetails->sum('total');
         }
 
-        $totalBilling = $consultationAmount + $laboratoryTotal + $medicationTotal+ $radiologyTotal+ $examinationTotal;
+        $totalBilling = $consultationAmount  + $medicationTotal+ $radiologyTotal+ $examinationTotal + $ultrasoundTotal + $mammogramTotal;
 
         //  Apply 20% discount if Senior OR PWD
         $discount = 0;
@@ -113,20 +119,23 @@ class BillingController extends Controller
             ],
             'transaction_date'    => $transaction->transaction_date,
             'consultation_amount' => $consultationAmount,
-            'laboratory_total'    => $laboratoryTotal,
+            // 'laboratory_total'    => $laboratoryTotal,
             'radiology_total'    => $radiologyTotal,
+            'ultrasound_total'    => $ultrasoundTotal,
+            'examination_total'    => $examinationTotal,
+            'mammogram_total'    => $mammogramTotal,
             'medication_total'    => $medicationTotal,
             'total_billing'       => $totalBilling,   // before discount
             'discount'            => $discount,       // ✅ show discount amount
             'final_billing'       => $finalBilling,   // ✅ after discount
-            'laboratories_details'        => $transaction->laboratories_details->map(function ($lab) {
-                return [
-                    'id'              => $lab->id,
-                    'laboratory_type' => $lab->laboratory_type,
-                    'total_amount' => $lab->total_amount,
-                    // 'status'          => $lab->status,
-                ];
-            }),
+            // 'laboratories_details'        => $transaction->laboratories_details->map(function ($lab) {
+            //     return [
+            //         'id'              => $lab->id,
+            //         'laboratory_type' => $lab->laboratory_type,
+            //         'total_amount' => $lab->total_amount,
+            //         // 'status'          => $lab->status,
+            //     ];
+            // }),
             'radiologies_details'        => $transaction->radiologies_details->map(function ($rad) {
                 return [
                     'id'              => $rad->id,
@@ -146,6 +155,31 @@ class BillingController extends Controller
                     // 'selling_price' => $rad->selling_price,
                     // 'service_fee' => $rad->service_fee,
                     'total_amount' =>  $exam->total_amount,
+
+                ];
+            }),
+
+            'mammogram_details'        => $transaction->mammogram_details->map(function ($mammogram) {
+                return [
+                    'id'  => $mammogram->id,
+
+                    'procedure' => $mammogram->procedure,
+                    'rate' => $mammogram->rate,
+                    'service_fee' => $mammogram->service_fee,
+                    'total_amount' =>  $mammogram->total_amount,
+
+                ];
+            }),
+
+
+
+            'ultrasound_details'        => $transaction->ultrasound_details->map(function ($ultra) {
+                return [
+                    'id'  => $ultra->id,
+                    'body_parts' => $ultra->body_parts,
+                    'rate' => $ultra->rate,
+                    'service_fee' => $ultra->service_fee,
+                    'total_amount' =>  $ultra->total_amount,
 
                 ];
             }),

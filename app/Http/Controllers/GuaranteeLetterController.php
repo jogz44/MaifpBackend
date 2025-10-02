@@ -87,8 +87,12 @@ class GuaranteeLetterController extends Controller
             ->firstOrFail();
 
         // Decode JSON fields
-        $transaction->laboratories_details = json_decode($transaction->laboratories_details, true);
         $transaction->medication = json_decode($transaction->medication, true);
+        $transaction->radiology_details = json_decode($transaction->radiology_details, true);
+        $transaction->ultrasound_details = json_decode($transaction->ultrasound_details, true);
+        $transaction->mammogram_details = json_decode($transaction->mammogram_details, true);
+        $transaction->examination_details = json_decode($transaction->examination_details, true);
+
 
         // ✅ Combine purok, street, and barangay into address
         if ($transaction->patient) {

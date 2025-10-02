@@ -18,7 +18,9 @@ use App\Http\Requests\lib_radiologyRequest;
 use App\Http\Requests\Mammogram_examination_Request;
 use App\Http\Requests\UltraSoundRequest;
 use App\Models\lab_examination_details;
+use App\Models\lab_mammogram_details;
 use App\Models\lab_radiology_details;
+use App\Models\lab_ultrasound_details;
 use App\Models\Lib_lab_examination;
 use App\Models\lib_mammogram_examination;
 use App\Models\lib_radiology;
@@ -115,18 +117,29 @@ class LaboratoryController extends Controller
     {
         // validate request
         $validated = $request->validate([
-            'status' => 'required|in:Done,Returned',
+            'status' => 'required|in:Done,Returned,',
             'transaction_id' => 'required|exists:transaction,id',
         ]);
+
+        $transaction = \App\Models\Transaction::with('consultation')
+            ->findOrFail($validated['transaction_id']);
+
+        $newConsultationId = $transaction->consultation
+            ? $transaction->consultation->id
+            : null;
+
 
         // Update or create the main laboratory record
         $lab = Laboratory::updateOrCreate(
             ['transaction_id' => $validated['transaction_id']], // condition
-            ['status' => $validated['status']]                  // update values
+            [
+                'status' => $validated['status'],
+                'new_consultation_id' => $newConsultationId
+            ]
         );
 
         // ✅ Also update all laboratory_details linked to this transaction
-        $labDetails = Laboratories_details::where('transaction_id', $validated['transaction_id'])->get();
+        $labDetails = Laboratory::where('transaction_id', $validated['transaction_id'])->get();
 
         foreach ($labDetails as $detail) {
             // If Returned, update related consultation
@@ -216,18 +229,18 @@ class LaboratoryController extends Controller
         $savedRecords = [];
 
         // ✅ Save Laboratories
-        if (!empty($validated['laboratories'])) {
-            foreach ($validated['laboratories'] as $labData) {
-                $savedRecords['laboratories'][] = Laboratories_details::create([
-                    'transaction_id'      => $validated['transaction_id'],
-                    'new_consultation_id' => $newConsultationId,
-                    'laboratory_type'     => $labData['laboratory_type'],
-                    'amount'              => $labData['amount'],
-                    'service_fee'         => $labData['service_fee'],
-                    'total_amount'        => $labData['total_amount'],
-                ]);
-            }
-        }
+        // if (!empty($validated['laboratories'])) {
+        //     foreach ($validated['laboratories'] as $labData) {
+        //         $savedRecords['laboratories'][] = Laboratories_details::create([
+        //             'transaction_id'      => $validated['transaction_id'],
+        //             'new_consultation_id' => $newConsultationId,
+        //             'laboratory_type'     => $labData['laboratory_type'],
+        //             'amount'              => $labData['amount'],
+        //             'service_fee'         => $labData['service_fee'],
+        //             'total_amount'        => $labData['total_amount'],
+        //         ]);
+        //     }
+        // }
 
         // ✅ Save Radiologies
         if (!empty($validated['radiologies'])) {
@@ -258,6 +271,34 @@ class LaboratoryController extends Controller
             }
         }
 
+        // ✅ Save ultrasound
+        if (!empty($validated['ultrasound'])) {
+            foreach ($validated['ultrasound'] as $ultraData) {
+                $savedRecords['ultrasound'][] = lab_ultrasound_details::create([
+                    'transaction_id'      => $validated['transaction_id'],
+                    'new_consultation_id' => $newConsultationId,
+                    'body_parts'    => $ultraData['body_parts'],
+                    'rate'       => $ultraData['rate'],
+                    'service_fee'         => $ultraData['service_fee'],
+                    'total_amount'        => $ultraData['total_amount'],
+                ]);
+            }
+        }
+
+        // ✅ Save mammogram
+        if (!empty($validated['mammogram'])) {
+            foreach ($validated['mammogram'] as $mammogramData) {
+                $savedRecords['mammogram'][] = lab_mammogram_details::create([
+                    'transaction_id'      => $validated['transaction_id'],
+                    'new_consultation_id' => $newConsultationId,
+                    'procedure'    => $mammogramData['procedure'],
+                    'rate'       => $mammogramData['rate'],
+                    'service_fee'         => $mammogramData['service_fee'],
+                    'total_amount'        => $mammogramData['total_amount'],
+                ]);
+            }
+        }
+
         // Prepare log details
         // $labDetails = collect($savedRecords)->map(function ($lab) { return "{$lab->laboratory_type} (₱{$lab->amount})";
         // })->implode(', '); // Log activity
@@ -271,6 +312,45 @@ class LaboratoryController extends Controller
             'data'    => $savedRecords,
         ]);
     }
+
+    public function destroy(Request $request)
+    {
+        $validated = $request->validate([
+            'transaction_id' => 'required|exists:transaction,id',
+            'type'           => 'required|string|in:radiology,examination,ultrasound,mammogram',
+            'id'            => 'required|integer',
+
+        ]);
+
+        $transactionId = $validated['transaction_id'];
+        $type = $validated['type'];
+        $id   = $validated['id'];
+
+        // Map type → model
+        $models = [
+
+            'radiology'  => \App\Models\lab_radiology_details::class,
+            'examination'  => \App\Models\lab_examination_details::class,
+            'ultrasound'   => \App\Models\lab_ultrasound_details::class,
+            'mammogram'    => \App\Models\lab_mammogram_details::class,
+        ];
+
+        $model = $models[$type];
+
+
+        $deletedCount = $model::where('transaction_id', $transactionId)
+            ->where('id', $id)
+            ->delete();
+
+        return response()->json([
+            'message' => $deletedCount > 0
+                ? ucfirst($type) . " record deleted successfully"
+                : "No matching record found to delete",
+            'deleted' => $deletedCount,
+        ]);
+    }
+
+
 
 
     //for library laboratory store
@@ -378,20 +458,33 @@ class LaboratoryController extends Controller
         return response()->json($laboratory);
     }
 
-
-
-
     // lib laboratory examination
-    // ✅ Store
+    public function getByTransaction_exam($transactionId)
+    {
+        $results = lab_examination_details::where('transaction_id', $transactionId)->get();
+
+        return response()->json([
+            'radiologies' => $results
+        ]);
+    }
+
+    //  Store
     public function lib_lab_store(lib_laboratory_examinationRequest $request)
     {
         $validated = $request->validated();
-        $lib = Lib_lab_examination::create($validated);
 
+        // Check if item_id already exists
+        if (Lib_lab_examination::where('item_id', $validated['item_id'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item ID already exists.',
+            ], 422);
+        }
+        $lib = Lib_lab_examination::create($validated);
         return response()->json($lib);
     }
 
-    // ✅ Index
+    //  Index
     public function lib_lab_index()
     {
         $lib = Lib_lab_examination::all();
@@ -399,17 +492,28 @@ class LaboratoryController extends Controller
         return response()->json($lib);
     }
 
-    // ✅ Update
+    // Update
     public function lib_lab_update(lib_laboratory_examinationRequest $request, $lib_laboratory_examination_id)
     {
         $validated = $request->validated();
+
+        // Check if item_id already exists for another record
+        if (Lib_lab_examination::where('item_id', $validated['item_id'])
+            ->where('id', '!=', $lib_laboratory_examination_id)
+            ->exists()
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item ID already exists for another record.',
+            ], 422);
+        }
         $lib = Lib_lab_examination::findOrFail($lib_laboratory_examination_id);
         $lib->update($validated);
 
         return response()->json($lib);
     }
 
-    // ✅ Delete
+    // Delete
     public function lib_lab_delete($lib_laboratory_examination_id)
     {
         $lib = Lib_lab_examination::findOrFail($lib_laboratory_examination_id);
@@ -419,6 +523,14 @@ class LaboratoryController extends Controller
     }
 
     //lib_radiology
+    public function getByTransaction($transactionId)
+    {
+        $results = lab_radiology_details::where('transaction_id', $transactionId)->get();
+
+        return response()->json([
+            'radiologies' => $results
+        ]);
+    }
 
     public function lib_rad_index(){
 
@@ -434,7 +546,6 @@ class LaboratoryController extends Controller
 
         return response()->json($lib);
     }
-
     public function lib_rad_update(lib_radiologyRequest $request ,$lib_rad_id)
     {
         $validated = $request->validated();
@@ -442,7 +553,6 @@ class LaboratoryController extends Controller
         $lib->update($validated);
         return response()->json($lib);
     }
-
     public function lib_rad_delete($lib_rad_id)
     {
 
@@ -450,8 +560,15 @@ class LaboratoryController extends Controller
         $lib->delete();
         return response()->json($lib);
     }
-
     //  lib ultra sound
+    public function getByTransaction_ultrasound($transactionId)
+    {
+        $results = lab_ultrasound_details::where('transaction_id', $transactionId)->get();
+
+        return response()->json([
+            'radiologies' => $results
+        ]);
+    }
     public function lib_ultra_sound_index()
     {
 
@@ -486,7 +603,14 @@ class LaboratoryController extends Controller
 
 
     // Lib Mammogram examination
+    public function getByTransaction_mammogram($transactionId)
+    {
+        $results = lab_mammogram_details::where('transaction_id', $transactionId)->get();
 
+        return response()->json([
+            'radiologies' => $results
+        ]);
+    }
 
     public function lib_mammogram_index()
     {
@@ -521,4 +645,59 @@ class LaboratoryController extends Controller
     }
 
 
+    //fetch all that of the patient of this laboratory
+
+    public function Laboratory_transaction($transactionId)
+    {
+        $transaction = Transaction::with([
+            'radiologies_details',
+            'examination_details',
+            'ultrasound_details',
+            'mammogram_details'
+        ])->find($transactionId);
+
+        if (!$transaction) {
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        // Transform the data
+        $data = [
+            'transaction_id' => $transaction->id,
+            'radiologies' => $transaction->radiologies_details->map(function ($item) {
+                return [
+                    'item_description' => $item->item_description,
+                    'selling_price'    => $item->selling_price,
+                    'service_fee'      => $item->service_fee,
+                    'total_amount'     => $item->total_amount,
+                ];
+            }),
+            'examination' => $transaction->examination_details->map(function ($item) {
+                return [
+                    'item_id'          => $item->item_id,
+                    'item_description' => $item->item_description,
+                    'selling_price'    => $item->selling_price,
+                    'service_fee'      => $item->service_fee,
+                    'total_amount'     => $item->total_amount,
+                ];
+            }),
+            'ultrasound' => $transaction->ultrasound_details->map(function ($item) {
+                return [
+                    'body_parts'   => $item->body_parts,
+                    'rate'         => $item->rate,
+                    'service_fee'  => $item->service_fee,
+                    'total_amount' => $item->total_amount,
+                ];
+            }),
+            'mammogram' => $transaction->mammogram_details->map(function ($item) {
+                return [
+                    'procedure'    => $item->procedure,
+                    'rate'         => $item->rate,
+                    'service_fee'  => $item->service_fee,
+                    'total_amount' => $item->total_amount,
+                ];
+            }),
+        ];
+
+        return response()->json($data);
+    }
 }

@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->string('gl_number')->nullable()->after('id');
+            // $table->json('laboratories_details')->nullable()->after('transaction_id');
+            $table->json('medication')->nullable()->after('laboratories_details');
             $table->decimal('consultation_amount', 10, 2)->default(0);
-            $table->decimal('laboratory_total', 10, 2)->default(0);
+            // $table->decimal('laboratory_total', 10, 2)->default(0);
             $table->decimal('medication_total', 10, 2)->default(0);
             $table->decimal('total_billing', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);

@@ -46,6 +46,22 @@ class LaboratoryRequest extends FormRequest
             'examination.*.selling_price' => 'required_with:examination|numeric',
             'examination.*.service_fee' => 'required_with:examination|numeric',
             'examination.*.total_amount' => 'required_with:examination|numeric',
+
+            // ultrasound
+            'ultrasound' => 'nullable|array|min:1',
+            'ultrasound.*.body_parts' => 'required_with:ultrasound|string|max:255',
+            'ultrasound.*.rate' => 'required_with:ultrasound|numeric',
+            'ultrasound.*.service_fee' => 'required_with:ultrasound|numeric',
+            'ultrasound.*.total_amount' => 'required_with:ultrasound|numeric',
+
+            // mammogram
+            'mammogram' => 'nullable|array|min:1',
+            'mammogram.*.procedure' => 'required_with:mammogram|string|max:255',
+            'mammogram.*.rate' => 'required_with:mammogram|numeric',
+            'mammogram.*.service_fee' => 'required_with:mammogram|numeric',
+            'mammogram.*.total_amount' => 'required_with:mammogram|numeric',
+
+
         ];
     }
 
