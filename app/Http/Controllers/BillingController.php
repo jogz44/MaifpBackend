@@ -15,7 +15,18 @@ class BillingController extends Controller
 
     public function index(){
 
-        $billing  = vw_patient_billing::all();
+        $billing  = vw_patient_billing::select(
+            'patient_id',
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'barangay',
+            'transaction_id',
+        )->get();
 
         return response()->json($billing);
     }
@@ -27,13 +38,11 @@ class BillingController extends Controller
         $transaction = Transaction::with([
             'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category',
             'consultation:id,transaction_id,amount',
-
             // 'laboratories_details:id,transaction_id,laboratory_type,total_amount',
             'radiologies_details:id,transaction_id,item_description,selling_price,total_amount',
             'ultrasound_details:id,transaction_id,body_parts,rate,service_fee,total_amount',
             'mammogram_details:id,transaction_id,procedure,rate,service_fee,total_amount',
             'examination_details:id,transaction_id,item_id,item_description,selling_price,total_amount',
-
             'medication:id,transaction_id,status',
             'medicationDetails:id,transaction_id,item_description,quantity,unit,amount,patient_id,transaction_date',
             'representative:id,rep_name,rep_relationship,rep_address',
@@ -125,9 +134,9 @@ class BillingController extends Controller
             'examination_total'    => $examinationTotal,
             'mammogram_total'    => $mammogramTotal,
             'medication_total'    => $medicationTotal,
-            'total_billing'       => $totalBilling,   // before discount
-            'discount'            => $discount,       // ✅ show discount amount
-            'final_billing'       => $finalBilling,   // ✅ after discount
+            'total_billing'       => $totalBilling,   
+            'discount'            => $discount,       //  show discount amount
+            'final_billing'       => $finalBilling,
             // 'laboratories_details'        => $transaction->laboratories_details->map(function ($lab) {
             //     return [
             //         'id'              => $lab->id,

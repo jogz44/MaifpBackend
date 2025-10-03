@@ -10,22 +10,24 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Representative;
 use PhpParser\Node\Stmt\TryCatch;
+use App\Models\vw_patient_billing;
+
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Log;
+
 use Illuminate\Support\Facades\Auth;
-
 use App\Http\Requests\PatientRequest;
-
+use App\Models\vw_patient_assessment;
+use App\Models\vw_patient_laboratory;
+use App\Models\vw_patient_medication;
+use Illuminate\Support\Facades\Cache;
+use App\Models\vw_patient_consultation;
+use App\Models\vw_transaction_complete;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\PatientRequestAll;
 use App\Http\Requests\AddTransactionRequest;
-use App\Models\vw_patient_assessment;
-use App\Models\vw_patient_billing;
-use App\Models\vw_patient_consultation;
 use App\Models\vw_patient_consultation_return;
-use App\Models\vw_patient_laboratory;
-use App\Models\vw_patient_medication;
-use App\Models\vw_transaction_complete;
 use Illuminate\Validation\ValidationException;
 
 
@@ -35,13 +37,38 @@ class PatientController extends Controller
 
 
     //fetch all patients
+    // public function index()
+    // {
+    //     $patients = Patient::all();
+
+    //     return response()->json($patients);
+    // }
+
     public function index()
     {
-        $patients = Patient::all();
+        // $patients = Cache::rememberForever('patients',function () {
+        //     Log::info('📥 Fetching patients from Data base Patients'); // cache miss
 
+        //     return Patient::all();
+        // });
+        // Log::info('Patients retrieved from cache file'); // always logs
+        $patients = Patient::select(
+            'id',
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'gender',
+            'is_not_tagum',
+            'street',
+            'purok',
+            'barangay',
+        )->get();
         return response()->json($patients);
     }
-
 
     public function getAllPatientsWithLatestTransaction()
     {
@@ -99,28 +126,13 @@ class PatientController extends Controller
     }
 
 
-    // public function assessment()
-    // {
-    //     $patients = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status', 'assessment');
-
-    //     })
-    //         ->with(['transaction' => function ($query) {
-    //             $query->where('status', 'assessment');
-
-    //         }])
-    //         ->get();
-
-    //     return response()->json($patients);
-    // }
-
-
 
 
     public function assessment()
     {
         // Fetch data from the view
         $rows = vw_patient_assessment::all();
+            // Log::info('Fetching patients from DB view...'); // debug log
 
         // Group by patient_id
         $grouped = $rows->groupBy('patient_id');
@@ -138,65 +150,38 @@ class PatientController extends Controller
                 "birthdate" => $patient->birthdate,
                 "contact_number" => $patient->contact_number,
                 "age" => $patient->age,
-                "gender" => $patient->gender,
-                "is_not_tagum" => $patient->is_not_tagum,
-                "street" => $patient->street,
-                "purok" => $patient->purok,
                 "barangay" => $patient->barangay,
-                "city" => $patient->city,
-                "province" => $patient->province,
-                "category" => $patient->category,
-                "philsys_id" =>$patient->philsys_id,
-                "philhealth_id"  => $patient->philhealth_id,
-                "place_of_birth"  => $patient->place_of_birth,
-                "civil_status"  => $patient->civil_status,
-                "religion"  => $patient->religion,
-                "education"  => $patient->education,
-                "occupation"  => $patient->occupation,
-                "income"  => $patient->income,
-                "is_pwd" => $patient->is_pwd,
-                "is_solo" => $patient->is_solo,
 
 
-                "pernament_street" => $patient->pernament_street,
-                "pernament_purok" => $patient->pernament_purok,
-                "pernament_barangay" => $patient->pernament_barangay,
-                "pernament_city" => $patient->pernament_city,
-                "pernament_province" => $patient->pernament_province,
+                // "pernament_street" => $patient->pernament_street,
+                // "pernament_purok" => $patient->pernament_purok,
+                // "pernament_barangay" => $patient->pernament_barangay,
+                // "pernament_city" => $patient->pernament_city,
+                // "pernament_province" => $patient->pernament_province,
 
-                "user_id" => $patient->user_id ?? null,
-                "created_at" => $patient->created_at ?? null,
-                "updated_at" => $patient->updated_at ?? null,
-                "transaction" => $items->map(function ($t) {
-                    return [
-                        "id" => $t->id,
-                        "transaction_number" => $t->transaction_number ?? null,
-                        "patient_id" => $t->patient_id,
-                        "transaction_type" => $t->transaction_type,
-                        "status" => $t->status,
-                        "transaction_date" => $t->transaction_date,
-                        "transaction_mode" => $t->transaction_mode ?? null,
-                        "purpose" => $t->purpose ?? null,
-                        "created_at" => $t->created_at ?? null,
-                        "updated_at" => $t->updated_at ?? null,
-                        "representative_id" => $t->representative_id ?? null,
-                    ];
-                })->values()
+                // "user_id" => $patient->user_id ?? null,
+                // "created_at" => $patient->created_at ?? null,
+                // "updated_at" => $patient->updated_at ?? null,
+                // "transaction" => $items->map(function ($t) {
+                //     return [
+                //         "id" => $t->id,
+                //         "transaction_number" => $t->transaction_number ?? null,
+                //         "patient_id" => $t->patient_id,
+                //         "transaction_type" => $t->transaction_type,
+                //         "status" => $t->status,
+                //         "transaction_date" => $t->transaction_date,
+                //         "transaction_mode" => $t->transaction_mode ?? null,
+                //         "purpose" => $t->purpose ?? null,
+                //         "created_at" => $t->created_at ?? null,
+                //         "updated_at" => $t->updated_at ?? null,
+                //         "representative_id" => $t->representative_id ?? null,
+                //     ];
+                // })->values()
             ];
         })->values();
 
         return response()->json($patients);
     }
-
-        // public function assessment()
-        // {
-        //     // Fetch data from the view
-        //     $rows = vw_patient_assessment::all();
-
-
-        //     return response()->json($rows);
-
-        // }
 
     public function storeAll(PatientRequestAll $request)
     {
@@ -312,6 +297,13 @@ class PatientController extends Controller
             $vitalData['transaction_id'] = $transaction->id;
             $vital = Vital::create($vitalData);
 
+            // ✅ Clear the old cache so index() fetches fresh data
+            // Cache::forget('patients'); // patients is the key cache
+            // Cache::forget('patients_assessment');
+
+            // Log::info('🗑️ Patients cache cleared after creating new patient: ' . $patient->firstname . ' ' . $patient->lastname);
+
+
             // 📝 Activity Log
             activity($user->first_name . ' ' . $user->last_name)
                 ->causedBy($user)
@@ -360,6 +352,11 @@ class PatientController extends Controller
         // Perform update
         $patient->update($validated);
 
+        // 🗑️ Clear cache so next index() fetch is fresh
+        Cache::forget('patients');
+        Cache::forget('patients_assessment');
+        Log::info("🗑️ Cache cleared after updating patient ID {$id}");
+
         $user = Auth::user();
 
         // 📝 Add activity log
@@ -385,98 +382,6 @@ class PatientController extends Controller
         ]);
     }
 
-
-    // public function total_count_badge()
-    // {
-
-
-    //     // ✅ Count of assessed patients
-    //     $count_assessment = Patient::whereHas('transaction', function ($query) {
-    //         $query->where('status', 'assessment');
-    //             // ->whereDate('transaction_date', $today);
-    //     })->count();
-
-    //     // ✅ Count of qualified consultations (unique patients)
-    //     $count_consultation = Transaction::where('status', 'qualified')
-    //         ->where('transaction_type', 'Consultation')
-    //         // ->whereDate('transaction_date', $today)
-    //         ->whereDoesntHave('consultation', function ($query) {
-    //             $query->whereIn('status', ['Done', 'Processing', 'Returned', 'Medication']);
-    //         })
-    //         ->distinct('patient_id')
-    //         ->count('patient_id');
-
-    //     // ✅ Laboratory count (unique patients)
-    //     $count_laboratory = Transaction::where('status', 'qualified')
-    //         ->where(function ($query) {
-    //             $query->where('transaction_type', 'Laboratory')
-    //                 ->orWhereHas('consultation', function ($q) {
-    //                     $q->where('status', 'Processing');
-    //                 });
-    //         })
-    //         ->whereDoesntHave('laboratories', function ($lab) {
-    //             $lab->where('status', 'Done');
-    //         })
-    //         // ->whereDate('transaction_date', $today)
-    //         ->distinct('patient_id')
-    //         ->count('patient_id');
-
-    //     // ✅ Medication count (unique patients)
-    //     $count_medication = Transaction::where('status', 'qualified')
-    //         ->where(function ($query) {
-    //             $query->where('transaction_type', 'Medication')
-    //                 ->orWhereHas('consultation', function ($q) {
-    //                     $q->where('status', 'Medication');
-    //                 });
-    //         })
-    //         // ->whereDate('transaction_date', $today)
-    //         ->whereDoesntHave('medication', function ($q) {
-    //             $q->where('status', 'Done');
-    //         })
-    //         ->distinct('patient_id')
-    //         ->count('patient_id');
-
-    //     // ✅ Returned consultations
-    //     $count_return_consultation = Transaction::whereHas('consultation', function ($query) {
-    //         $query->where('status', 'Returned');
-    //     })
-    //         // ->whereDate('transaction_date', $today)
-    //         ->distinct('patient_id')
-    //         ->count('patient_id');
-
-    //     // ✅ Billing patients
-    //     $count_billing = Transaction::where('status', '!=', 'Complete')
-    //         ->where(function ($q) {
-    //             $q->whereHas('consultation', function ($con) {
-    //                 $con->where('status', 'Done');
-    //             })
-    //                 ->orWhere(function ($q2) {
-    //                     $q2->whereDoesntHave('consultation')
-    //                         ->whereHas('laboratories', function ($lab) {
-    //                             $lab->where('status', 'Done');
-    //                         });
-    //                 })
-    //                 ->orWhereHas('medication', function ($med) {
-    //                     $med->where('status', 'Done');
-    //                 });
-    //         })
-    //         ->count(); // counts transactions, not patients
-    //     // // ✅ Guarantee letter patients
-    //     $count_guarantee = Patient::whereHas('transaction', function ($query) {
-    //         $query
-    //             ->where('status', 'Complete');
-    //     }) ->count();
-
-    //     return response()->json([
-    //         'totalAssessedCount'   => $count_assessment,
-    //         'totalQualifiedCount'  => $count_consultation,
-    //         'totalLaboratoryCount' => $count_laboratory,
-    //         'totalMedicationCount' => $count_medication,
-    //         'totalReturnedCount'   => $count_return_consultation,
-    //         'totalBillingCount'    => $count_billing,
-    //         'totalGLCount'         => $count_guarantee,
-    //     ]);
-    // }
     public function total_count_badge()
     {
         // ✅ Count of assessed patients (unique)

@@ -63,16 +63,6 @@ class AssistanceController extends Controller
         ]);
     }
 
-
-
-    // public function  index()
-    // {
-
-    //     $patient = vw_PatientAssistanceFunds::all();
-    //     return response()->json($patient);
-    // }
-
-
     public function index()
     {
         $transactions = Transaction::where('status', 'Funded')
@@ -90,7 +80,6 @@ class AssistanceController extends Controller
 
         return response()->json($result);
     }
-
 
 
     public function  funds()

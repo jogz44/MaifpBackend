@@ -160,63 +160,9 @@ class LaboratoryController extends Controller
     }
 
 
-
-    //  this method is for saving the laboratory of the patient with his transaction with amount
-    // public function store(LaboratoryRequest $request)
-    // {
-    //     $user = Auth::user();
-
-    //     $validated = $request->validated();
-
-    //     // Check if transaction has consultation
-    //     $transaction = \App\Models\Transaction::with('consultation')
-    //         ->findOrFail($validated['transaction_id']);
-
-    //     $newConsultationId = $transaction->consultation
-    //         ? $transaction->consultation->id
-    //         : null;
-
-    //     $labs = [];
-
-    //     foreach ($validated['laboratories'] as $labData) {
-    //         $labs[] = Laboratories_details::create([
-    //             'transaction_id' => $validated['transaction_id'],
-    //             'new_consultation_id' => $newConsultationId, // set only if exists
-    //             'laboratory_type' => $labData['laboratory_type'],
-    //             'amount' => $labData['amount'],
-    //             'service_fee' => $labData['service_fee'],
-    //             'total_amount' => $labData['total_amount'],
-    //             // 'status' => $labData['status'] ?? 'Pending',
-    //         ]);
-    //     }
-
-    //     // Prepare log details
-    //     $labDetails = collect($labs)->map(function ($lab) {
-    //         return "{$lab->laboratory_type} (₱{$lab->amount})";
-    //     })->implode(', ');
-
-    //     // Log activity
-    //     activity($user->first_name . ' ' . $user->last_name)
-    //         ->causedBy($user)
-    //         ->performedOn($transaction) // better to log on the transaction
-    //         ->withProperties([
-    //             'ip'   => $request->ip(),
-    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //             'labs' => $labs
-    //         ])
-    //         ->log("Added new laboratory services: {$labDetails}");
-
-
-    //     return response()->json([
-    //         'message' => 'Laboratories stored successfully',
-    //         'laboratories' => $labs
-    //     ]);
-    // }
-
-
     public function store(LaboratoryRequest $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
         $validated = $request->validated();
 
         $transaction = \App\Models\Transaction::with('consultation')
@@ -227,20 +173,6 @@ class LaboratoryController extends Controller
             : null;
 
         $savedRecords = [];
-
-        // ✅ Save Laboratories
-        // if (!empty($validated['laboratories'])) {
-        //     foreach ($validated['laboratories'] as $labData) {
-        //         $savedRecords['laboratories'][] = Laboratories_details::create([
-        //             'transaction_id'      => $validated['transaction_id'],
-        //             'new_consultation_id' => $newConsultationId,
-        //             'laboratory_type'     => $labData['laboratory_type'],
-        //             'amount'              => $labData['amount'],
-        //             'service_fee'         => $labData['service_fee'],
-        //             'total_amount'        => $labData['total_amount'],
-        //         ]);
-        //     }
-        // }
 
         // ✅ Save Radiologies
         if (!empty($validated['radiologies'])) {
@@ -300,11 +232,42 @@ class LaboratoryController extends Controller
         }
 
         // Prepare log details
-        // $labDetails = collect($savedRecords)->map(function ($lab) { return "{$lab->laboratory_type} (₱{$lab->amount})";
-        // })->implode(', '); // Log activity
-        // activity($user->first_name . ' ' . $user->last_name) ->causedBy($user) ->performedOn($transaction) // better to log on the transaction
-        //  ->withProperties([ 'ip' => $request->ip(), 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'), 'labs' => $savedRecords ])
-        //  ->log("Added new laboratory services: {$labDetails}");
+        // Prepare log details
+        $logEntries = [];
+
+        foreach ($savedRecords as $type => $records) {
+            foreach ($records as $record) {
+                switch ($type) {
+                    case 'radiologies':
+                        $logEntries[] = "Radiology: {$record->item_description} (₱{$record->total_amount})";
+                        break;
+                    case 'examination':
+                        $logEntries[] = "Examination: {$record->item_description} (₱{$record->total_amount})";
+                        break;
+                    case 'ultrasound':
+                        $logEntries[] = "Ultrasound: {$record->body_parts} (₱{$record->total_amount})";
+                        break;
+                    case 'mammogram':
+                        $logEntries[] = "Mammogram: {$record->procedure} (₱{$record->total_amount})";
+                        break;
+                    default:
+                        $logEntries[] = "Unknown Service (₱{$record->total_amount})";
+                }
+            }
+        }
+
+        $labDetails = implode(', ', $logEntries);
+
+        // Log activity
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($transaction) // better to log on the transaction
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'labs' => $savedRecords
+            ])
+            ->log("Added new services: {$labDetails}");
 
 
         return response()->json([
@@ -315,6 +278,8 @@ class LaboratoryController extends Controller
 
     public function destroy(Request $request)
     {
+
+        $user = Auth::user();
         $validated = $request->validate([
             'transaction_id' => 'required|exists:transaction,id',
             'type'           => 'required|string|in:radiology,examination,ultrasound,mammogram',
@@ -337,11 +302,12 @@ class LaboratoryController extends Controller
 
         $model = $models[$type];
 
-
         $deletedCount = $model::where('transaction_id', $transactionId)
             ->where('id', $id)
             ->delete();
 
+
+        // 📝 Activity Log for Delete
         return response()->json([
             'message' => $deletedCount > 0
                 ? ucfirst($type) . " record deleted successfully"
@@ -541,25 +507,95 @@ class LaboratoryController extends Controller
 
     public function lib_rad_store(lib_radiologyRequest $request)
     {
+         $user = Auth::user();
         $validated = $request->validated();
         $lib = lib_radiology::create($validated);
 
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log(
+                $lib
+                    ? "Added new radiology service: {$lib->item_description} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}"
+                    : "Added new radiology service: Unknown"
+            );
+
+
         return response()->json($lib);
     }
+
     public function lib_rad_update(lib_radiologyRequest $request ,$lib_rad_id)
     {
+
+        $user =Auth::user();
+
         $validated = $request->validated();
-        $lib = lib_radiology::findOrFail($lib_rad_id);
-        $lib->update($validated);
-        return response()->json($lib);
-    }
-    public function lib_rad_delete($lib_rad_id)
-    {
 
         $lib = lib_radiology::findOrFail($lib_rad_id);
-        $lib->delete();
+
+        $lib->update($validated);
+
+
+        // Keep a copy of old values (for logging comparison)
+        $oldValues = $lib->only(['item_description', 'service_fee', 'total_amount']);
+
+        $lib->update($validated);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'        => $request->ip(),
+                'date'      => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'       => $oldValues,
+                'new'       => $lib->only(['item_description', 'service_fee', 'total_amount']),
+            ])
+            ->log(
+                "Updated radiology service: {$lib->item_description} | " .
+                    "Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}"
+            );
+
         return response()->json($lib);
     }
+
+    public function lib_rad_delete($lib_rad_id)
+    {
+            $user= Auth::user();
+        $lib = lib_radiology::findOrFail($lib_rad_id);
+
+        $lib->delete();
+
+        // Capture old values before deleting
+        $oldValues = $lib->only(['item_description', 'service_fee', 'total_amount']);
+
+        // Log activity BEFORE deleting
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(), // use helper function request()
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'  => $oldValues,
+            ])
+            ->log("Deleted radiology service: {$lib->item_description} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
+
+        // Delete the record
+        $lib->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Radiology service deleted successfully',
+            'data' => $oldValues
+        ]);
+
+    }
+
+
     //  lib ultra sound
     public function getByTransaction_ultrasound($transactionId)
     {
@@ -569,6 +605,7 @@ class LaboratoryController extends Controller
             'radiologies' => $results
         ]);
     }
+
     public function lib_ultra_sound_index()
     {
 
@@ -579,26 +616,75 @@ class LaboratoryController extends Controller
 
     public function lib_ultra_sound_store(UltraSoundRequest $request)
     {
+        $user = Auth::user();
+
         $validated = $request->validated();
+
         $lib = lib_ultra_sound::create($validated);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'new'  => $lib->only(['body_parts', 'rate', 'service_fee', 'total_amount']),
+            ])
+            ->log("Added new ultrasound service: {$lib->body_parts} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
 
         return response()->json($lib);
     }
 
     public function lib_ultra_sound_update(UltraSoundRequest $request, $lib_ultra_sound_id)
     {
+        $user = Auth::user();
         $validated = $request->validated();
+
         $lib = lib_ultra_sound::findOrFail($lib_ultra_sound_id);
+
+        $oldValues = $lib->only(['body_parts', 'rate', 'service_fee', 'total_amount']);
+
         $lib->update($validated);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'  => $oldValues,
+                'new'  => $lib->only(['body_parts', 'rate', 'service_fee', 'total_amount']),
+            ])
+            ->log("Updated ultrasound service: {$lib->body_parts} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
+
         return response()->json($lib);
     }
 
     public function lib_ultra_sound_delete($lib_ultra_sound_id)
     {
+        $user = Auth::user();
 
         $lib = lib_ultra_sound::findOrFail($lib_ultra_sound_id);
+
+        $oldValues = $lib->only(['body_parts', 'rate', 'service_fee', 'total_amount']);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'  => $oldValues,
+            ])
+            ->log("Deleted ultrasound service: {$lib->body_parts} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
+
         $lib->delete();
-        return response()->json($lib);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ultrasound service deleted successfully',
+            'data'    => $oldValues
+        ]);
     }
 
 
@@ -622,31 +708,77 @@ class LaboratoryController extends Controller
 
     public function lib_mammogram_store(Mammogram_examination_Request $request)
     {
+        $user = Auth::user();
         $validated = $request->validated();
         $lib = lib_mammogram_examination::create($validated);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'new'  => $lib->only(['procedure', 'rate', 'service_fee', 'total_amount']),
+            ])
+            ->log("Added new mammogram service: {$lib->procedure} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
 
         return response()->json($lib);
     }
 
     public function lib_mammogram_update(Mammogram_examination_Request $request, $lib_mammogram_id)
     {
+        $user = Auth::user();
         $validated = $request->validated();
+
         $lib = lib_mammogram_examination::findOrFail($lib_mammogram_id);
+
+        $oldValues = $lib->only(['procedure', 'rate', 'service_fee', 'total_amount']);
+
         $lib->update($validated);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'  => $oldValues,
+                'new'  => $lib->only(['procedure', 'rate', 'service_fee', 'total_amount']),
+            ])
+            ->log("Updated mammogram service: {$lib->procedure} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
+
+
         return response()->json($lib);
     }
 
     public function lib_mammogram_delete($lib_mammogram_id)
     {
+        $user = Auth::user();
 
         $lib = lib_mammogram_examination::findOrFail($lib_mammogram_id);
+        $oldValues = $lib->only(['procedure', 'rate', 'service_fee', 'total_amount']);
+
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($lib)
+            ->withProperties([
+                'ip'   => request()->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'  => $oldValues,
+            ])
+            ->log("Deleted mammogram service: {$lib->procedure} | Rate: ₱{$lib->rate} | Service Fee: ₱{$lib->service_fee} | Total: ₱{$lib->total_amount}");
+
         $lib->delete();
-        return response()->json($lib);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mammogram service deleted successfully',
+            'data'    => $oldValues
+        ]);
     }
 
 
     //fetch all that of the patient of this laboratory
-
     public function Laboratory_transaction($transactionId)
     {
         $transaction = Transaction::with([

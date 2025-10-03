@@ -201,18 +201,6 @@ class NewConsultationController extends Controller
             $validated                                          // values to update
         );
 
-        // // Update related Laboratory status
-        // if ($NewConsultation && isset($validated['status'])) {
-        //     if ($validated['status'] === 'Medication') {
-        //         // When consultation status is Medication → lab status becomes Done
-        //         Laboratory::where('transaction_id', $validated['transaction_id'])
-        //             ->update(['status' => 'Done']);
-        //     } else {
-        //         // otherwise, just mirror the consultation status
-        //         Laboratory::where('transaction_id', $validated['transaction_id'])
-        //             ->update(['status' => $validated['status']]);
-        //     }
-        // }
 
         if ($NewConsultation && isset($validated['status'])) {
             $statusToSet = ($validated['status'] === 'Medication') ? 'Done' : $validated['status'];

@@ -32,7 +32,10 @@ class TransactionController extends Controller
     public function show($id, Request $request)
     {
         $user = Auth::user();
-        $transaction = Transaction::with(['vital', 'laboratories_details', 'representative', 'patient'])
+        $transaction = Transaction::with(['vital','representative', 'patient',
+         'mammogram_details', 'medicationDetails', 'examination_details',
+            'radiologies_details',
+            'ultrasound_details'])
             ->findOrFail($id);
 
         // ✅ Get patient name if linked
@@ -55,54 +58,6 @@ class TransactionController extends Controller
 
         return response()->json($transaction);
     }
-
-
-    // public function hideButton($id, Request $request)
-    // {
-    //     $user = Auth::user();
-    //     $transaction = Transaction::with([
-    //         'vital',
-    //         'laboratories_details',
-    //         'representative',
-    //         'patient',
-    //         'consultation',
-    //     ])->findOrFail($id);
-
-    //     // ✅ Check consultation status
-    //     $consultationStatus = $transaction->consultation ? $transaction->consultation->status : null;
-
-    //     $hideButtons = $consultationStatus && $consultationStatus !== 'Returned';
-
-    //     // ✅ Get patient name if linked
-    //     $patientName = $transaction->patient
-    //         ? trim("{$transaction->patient->firstname} {$transaction->middlename} {$transaction->lastname} {$transaction->ext}")
-    //         : 'Unknown Patient';
-
-    //     // ✅ Actor name
-    //     $actorName = $user ? "{$user->first_name} {$user->last_name}" : 'System';
-
-    //     // ✅ Log activity
-    //     activity($actorName)
-    //         ->causedBy($user)
-    //         ->performedOn($transaction)
-    //         ->withProperties([
-    //             'ip'   => $request->ip(),
-    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //         ])
-    //         ->log("Viewed transaction record (ID: {$transaction->id}) for Patient: {$patientName}");
-
-    //     // ✅ Custom response with flags
-    //     return response()->json([
-    //         'transaction' => $transaction,
-    //         'buttons' => [
-    //             'medication'   => !$hideButtons,
-    //             'laboratories' => !$hideButtons,
-    //             'done'         => !$hideButtons,
-    //         ],
-    //     ]);
-    // }
-
-
 
 
     public function rep_update(RepresentativeRequest $request, $id) // this function is for the updating or edit the Representative

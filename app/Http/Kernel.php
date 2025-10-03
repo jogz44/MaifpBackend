@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -68,4 +69,9 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
+
+    protected function schedule(Schedule $schedule)
+    {
+        $schedule->command('activity:archive')->daily(); // runs every day
+    }
 }

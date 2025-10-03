@@ -171,6 +171,7 @@ class SystemUserController extends Controller
                 'office' => 'required|string|max:100',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
                 'password' => 'nullable|string|min:8|max:16|confirmed',
+                'role_id' => 'required|exists:role,id'
             ]);
 
             // Only update password if it was provided
