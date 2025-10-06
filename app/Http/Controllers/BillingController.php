@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Assistances;
 use App\Models\Patient;
 use App\Models\Transaction;
 use App\Models\vw_patient_billing;
@@ -29,6 +30,28 @@ class BillingController extends Controller
         )->get();
 
         return response()->json($billing);
+    }
+
+
+    public function billing_report()
+    {
+        // Get all billing data
+        $billing = DB::table('vw_billing_report')->select(
+            'patient_id',
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'barangay'
+        )->get();
+
+        // Use unique() to filter by patient_id
+        $uniquePatients = $billing->unique('patient_id')->values();
+
+        return response()->json($uniquePatients);
     }
 
     // fetching the billing of the patient base on his transaction id
@@ -134,7 +157,7 @@ class BillingController extends Controller
             'examination_total'    => $examinationTotal,
             'mammogram_total'    => $mammogramTotal,
             'medication_total'    => $medicationTotal,
-            'total_billing'       => $totalBilling,   
+            'total_billing'       => $totalBilling,
             'discount'            => $discount,       //  show discount amount
             'final_billing'       => $finalBilling,
             // 'laboratories_details'        => $transaction->laboratories_details->map(function ($lab) {

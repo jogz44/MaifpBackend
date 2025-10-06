@@ -41,6 +41,7 @@ use App\Http\Controllers\UserCredentialsController;
 // });
 
 
+Route::get('/billing/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
 
 Route::prefix('medications')->group(function () {
     Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation

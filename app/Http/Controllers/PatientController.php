@@ -9,26 +9,17 @@ use App\Models\Patient;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Representative;
-use PhpParser\Node\Stmt\TryCatch;
 use App\Models\vw_patient_billing;
-
-use Illuminate\Support\Facades\DB;
-
-use Illuminate\Support\Facades\Log;
-
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\PatientRequest;
 use App\Models\vw_patient_assessment;
 use App\Models\vw_patient_laboratory;
 use App\Models\vw_patient_medication;
-use Illuminate\Support\Facades\Cache;
 use App\Models\vw_patient_consultation;
 use App\Models\vw_transaction_complete;
-use Illuminate\Database\QueryException;
 use App\Http\Requests\PatientRequestAll;
-use App\Http\Requests\AddTransactionRequest;
 use App\Models\vw_patient_consultation_return;
-use Illuminate\Validation\ValidationException;
+
 
 
 class PatientController extends Controller
@@ -353,9 +344,9 @@ class PatientController extends Controller
         $patient->update($validated);
 
         // 🗑️ Clear cache so next index() fetch is fresh
-        Cache::forget('patients');
-        Cache::forget('patients_assessment');
-        Log::info("🗑️ Cache cleared after updating patient ID {$id}");
+        // Cache::forget('patients');
+        // Cache::forget('patients_assessment');
+        // Log::info("🗑️ Cache cleared after updating patient ID {$id}");
 
         $user = Auth::user();
 

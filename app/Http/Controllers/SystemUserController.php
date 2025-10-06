@@ -40,7 +40,7 @@ class SystemUserController extends Controller
     {
         try {
 
-            $System_users = User::orderBy('id', 'desc')
+            $System_users = User::with('role')-> orderBy('id', 'desc')
                 ->get();
             return response()->json(['success' => true, 'users' =>  $System_users]);
         } catch (ValidationException $ve) {
