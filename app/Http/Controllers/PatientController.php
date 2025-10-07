@@ -80,8 +80,30 @@ class PatientController extends Controller
     public function show($id, Request $request)
     {
         $user = Auth::user();
-        $patient = Patient::select(['id','lastname','firstname','contact_number',
-        'middlename','ext','gender','age','ext','birthdate','category','purok','street','barangay','city',
+        $patient = Patient::select([
+            'id',
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'gender',
+            'is_not_tagum',
+            'street',
+            'purok',
+            'barangay',
+            'city',
+            'province',
+
+            'permanent_street',
+            'permanent_purok',
+            'permanent_barangay',
+            'permanent_city',
+            'permanent_province',
+
+            'category',
             'philsys_id',
             'philhealth_id',
             'place_of_birth',
@@ -90,12 +112,9 @@ class PatientController extends Controller
             'education',
             'occupation',
             'income',
-
-            'permanent_street',
-            'permanent_purok',
-            'permanent_barangay',
-            'permanent_city',
-            'permanent_province',
+            'is_pwd',
+            'is_solo',
+            'user_id'
         ])
         ->with('transaction')->find($id);
 

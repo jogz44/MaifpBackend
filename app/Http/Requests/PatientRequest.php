@@ -56,7 +56,7 @@ class PatientRequest extends FormRequest
             'income' => 'sometimes|nullable|string',
             'is_pwd' => 'sometimes|boolean',
             'is_solo' => 'sometimes|boolean',
-            'user_id' => 'sometimes|required|exists:users,id'
+            // 'user_id' => 'sometimes|required|exists:users,id'
         ];
     }
 }

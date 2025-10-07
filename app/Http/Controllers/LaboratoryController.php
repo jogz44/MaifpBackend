@@ -111,7 +111,6 @@ class LaboratoryController extends Controller
         }
     }
 
-
     // this method for updating the status on the laboratory that is connected to the consultation for the patient
     public function Laboratory_status(Request $request)
     {
@@ -315,9 +314,6 @@ class LaboratoryController extends Controller
             'deleted' => $deletedCount,
         ]);
     }
-
-
-
 
     //for library laboratory store
     public function lib_laboratory_store(lib_laboratoryRequest $request)
@@ -776,7 +772,6 @@ class LaboratoryController extends Controller
             'data'    => $oldValues
         ]);
     }
-
 
     //fetch all that of the patient of this laboratory
     public function Laboratory_transaction($transactionId)

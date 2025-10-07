@@ -32,7 +32,7 @@ class ArchiveOldActivities extends Command
 
     public function handle()
     {
-        $cutoff = Carbon::now()->subDays(1);
+        $cutoff = Carbon::now()->subDays(7);
 
         $oldActivities = Activity::where('created_at', '<', $cutoff)->get();
 
@@ -53,5 +53,5 @@ class ArchiveOldActivities extends Command
         $this->info("Archived and deleted " . $oldActivities->count() . " activity logs.");
     }
 
-   
+
 }
