@@ -27,6 +27,8 @@ class TransactionRequest extends FormRequest
              'transaction_mode' => 'sometimes|required|string|max:255',
              'transaction_date' => 'sometimes|required|date',
              'purpose' => 'sometimes|nullable|string|max:255',
+            'maifip' => 'sometimes|boolean',
+            'philhealth' => 'sometimes|boolean',
         ];
     }
 }

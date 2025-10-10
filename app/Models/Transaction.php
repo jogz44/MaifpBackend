@@ -26,7 +26,9 @@ class Transaction extends Model
         'transaction_date',
         'purpose',
         'status', // Added status field
-        'representative_id'
+        'representative_id',
+        'maifip',
+        'philhealth',
     ];
 
 

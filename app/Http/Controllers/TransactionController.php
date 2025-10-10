@@ -226,11 +226,130 @@ class TransactionController extends Controller
     }
 
 
-    public function addTransactionAndVitals(AddTransactionRequest $request) // this is methiod for adding transaction and vitals for existing patient
-    {
+    // public function addTransactionAndVitals(AddTransactionRequest $request) // this is methiod for adding transaction and vitals for existing patient
+    // {
 
+    //     try {
+    //         // ✅ Validate all incoming data except existence check
+    //         $validated = $request->validated();
+
+    //         // ✅ Check if patient exists
+    //         $patient = Patient::find($validated['patient_id']);
+    //         if (!$patient) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Patient does not exist. Please add the patient first.',
+    //                 'patient_id' => $patient
+    //             ], 404);
+    //         }
+
+    //         // ✅ Generate transaction number
+    //         $datePart = now()->format('Y-m-d');
+    //         $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
+    //         $transactionNumber = "{$datePart}-{$sequenceFormatted}";
+
+    //         $representative = Representative::create([
+    //             'rep_name' => $validated['rep_name'],
+    //             'rep_relationship' => $validated['rep_relationship'] ?? 'NA',
+    //             'rep_contact' => $validated['rep_contact'] ?? 'NA',
+    //             'rep_barangay' => $validated['rep_barangay'] ?? 'NA',
+    //             'rep_address' => $validated['rep_address'] ?? 'NA',
+    //             'rep_purok' => $validated['rep_purok'] ?? 'NA',
+    //             'rep_street' => $validated['rep_street'] ?? 'NA',
+    //             'rep_province' => $validated['rep_province'] ?? 'NA',
+    //             'rep_city' => $validated['rep_city'] ?? 'NA',
+    //         ]);
+
+
+    //         if ($patient->philhealth_id) {
+    //             $philhealth = true;
+    //             $maifip = false;
+    //         } else {
+    //             $philhealth = false;
+    //             $maifip = true;
+    //         }
+    //         // ✅ Create transaction
+    //         $transaction = Transaction::create([
+    //             'patient_id' => $patient->id,
+    //             'representative_id' => $representative->id,
+    //             'transaction_number' => $transactionNumber,
+    //             'transaction_type' => $validated['transaction_type'],
+    //             'transaction_date' => $validated['transaction_date'],
+    //             'transaction_mode' => $validated['transaction_mode'],
+    //             'purpose' => $validated['purpose'],
+    //             'philhealth' => $philhealth,
+    //             'maifip' => $maifip,
+    //         ]);
+
+    //         // ✅ Create vitals
+    //         $vital = Vital::create([
+    //             'patient_id' => $patient->id,
+    //             'transaction_id' => $transaction->id,
+    //             'height' => $validated['height'],
+    //             'weight' => $validated['weight'],
+    //             'bmi' => $validated['bmi'] ?? 'NA',
+    //             'temperature' => $validated['temperature'] ?? 'NA',
+    //             'waist' => $validated['waist'] ?? 'NA',
+    //             'pulse_rate' => $validated['pulse_rate'] ?? 'NA',
+    //             'sp02' => $validated['sp02'] ??  'NA',
+    //             'heart_rate' => $validated['heart_rate'] ?? 'NA',
+    //             'blood_pressure' => $validated['blood_pressure'] ?? 'NA',
+    //             'respiratory_rate' => $validated['respiratory_rate'] ?? 'NA',
+    //             'medicine' => $validated['medicine'] ?? 'NA',
+    //             'LMP' => $validated['LMP'] ?? 'NA',
+    //         ]);
+
+    //         // ✅ Add activity log
+    //         $user = Auth::user();
+    //         $actorName = $user ? $user->first_name . ' ' . $user->last_name : 'System';
+    //         $patientName = $patient->firstname . ' ' . $patient->lastname;
+
+    //         activity($actorName)
+    //             ->causedBy($user)
+    //             ->performedOn($transaction)
+    //             ->withProperties([
+    //                 'ip'   => $request->ip(),
+    //                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+    //                 'transaction' => $transaction->toArray(),
+    //                 'vital'       => $vital->toArray(),
+    //                 'representative' => $representative->toArray(),
+    //             ])
+    //             ->log("Created new transaction {$transaction->transaction_number} and vitals for Patient: {$patientName}");
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Transaction and vitals added successfully for existing patient.',
+    //             'patient' => $patient,
+    //             'transaction' => $transaction,
+    //             'vital' => $vital,
+    //             'representative' => $representative,
+    //             'transaction_number' => $transactionNumber
+    //         ]);
+    //     } catch (ValidationException $ve) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $ve->errors()
+    //         ], 422);
+    //     } catch (QueryException $qe) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Database error',
+    //             'errors' => $qe->getMessage()
+    //         ], 500);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'An unexpected error occurred',
+    //             'errors' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function addTransactionAndVitals(AddTransactionRequest $request)
+    {
         try {
-            // ✅ Validate all incoming data except existence check
+            // ✅ Validate all incoming data
             $validated = $request->validated();
 
             // ✅ Check if patient exists
@@ -239,7 +358,6 @@ class TransactionController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Patient does not exist. Please add the patient first.',
-                    'patient_id' => $patient
                 ], 404);
             }
 
@@ -248,6 +366,7 @@ class TransactionController extends Controller
             $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
             $transactionNumber = "{$datePart}-{$sequenceFormatted}";
 
+            // ✅ Create representative
             $representative = Representative::create([
                 'rep_name' => $validated['rep_name'],
                 'rep_relationship' => $validated['rep_relationship'] ?? 'NA',
@@ -260,6 +379,15 @@ class TransactionController extends Controller
                 'rep_city' => $validated['rep_city'] ?? 'NA',
             ]);
 
+            // ✅ Determine assistance based on patient's PhilHealth ID
+            if ($patient->philhealth_id) {
+                $philhealth = true;
+                $maifip = false;
+            } else {
+                $philhealth = false;
+                $maifip = true;
+            }
+
             // ✅ Create transaction
             $transaction = Transaction::create([
                 'patient_id' => $patient->id,
@@ -269,6 +397,8 @@ class TransactionController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'transaction_mode' => $validated['transaction_mode'],
                 'purpose' => $validated['purpose'],
+                'philhealth' => $philhealth,
+                'maifip' => $maifip,
             ]);
 
             // ✅ Create vitals
@@ -281,7 +411,7 @@ class TransactionController extends Controller
                 'temperature' => $validated['temperature'] ?? 'NA',
                 'waist' => $validated['waist'] ?? 'NA',
                 'pulse_rate' => $validated['pulse_rate'] ?? 'NA',
-                'sp02' => $validated['sp02'] ??  'NA',
+                'sp02' => $validated['sp02'] ?? 'NA',
                 'heart_rate' => $validated['heart_rate'] ?? 'NA',
                 'blood_pressure' => $validated['blood_pressure'] ?? 'NA',
                 'respiratory_rate' => $validated['respiratory_rate'] ?? 'NA',
@@ -298,10 +428,10 @@ class TransactionController extends Controller
                 ->causedBy($user)
                 ->performedOn($transaction)
                 ->withProperties([
-                    'ip'   => $request->ip(),
+                    'ip' => $request->ip(),
                     'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
                     'transaction' => $transaction->toArray(),
-                    'vital'       => $vital->toArray(),
+                    'vital' => $vital->toArray(),
                     'representative' => $representative->toArray(),
                 ])
                 ->log("Created new transaction {$transaction->transaction_number} and vitals for Patient: {$patientName}");
@@ -334,5 +464,46 @@ class TransactionController extends Controller
                 'errors' => $th->getMessage()
             ], 500);
         }
+    }
+
+    // this method is for updating transaction status if the patient want to avail the maifip so his status will be change to assessment
+    public function status_to_maifip(Request $request, $TransactionId)
+    {
+        $user = Auth::user();
+        // Logic to update a transaction
+        $validated =  $request->validate([
+            'status' => 'required|string|in:evaluation',
+            'maifip' => 'required|boolean',
+        ]);
+        $transaction = Transaction::with('patient')->findOrFail($TransactionId);
+
+
+
+        $oldData = $transaction->toArray();
+        $transaction->update($validated);
+        $newData = $transaction->toArray();
+
+        // ✅ Get patient name
+        $patientName = $transaction->patient
+            ? $transaction->patient->firstname . ' ' . $transaction->patient->lastname
+            : 'Unknown Patient';
+
+        // ✅ Log activity with patient name
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($transaction)
+            ->withProperties([
+                'ip'      => $request->ip(),
+                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'old'     => $oldData,
+                'new'     => $newData,
+                'changes' => $validated,
+            ])
+            ->log("Updated patient transaction status to {$validated['status']} for Patient: {$patientName}");
+
+        return response()->json([
+            'message' => 'Transaction updated status successfully for to maifip.',
+            'transaction' => $transaction
+        ]);
     }
 }

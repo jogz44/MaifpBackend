@@ -40,6 +40,9 @@ use App\Http\Controllers\UserCredentialsController;
 //     ]);
 // });
 
+Route::get('patients/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+
+Route::get('patients/philhealth/maifip/assessment', [PatientController::class, 'philhealth_to_maifip_assessment']); // phildhealth to maifip assessment
 
 Route::get('/billing/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
 
@@ -94,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
         Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);
 
+        Route::put('/{TransactionId}/update/philhealth', [TransactionController::class, 'status_to_maifip']);// updating the transaction to maifip
     });
 
     Route::prefix('laboratory')->group(function () {
@@ -157,6 +161,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
         Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
         Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+        // Route::get('/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+
         Route::get('/count/badge', [PatientController::class, 'total_count_badge']); // fetch patient for assessment on the social if this qualified or unqualified
         Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
 

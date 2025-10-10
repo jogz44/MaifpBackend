@@ -44,8 +44,8 @@ class PatientRequestAll extends FormRequest
             'permanent_city',
             'permanent_province',
             'category',
-            'philsys_id',
-            'philhealth_id',
+            // 'philsys_id',
+            // 'philhealth_id',
             'place_of_birth',
             'civil_status',
             'religion',
@@ -72,6 +72,8 @@ class PatientRequestAll extends FormRequest
             'transaction_mode',
             'transaction_date',
             'purpose',
+            // 'maifip',
+            // 'philhealth',
 
             // Vital
             'height',
@@ -155,6 +157,8 @@ class PatientRequestAll extends FormRequest
             'transaction_mode' => 'required|string|max:255',
             'transaction_date' => 'required|date',
             'purpose' => 'nullable|string|max:255',
+            'maifip' => 'sometimes|boolean',
+            'philhealth' => 'sometimes|boolean',
 
             //vital
             'height' => 'sometimes|required|string|max:255',
@@ -169,6 +173,7 @@ class PatientRequestAll extends FormRequest
             'respiratory_rate' => 'sometimes|nullable|string|max:255',
             'medicine' => 'sometimes|nullable|string|max:255',
             'LMP' => 'sometimes|nullable|string|max:255',
+
         ];
 
     }

@@ -10,14 +10,18 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Representative;
 use App\Models\vw_patient_billing;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\PatientRequest;
-use App\Models\vw_patient_assessment;
+use App\Models\vw_patient_assessment_maifip;
 use App\Models\vw_patient_laboratory;
 use App\Models\vw_patient_medication;
 use App\Models\vw_patient_consultation;
 use App\Models\vw_transaction_complete;
 use App\Http\Requests\PatientRequestAll;
+use App\Models\vw_patient_assessment_maifip_maifip;
+use App\Models\vw_patient_assessment_philhealth;
+use App\Models\vw_patient_assessment_philhealth_to_maifip;
 use App\Models\vw_patient_consultation_return;
 
 
@@ -141,7 +145,7 @@ class PatientController extends Controller
     public function assessment()
     {
         // Fetch data from the view
-        $rows = vw_patient_assessment::all();
+        $rows = vw_patient_assessment_maifip::all();
             // Log::info('Fetching patients from DB view...'); // debug log
 
         // Group by patient_id
@@ -187,6 +191,71 @@ class PatientController extends Controller
                 //         "representative_id" => $t->representative_id ?? null,
                 //     ];
                 // })->values()
+            ];
+        })->values();
+
+        return response()->json($patients);
+    }
+
+
+
+    public function philhealth_to_maifip_assessment()
+    {
+        // Fetch data from the view
+        $rows = DB::table('vw_patient_assessment_philhealth_to_maifip')->get();
+        // Log::info('Fetching patients from DB view...'); // debug log
+
+        // Group by patient_id
+        $grouped = $rows->groupBy('patient_id');
+
+        // Transform into desired structure
+        $patients = $grouped->map(function ($items) {
+            $patient = $items->first(); // patient details (same for all rows)
+
+            return [
+                "id" => $patient->patient_id,
+                "firstname" => $patient->firstname,
+                "lastname" => $patient->lastname,
+                "middlename" => $patient->middlename,
+                "ext" => $patient->ext,
+                "birthdate" => $patient->birthdate,
+                "contact_number" => $patient->contact_number,
+                "age" => $patient->age,
+                "barangay" => $patient->barangay,
+
+
+            ];
+        })->values();
+
+        return response()->json($patients);
+    }
+
+
+    public function philhealth_assessment()
+    {
+        // Fetch data from the view
+        $rows = DB::table('vw_patient_assessment_philhealth')->get();
+        // Log::info('Fetching patients from DB view...'); // debug log
+
+        // Group by patient_id
+        $grouped = $rows->groupBy('patient_id');
+
+        // Transform into desired structure
+        $patients = $grouped->map(function ($items) {
+            $patient = $items->first(); // patient details (same for all rows)
+
+            return [
+                "id" => $patient->patient_id,
+                "firstname" => $patient->firstname,
+                "lastname" => $patient->lastname,
+                "middlename" => $patient->middlename,
+                "ext" => $patient->ext,
+                "birthdate" => $patient->birthdate,
+                "contact_number" => $patient->contact_number,
+                "age" => $patient->age,
+                "barangay" => $patient->barangay,
+
+
             ];
         })->values();
 
@@ -274,17 +343,29 @@ class PatientController extends Controller
             $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
             $transactionNumber = "{$datePart}-{$sequenceFormatted}";
 
+            // ✅ Determine assistance based on PhilHealth ID
+            if ($patient->philhealth_id) {
+                $philhealth = true;
+                $maifip = false;
+            } else {
+                $philhealth = false;
+                $maifip = true;
+            }
+
             // ✅ Transaction data
             $transactionData = $request->only([
                 'transaction_type',
                 'transaction_date',
                 'transaction_mode',
-                'purpose'
+                'purpose',
+
             ]);
 
             $transactionData['patient_id'] = $patient->id;
             $transactionData['representative_id'] = $representative->id;
             $transactionData['transaction_number'] = $transactionNumber;
+            $transactionData['philhealth'] = $philhealth;
+            $transactionData['maifip'] = $maifip;
             $transaction = Transaction::create($transactionData);
 
             // ✅ Vital signs
@@ -395,7 +476,7 @@ class PatientController extends Controller
     public function total_count_badge()
     {
         // ✅ Count of assessed patients (unique)
-        $count_assessment = vw_patient_assessment::distinct('patient_id')->count('patient_id');
+        $count_assessment = vw_patient_assessment_maifip::distinct('patient_id')->count('patient_id');
 
         // ✅ Count of qualified consultations (unique patients)
         $count_consultation = vw_patient_consultation::distinct('patient_id')->count('patient_id');
@@ -415,6 +496,12 @@ class PatientController extends Controller
         // ✅ Guarantee letter patients (unique)
         $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
 
+
+        $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
+
+        $count_assessment_philhealth= vw_patient_assessment_philhealth::distinct('patient_id')->count('patient_id');
+
+
         return response()->json([
             'totalAssessedCount'   => $count_assessment,
             'totalQualifiedCount'  => $count_consultation,
@@ -423,6 +510,9 @@ class PatientController extends Controller
             'totalReturnedCount'   => $count_return_consultation,
             'totalBillingCount'    => $count_billing,
             'totalGLCount'         => $count_guarantee,
+            'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
+            'totalphilhealth'         => $count_assessment_philhealth,
+
         ]);
     }
 }

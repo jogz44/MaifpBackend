@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('assistances_funds', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('assistance_id');
+            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
             $table->string('fund_source');
             $table->decimal('fund_amount', 10, 2)->nullable();
             $table->timestamps();
-            $table->foreign('assistance_id')->references('id')->on('assistances')->cascadeOnDelete();
+            // $table->foreign('assistance_id')->references('id')->on('assistances')->cascadeOnDelete();
         });
     }
 

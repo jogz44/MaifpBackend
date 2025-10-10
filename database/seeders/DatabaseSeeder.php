@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
+use Termwind\Components\Li;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,10 +25,13 @@ class DatabaseSeeder extends Seeder
          $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            PatientTransactionVitalSeeder::class, // ✅ add this
+            // PatientTransactionVitalSeeder::class, // ✅ add this
             LibLaboratorySeeder::class,
             DoctorfeeSeeder::class,
             LibRadiologySeeder::class,
+            LibMammogramExaminationSeeder::class,
+            LibLabExaminationSeeder::class,
+            LibUltraSoundSeeder::class,
 
         ]);
     }

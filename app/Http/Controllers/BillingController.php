@@ -144,6 +144,9 @@ class BillingController extends Controller
             'is_pwd'              => $transaction->patient->is_pwd,
             'is_solo'             => $transaction->patient->is_solo,
             'contact_number'      => $transaction->patient->contact_number,
+            'maifip'             => $transaction->maifip,
+            'transaction_status'             => $transaction->status,
+            'philhealth'             => $transaction->philhealth,
             'address'             => [
                 'street'   => $transaction->patient->street,
                 'purok'    => $transaction->patient->purok,

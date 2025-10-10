@@ -18,7 +18,7 @@ class AddTransactionRequest extends FormRequest
     {
         // All fields that should default to "NA" if empty
         $defaults = [
-          
+
             // Representative
             'rep_name',
             'rep_relationship',
@@ -35,6 +35,7 @@ class AddTransactionRequest extends FormRequest
             'transaction_mode',
             'transaction_date',
             'purpose',
+
 
             // Vital
             'height',
@@ -85,6 +86,8 @@ class AddTransactionRequest extends FormRequest
             'transaction_date' => 'required|string|max:255',
             'transaction_mode' => 'required|string|max:255',
             'purpose' => 'nullable|string|max:255',
+            'maifip' => 'sometimes|boolean',
+            'philhealth' => 'sometimes|boolean',
 
             // Vital signs fields
             'height' => 'nullable|string|max:255',

@@ -7,10 +7,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('DROP VIEW IF EXISTS vw_patient_assessment');
+        DB::statement('DROP VIEW IF EXISTS vw_patient_assessment_maifip');
 
         DB::statement("
-            CREATE VIEW vw_patient_assessment AS
+            CREATE VIEW vw_patient_assessment_maifip AS
             SELECT
              p.id AS patient_id,
                 p.firstname,
@@ -39,12 +39,14 @@ return new class extends Migration
                 t.purpose
             FROM transaction t
             LEFT JOIN patient p ON p.id = t.patient_id
-            WHERE t.status = 'assessment'
+           WHERE
+        ((`t`.`status` = 'assessment')
+            AND (`t`.`maifip` = TRUE))
         ");
     }
 
     public function down(): void
     {
-        DB::statement("DROP VIEW IF EXISTS vw_patient_assessment");
+        DB::statement("DROP VIEW IF EXISTS vw_patient_assessment_maifip");
     }
 };
