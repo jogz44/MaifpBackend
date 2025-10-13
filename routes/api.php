@@ -40,6 +40,7 @@ use App\Http\Controllers\UserCredentialsController;
 //     ]);
 // });
 
+
 Route::get('patients/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
 Route::get('patients/philhealth/maifip/assessment', [PatientController::class, 'philhealth_to_maifip_assessment']); // phildhealth to maifip assessment
@@ -108,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
         Route::get('/index/lab_services', [LaboratoryController::class, 'lib_laboratory_index']);
         Route::post('/store/lab_services', [LaboratoryController::class, 'lib_laboratory_store']);
+        
         Route::post('/update/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_update']);
         Route::delete('/delete/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_delete']);
 

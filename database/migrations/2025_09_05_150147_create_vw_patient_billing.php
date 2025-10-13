@@ -36,6 +36,7 @@ return new class extends Migration
     WHERE
         ((`t`.`status` <> 'Funded')
             AND (((`t`.`status` <> 'Complete')
+            AND (`t`.`status` <> 'Evaluation')
             AND EXISTS( SELECT
                 1
             FROM

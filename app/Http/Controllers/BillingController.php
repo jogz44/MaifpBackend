@@ -59,7 +59,7 @@ class BillingController extends Controller
     {
         $user = Auth::user();
         $transaction = Transaction::with([
-            'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category',
+            'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category,philhealth_id',
             'consultation:id,transaction_id,amount',
             // 'laboratories_details:id,transaction_id,laboratory_type,total_amount',
             'radiologies_details:id,transaction_id,item_description,selling_price,total_amount',
@@ -137,6 +137,7 @@ class BillingController extends Controller
             'firstname'           => $transaction->patient->firstname,
             'lastname'            => $transaction->patient->lastname,
             'middlename'          => $transaction->patient->middlename,
+
             'birthdate'           => $transaction->patient->birthdate,
             'age'                 => $transaction->patient->age,
             'gender'              => $transaction->patient->gender,
@@ -144,17 +145,28 @@ class BillingController extends Controller
             'is_pwd'              => $transaction->patient->is_pwd,
             'is_solo'             => $transaction->patient->is_solo,
             'contact_number'      => $transaction->patient->contact_number,
+            'philhealth_id' => $transaction->patient->philhealth_id,
             'maifip'             => $transaction->maifip,
             'transaction_status'             => $transaction->status,
             'philhealth'             => $transaction->philhealth,
+
             'address'             => [
                 'street'   => $transaction->patient->street,
                 'purok'    => $transaction->patient->purok,
                 'barangay' => $transaction->patient->barangay,
             ],
+
+            'representative'      => $transaction->representative
+                ? [
+                    'id'            => $transaction->representative->id,
+                    'rep_name'      => $transaction->representative->rep_name,
+                    'relationship'  => $transaction->representative->rep_relationship,
+                    'address'       => $transaction->representative->rep_address,
+                ]
+                : null,
+
             'transaction_date'    => $transaction->transaction_date,
             'consultation_amount' => $consultationAmount,
-            // 'laboratory_total'    => $laboratoryTotal,
             'radiology_total'    => $radiologyTotal,
             'ultrasound_total'    => $ultrasoundTotal,
             'examination_total'    => $examinationTotal,
@@ -163,14 +175,7 @@ class BillingController extends Controller
             'total_billing'       => $totalBilling,
             'discount'            => $discount,       //  show discount amount
             'final_billing'       => $finalBilling,
-            // 'laboratories_details'        => $transaction->laboratories_details->map(function ($lab) {
-            //     return [
-            //         'id'              => $lab->id,
-            //         'laboratory_type' => $lab->laboratory_type,
-            //         'total_amount' => $lab->total_amount,
-            //         // 'status'          => $lab->status,
-            //     ];
-            // }),
+
             'radiologies_details'        => $transaction->radiologies_details->map(function ($rad) {
                 return [
                     'id'              => $rad->id,
@@ -206,8 +211,6 @@ class BillingController extends Controller
                 ];
             }),
 
-
-
             'ultrasound_details'        => $transaction->ultrasound_details->map(function ($ultra) {
                 return [
                     'id'  => $ultra->id,
@@ -219,14 +222,7 @@ class BillingController extends Controller
                 ];
             }),
             'medication'          => $medicationDetails,
-            'representative'      => $transaction->representative
-                ? [
-                    'id'            => $transaction->representative->id,
-                    'rep_name'      => $transaction->representative->rep_name,
-                    'relationship'  => $transaction->representative->rep_relationship,
-                    'address'       => $transaction->representative->rep_address,
-                ]
-                : null,
+
             'assistance' => $transaction->assistance ? [
                 'id' => $transaction->assistance->id,
                 // 'consultation_amount' => $transaction->assistance->consultation_amount,

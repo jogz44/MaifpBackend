@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
          $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            // PatientTransactionVitalSeeder::class, // ✅ add this
+            PatientAllSeeder::class,
             LibLaboratorySeeder::class,
             DoctorfeeSeeder::class,
             LibRadiologySeeder::class,

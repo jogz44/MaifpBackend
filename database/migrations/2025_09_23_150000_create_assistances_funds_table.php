@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction_type', function (Blueprint $table) {
+        Schema::create('assistances_funds', function (Blueprint $table) {
             $table->id();
-            $table->string('transaction_name')->nullable();
-            $table->boolean('status')->default(true); // ✅ default available
+            $table->foreignId('assistance_id')->nullable()->constrained('assistances')->onDelete('cascade');
+            $table->string('fund_source');
+            $table->decimal('fund_amount', 10, 2)->nullable();
             $table->timestamps();
+            // Add the foreign key column first
+
         });
     }
 
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction_type');
+        Schema::dropIfExists('assistances_funds');
     }
 };

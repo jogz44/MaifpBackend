@@ -29,7 +29,11 @@ use App\Models\vw_patient_consultation_return;
 class PatientController extends Controller
 {
 
+    public function  test ()
 
+{
+    return response()->json(['message' => 'ngrok Test successful']);
+}
 
     //fetch all patients
     // public function index()

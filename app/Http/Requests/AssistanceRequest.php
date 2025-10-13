@@ -50,15 +50,10 @@ class AssistanceRequest extends FormRequest
             'medication.*.total' => 'nullable|numeric',
             'medication.*.transaction_date' => 'nullable|date',
 
-            // 'laboratories_details' => 'nullable|array',
-            // 'laboratories_details.*.laboratory_type' => 'nullable|string',
-            // // 'laboratories_details.*.amount' => 'nullable|numeric',
-            // 'laboratories_details.*.total_amount' => 'nullable|numeric',
+
 
             'ultrasound_details' => 'nullable|array',
             'ultrasound_details.*.body_parts' => 'nullable|string',
-            // 'ultrasound_details.*.rate' => 'nullable|numeric',
-            // 'ultrasound_details.*.service_fee' => 'nullable|numeric',
             'ultrasound_details.*.total_amount' => 'nullable|numeric',
 
             'mammogram_details' => 'nullable|array',

@@ -105,40 +105,101 @@ class GuaranteeLetterController extends Controller
 
     public function update(Request $request, $transaction_id)
     {
-        // ✅ Validation
+        // ✅ Validate inputs
         $validated = $request->validate([
             'gl_number'   => 'required|string|unique:assistances,gl_number,' . $transaction_id . ',transaction_id',
             'fund_source' => 'required|string',
             'fund_amount' => 'required|numeric',
+            'transaction_id' => 'required|exists:transaction,id',
+
+
+            'consultation_amount' => 'nullable|numeric',
+
+            'medication_total' => 'nullable|numeric',
+            'total_billing' => 'nullable|numeric',
+            'discount' => 'nullable|numeric',
+            'final_billing' => 'nullable|numeric',
+
+
+            'radiology_total' => 'nullable|numeric',
+            'examination_total' => '|nullable|numeric',
+            'ultrasound_total' => 'nullable|numeric',
+            'mammogram_total' => 'nullable|numeric',
+
+
+            'medication' => 'nullable|array',
+            'medication.*.item_description' => 'nullable|string',
+            'medication.*.quantity' => 'nullable|integer',
+            'medication.*.unit' => 'nullable|string',
+            'medication.*.amount' => 'nullable|numeric',
+            'medication.*.total' => 'nullable|numeric',
+            'medication.*.transaction_date' => 'nullable|date',
+
+            'ultrasound_details' => 'nullable|array',
+            'ultrasound_details.*.body_parts' => 'nullable|string',
+            'ultrasound_details.*.total_amount' => 'nullable|numeric',
+
+            'mammogram_details' => 'nullable|array',
+            'mammogram_details.*.procedure' => 'nullable|string',
+            'mammogram_details.*.total_amount' => 'nullable|numeric',
+
+            'radiology_details' => 'nullable|array',
+            'radiology_details.*.item_description' => 'nullable|string',
+            'radiology_details.*.total_amount' => 'nullable|numeric',
+
+            'examination_details' => 'nullable|array',
+            'examination_details.*.item_description' => 'nullable|string',
+            'examination_details.*.total_amount' => 'nullable|numeric',
+
         ]);
+        // 🧹 Helper function for clean encoding
+        $encodeIfNotEmpty = fn($arr) => (!empty($arr) && count(array_filter($arr, fn($v) => !empty($v))) > 0)
+            ? json_encode($arr)
+            : null;
 
-        // ✅ Find Assistance record by transaction_id
-        $assistance = Assistances::where('transaction_id', $transaction_id)->first();
+        // ✅ Find Assistance record by transaction_id or create a new one
+        $assistance = Assistances::UpdateOrCreate(
+            ['transaction_id' => $transaction_id],
+            [
+                'gl_number'            => $validated['gl_number'],
+                'consultation_amount'  => $validated['consultation_amount'],
+                'mammogram_total'      => $validated['mammogram_total'],
+                'radiology_total'      => $validated['radiology_total'],
+                'examination_total'    => $validated['examination_total'],
+                'ultrasound_total'     => $validated['ultrasound_total'],
+                'medication_total'      => $validated['medication_total'],
+                'total_billing'        => $validated['total_billing'],
+                'discount'             => $validated['discount'],
+                'final_billing'        => $validated['final_billing'],
 
-        if (!$assistance) {
-            return response()->json([
-                'message' => "No Assistance record found for transaction_id {$transaction_id}"
-            ], 404);
+                'ultrasound_details'  => $encodeIfNotEmpty($validated['ultrasound_details'] ?? []),
+                'mammogram_details'   => $encodeIfNotEmpty($validated['mammogram_details'] ?? []),
+                'radiology_details'   => $encodeIfNotEmpty($validated['radiology_details'] ?? []),
+                'examination_details' => $encodeIfNotEmpty($validated['examination_details'] ?? []),
+                'medication'          => $encodeIfNotEmpty($validated['medication'] ?? []),
+            ] // if creating new, set GL number
+        );
+
+        // ✅ If the Assistance already exists, update gl_number
+        if (!$assistance->wasRecentlyCreated) {
+            $assistance->update([
+                'gl_number' => $validated['gl_number'],
+            ]);
         }
+            // Create new fund if not exists
+            $assistance->funds()->create([
+                'fund_source' => $validated['fund_source'],
+                'fund_amount' => $validated['fund_amount'],
 
-        // ✅ Update gl_number (already validated as unique)
-        $assistance->update([
-            'gl_number' => $validated['gl_number'],
-        ]);
-
-        // ✅ Add fund source
-        $assistance->funds()->create([
-            'fund_source' => $validated['fund_source'],
-            'fund_amount' => $validated['fund_amount'],
-        ]);
+            ]);
 
         return response()->json([
-            'message'    => 'Successfully updated assistance and added fund source',
+            'message'    => 'Successfully created/updated assistance and fund source',
             'assistance' => $assistance->load('funds'),
         ]);
     }
 
-    public function update_status(Request $request, $transaction_id)
+    public function update_status(Request $request, $transaction_id) // updating the transaction status to Funded
     {
         // ✅ Validation
         $validated = $request->validate([
