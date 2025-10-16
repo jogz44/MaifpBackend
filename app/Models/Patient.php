@@ -57,14 +57,6 @@ class Patient extends Model
     {
         return $this->hasMany(Assistances::class);
     }
-    // public function medication()
-    // {
-    //     return $this->hasMany(Medication::class);
-    // }
-    // public function laboratories()
-    // {
-    //     return $this->hasMany(Laboratory::class);
-    // }
     public function latestTransaction()
     {
         return $this->hasOne(Transaction::class)

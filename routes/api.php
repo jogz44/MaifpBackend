@@ -15,7 +15,6 @@ use App\Http\Controllers\GuaranteeLetterController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\UserCredentialsController;
 
-// Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
 // this route is for v2 with cache
 // Route::get('/logs', function () {
@@ -41,18 +40,12 @@ use App\Http\Controllers\UserCredentialsController;
 // });
 
 
-Route::get('patients/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+// Route::prefix('medications')->group(function () {
+//     Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
+//     Route::post('/store', [MedicationController::class, 'store']);
+//     Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
 
-Route::get('patients/philhealth/maifip/assessment', [PatientController::class, 'philhealth_to_maifip_assessment']); // phildhealth to maifip assessment
-
-Route::get('/billing/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
-
-Route::prefix('medications')->group(function () {
-    Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
-    Route::post('/store', [MedicationController::class, 'store']);
-    Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
-
-});
+// });
 
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
@@ -76,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('billing')->group(function () {
         Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
         Route::get('/', [BillingController::class, 'index']); // fetch the patient  already done for his transaction
+        Route::get('/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
         Route::post('/store', [BillingController::class, 'store']); // storing the patient and his transaction on the billing table  to deduc the total_amount of patient billing on the remaining funds
     });
 
@@ -97,7 +91,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/qualified', [NewConsultationController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
         Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
         Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);
-
         Route::put('/{TransactionId}/update/philhealth', [TransactionController::class, 'status_to_maifip']);// updating the transaction to maifip
     });
 
@@ -109,7 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
         Route::get('/index/lab_services', [LaboratoryController::class, 'lib_laboratory_index']);
         Route::post('/store/lab_services', [LaboratoryController::class, 'lib_laboratory_store']);
-        
+
         Route::post('/update/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_update']);
         Route::delete('/delete/lab_services/{lib_laboratory}', [LaboratoryController::class, 'lib_laboratory_delete']);
 
@@ -152,21 +145,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('new_consultations')->group(function () {
         Route::post('/store', [NewConsultationController::class, 'store']); // this route is for the consultation of patient update if the transaction was exist if didnt exist create
-        // Route::get('/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
     });
 
     Route::prefix('patients')->group(function () {
         Route::get('/', [PatientController::class, 'index']); // list of patient
         Route::get('/master_list', [PatientController::class, 'getAllPatientsWithLatestTransaction']); // list of patient
         Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
-        // Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
         Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
         Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
         Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
-        // Route::get('/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
         Route::get('/count/badge', [PatientController::class, 'total_count_badge']); // fetch patient for assessment on the social if this qualified or unqualified
         Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
+        Route::get('/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
+        Route::get('/philhealth/maifip/assessment', [PatientController::class, 'philhealth_to_maifip_assessment']); // phildhealth to maifip assessment
 
     });
 
@@ -191,6 +183,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/configuration', [ConfigurationsController::class, 'store']); // Insert new config
         Route::put('/configuration/{id}/config', [ConfigurationsController::class, 'updateConfig']); // Update config
         Route::delete('/configuration/{id}', [ConfigurationsController::class, 'destroy']); // Delete config
+
+    });
+
+    Route::prefix('medications')->group(function () {
+        Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
+        Route::post('/store', [MedicationController::class, 'store']);
+        Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
 
     });
 

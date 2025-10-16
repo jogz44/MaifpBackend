@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 class MAIFIPReportController extends Controller
 {
     //
-
-
     public function report(Request $request)
     {
         $request->validate([
@@ -47,8 +45,6 @@ class MAIFIPReportController extends Controller
 
         return response()->json($result);
     }
-
-
 
     public function report_index()
     {

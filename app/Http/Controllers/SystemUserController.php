@@ -108,6 +108,9 @@ class SystemUserController extends Controller
     public function store(Request $request)
     {
         try {
+
+            $user=Auth::user();
+
             $validationInput = $request->validate([
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
@@ -122,6 +125,19 @@ class SystemUserController extends Controller
 
             // No need to hash password manually here
             $System_users = User::create($validationInput);
+
+            // Activity log
+            activity($user->first_name . ' ' . $user->last_name ?? 'System')
+                ->causedBy($user)
+                ->performedOn($System_users)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'created_user_id' => $System_users->id,
+                    'created_user_name' => $System_users->first_name . ' ' . $System_users->last_name,
+                ])
+                ->log("Created new user: {$System_users->first_name} {$System_users->last_name}");
+
             return response()->json([
                 'success' => true,
                 'user' => $System_users
@@ -257,39 +273,55 @@ class SystemUserController extends Controller
     public function deactivateUser($id)
     {
         try {
-            $user = User::find($id);
+            $userToDeactivate = User::find($id);
 
-            if (!$user) {
+            if (!$userToDeactivate) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
 
-            $user->status = 'Inactive';
-            $user->save(); // use save() instead of update() here
+            $authUser = Auth::user(); // the one performing the action
+            $oldStatus = $userToDeactivate->status;
+
+            $userToDeactivate->status = 'Inactive';
+            $userToDeactivate->save();
+
+            // Log activity
+            activity($authUser->first_name . ' ' . $authUser->last_name)
+                ->causedBy($authUser)
+                ->performedOn($userToDeactivate)
+                ->withProperties([
+                    'ip'      => request()->ip(),
+                    'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'old'     => ['status' => $oldStatus],
+                    'new'     => ['status' => $userToDeactivate->status],
+                ])
+                ->log("Deactivated system user: {$userToDeactivate->first_name} {$userToDeactivate->last_name}");
 
             return response()->json([
                 'success' => true,
-                'user' => $user
+                'message' => 'User deactivated successfully',
+                'user' => $userToDeactivate,
             ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $ve->errors()
+                'errors' => $ve->errors(),
             ], 422);
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'error' => $qe->getMessage(),
             ], 500);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'error' => $th->getMessage(),
             ], 500);
         }
     }
@@ -297,42 +329,138 @@ class SystemUserController extends Controller
     public function activateUser($id)
     {
         try {
-            $user = User::find($id);
+            $userToActivate = User::find($id);
 
-            if (!$user) {
+            if (!$userToActivate) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
 
-            $user->status = 'Active';
-            $user->save(); // use save() instead of update() here
+            $authUser = Auth::user(); // the one performing the action
+            $oldStatus = $userToActivate->status;
+
+            $userToActivate->status = 'Active';
+            $userToActivate->save();
+
+            // Log activity
+            activity($authUser->first_name . ' ' . $authUser->last_name)
+                ->causedBy($authUser)
+                ->performedOn($userToActivate)
+                ->withProperties([
+                    'ip'      => request()->ip(),
+                    'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'old'     => ['status' => $oldStatus],
+                    'new'     => ['status' => $userToActivate->status],
+                ])
+                ->log("Activated system user: {$userToActivate->first_name} {$userToActivate->last_name}");
 
             return response()->json([
                 'success' => true,
-                'user' => $user
+                'message' => 'User activated successfully',
+                'user' => $userToActivate,
             ], 200);
         } catch (ValidationException $ve) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $ve->errors()
+                'errors' => $ve->errors(),
             ], 422);
         } catch (QueryException $qe) {
             return response()->json([
                 'success' => false,
                 'message' => 'Database error',
-                'error' => $qe->getMessage()
+                'error' => $qe->getMessage(),
             ], 500);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'error' => $th->getMessage()
+                'error' => $th->getMessage(),
             ], 500);
         }
     }
+
+    // public function deactivateUser($id)
+    // {
+    //     try {
+    //         $user = User::find($id);
+
+    //         if (!$user) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'User not found'
+    //             ], 404);
+    //         }
+
+    //         $user->status = 'Inactive';
+    //         $user->save(); // use save() instead of update() here
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'user' => $user
+    //         ], 200);
+    //     } catch (ValidationException $ve) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $ve->errors()
+    //         ], 422);
+    //     } catch (QueryException $qe) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Database error',
+    //             'error' => $qe->getMessage()
+    //         ], 500);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'An unexpected error occurred',
+    //             'error' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // public function activateUser($id)
+    // {
+    //     try {
+    //         $user = User::find($id);
+
+    //         if (!$user) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'User not found'
+    //             ], 404);
+    //         }
+
+    //         $user->status = 'Active';
+    //         $user->save(); // use save() instead of update() here
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'user' => $user
+    //         ], 200);
+    //     } catch (ValidationException $ve) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $ve->errors()
+    //         ], 422);
+    //     } catch (QueryException $qe) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Database error',
+    //             'error' => $qe->getMessage()
+    //         ], 500);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'An unexpected error occurred',
+    //             'error' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
 
     //-------------------------------------------------------------------LOGIN/LOGOUT--------------------------------------------------------------------------
@@ -357,14 +485,47 @@ class SystemUserController extends Controller
                     'username' => ['The provided credentials are incorrect.']
                 ]
             ], 401);
-        }
 
+
+        // Log failed login attempt
+        activity('Login Attempt')
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'username' => $request->username,
+                'status' => 'Failed - Invalid credentials',
+            ])
+            ->log("Failed login attempt for username: {$request->username}");
+
+        return response()->json([
+            'success' => false,
+            'message' => 'The provided credentials are incorrect.',
+            'errors' => [
+                'username' => ['The provided credentials are incorrect.']
+            ]
+        ], 401);
+
+    }
         // Check if user is active
         if ($user->status !== 'Active') {
+
+            // Log deactivated user login attempt
+            activity('Login Attempt')
+                ->causedBy($user)
+                ->performedOn($user)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'status' => 'Failed - Account Inactive',
+                ])
+                ->log("Deactivated user attempted to log in: {$user->first_name} {$user->last_name} (Username: {$user->username})");
+
+
             return response()->json([
                 'success' => false,
                 'message' => 'Your account has been deactivated. Please contact administrator.',
             ], 403);
+
         }
 
         // Revoke all existing tokens for this user (optional - for single session)
@@ -372,6 +533,17 @@ class SystemUserController extends Controller
 
         // Create new token
         $token = $user->createToken('pharmacy-system')->plainTextToken;
+
+        // Log successful login
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($user)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'status' => 'Success',
+            ])
+            ->log("User logged in successfully: {$user->first_name} {$user->last_name}");
 
         // Prepare user data for response (excluding sensitive fields)
         $userData = [
@@ -399,14 +571,37 @@ class SystemUserController extends Controller
         ]);
     }
 
+    // public function logoutUser(Request $request)
+    // {
+    //     // Revoke the current user's token
+    //     $request->user()->currentAccessToken()->delete();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Logout successful'
+    //     ]);
+    // }
+
     public function logoutUser(Request $request)
     {
+        $authUser = $request->user();
+
+        // Log logout before token deletion
+        activity($authUser->first_name . ' ' . $authUser->last_name)
+            ->causedBy($authUser)
+            ->performedOn($authUser)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+            ])
+            ->log("User logged out: {$authUser->first_name} {$authUser->last_name}");
+
         // Revoke the current user's token
-        $request->user()->currentAccessToken()->delete();
+        $authUser->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Logout successful'
+            'message' => 'Logout successful',
         ]);
     }
 

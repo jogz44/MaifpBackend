@@ -239,24 +239,23 @@ class NewConsultationController extends Controller
         $validated = $request->validated();
         $doctor = lib_doctor::create($validated);
 
-
         // // 📝 Activity Log
 
-        // activity($user->first_name . ' ' . $user->last_name)
-        //     ->causedBy($user)
-        //     ->performedOn($doctor)
-        //     ->withProperties([
-        //         'ip' => $request->ip(),
-        //         'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-        //         'created_by' => $user?->full_name
-        //             ?? trim($user?->first_name . ' ' . $user?->last_name)
-        //             ?? $user?->username
-        //             ?? 'N/A',
-        //         'doctor_fee' => $doctor->toArray(),
-        //     ])
-        //     ->log(
-        //         "Doctor fee  [" . ($doctor ? "{$doctor->doctor_amount}" : "Unknown amount ") . "] was created or update "
-        //     );
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($doctor)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'created_by' => $user?->full_name
+                    ?? trim($user?->first_name . ' ' . $user?->last_name)
+                    ?? $user?->username
+                    ?? 'N/A',
+                'doctor_fee' => $doctor->toArray(),
+            ])
+            ->log(
+                "Doctor fee  [" . ($doctor ? "{$doctor->doctor_amount}" : "Unknown amount ") . "] was created or update "
+            );
 
         return response()->json([
             'message' => 'successfully create',

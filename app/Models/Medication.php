@@ -18,50 +18,6 @@ class Medication extends Model
 
     // app/Models/Medication.php
 
-    // protected static function booted()
-    // {
-    //     static::saved(function ($medication) {
-    //         if ($medication->status === 'Done') {
-    //             $transaction = Transaction::with('consultation')
-    //                 ->find($medication->transaction_id);
-
-    //             if ($transaction && $transaction->consultation) {
-    //                 $consultation = $transaction->consultation;
-
-    //                 // ✅ Update status and add 500 to amount
-    //                 $consultation->update([
-    //                     'status' => 'Done',
-    //                     'amount' => ($consultation->amount ?? 0) + 500
-    //                 ]);
-    //             }
-    //         }
-    //     });
-    // }
-
-    // protected static function booted()
-    // {
-    //     static::saved(function ($medication) {
-    //         if ($medication->status === 'Done') {
-    //             $transaction = Transaction::with('consultation')
-    //                 ->find($medication->transaction_id);
-
-    //             if ($transaction && $transaction->consultation) {
-    //                 $consultation = $transaction->consultation;
-
-    //                 // Fetch doctor amount (adjust if you have doctor_id reference)
-    //                 $doctor = lib_doctor::first(); // or lib_doctor::find($consultation->doctor_id)
-
-    //                 if ($doctor) {
-    //                     $consultation->update([
-    //                         'status' => 'Done',
-    //                         'amount' => ($consultation->amount ?? 0) + $doctor->doctor_amount,
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-    //     });
-    // }
-
     protected static function booted()
     {
         static::saved(function ($medication) {
