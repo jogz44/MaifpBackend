@@ -113,4 +113,9 @@ class Transaction extends Model
         return $this->hasMany(AssistancesFunds::class, 'assistance_id');
     }
 
+    public function assistances()
+    {
+        return $this->hasMany(Assistances::class, 'transaction_id');
+    }
+
 }

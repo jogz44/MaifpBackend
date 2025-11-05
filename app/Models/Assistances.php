@@ -33,7 +33,9 @@ class Assistances extends Model
         'radiology_details',
 
         'medication',
-        'gl_number'
+        'gl_number',
+        'gl_lgu',
+        'gl_cong',
     ];
 
     protected $casts = [

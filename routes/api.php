@@ -47,6 +47,13 @@ use App\Http\Controllers\UserCredentialsController;
 
 // });
 
+// testing  route
+
+Route::get('/test', [GuaranteeLetterController::class, 'getMaxGLNumber']);
+
+
+//
+
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
 
@@ -78,7 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{transactionId}', [GuaranteeLetterController::class, 'guaranteeLetter']); //  fetch the patient on the guarantee letter
         Route::post('/{transactionId}', [GuaranteeLetterController::class, 'update']); //  fetch the patient on the guarantee letter
         Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'update_status']); //  fetch the patient on the guarantee letter
-
+        Route::get('/max/number', [GuaranteeLetterController::class, 'getMaxGLNumber']);
     });
 
     Route::prefix('transactions')->group(function () {

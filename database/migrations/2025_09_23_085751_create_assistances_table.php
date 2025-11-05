@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('assistances', function (Blueprint $table) {
             $table->id();
-            $table->string('gl_number')->nullable();
+            // $table->string('gl_number')->nullable();
+            $table->string('gl_lgu')->nullable();
+            $table->string('gl_cong')->nullable();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
             $table->json('medication')->nullable();

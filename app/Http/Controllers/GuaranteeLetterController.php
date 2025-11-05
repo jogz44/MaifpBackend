@@ -74,45 +74,102 @@ class GuaranteeLetterController extends Controller
         return response()->json($transaction);
     }
 
+    // public function index()
+    // {
+    //     $transactions = Transaction::where('status', 'Complete')
+    //         ->with(['patient' => function ($query) {
+    //             // Only fetch the patient fields you need
+    //             $query->select(
+    //                 'id', // important! primary key for relationship
+    //                 'firstname',
+    //                 'lastname',
+    //                 'middlename',
+    //                 'ext',
+    //                 'birthdate',
+    //                 'age',
+    //                 'contact_number',
+    //                 'barangay'
+    //             );
+    //         }])
+    //         ->select([
+    //             DB::raw('id as transaction_id'), // alias properly
+    //             'patient_id',
+    //             'transaction_type',
+    //             'transaction_date',
+    //             'status'
+    //         ])
+    //         ->get();
+
+    //     return response()->json($transactions);
+    // }
+
     public function index()
     {
         $transactions = Transaction::where('status', 'Complete')
-            ->with(['patient' => function ($query) {
-                // Only fetch the patient fields you need
-                $query->select(
-                    'id', // important! primary key for relationship
-                    'firstname',
-                    'lastname',
-                    'middlename',
-                    'ext',
-                    'birthdate',
-                    'age',
-                    'contact_number',
-                    'barangay'
-                );
-            }])
+            ->with(['patient:id,firstname,lastname,middlename,ext,birthdate,age,contact_number,barangay'])
+            ->with(['assistances.funds'])
             ->select([
-                DB::raw('id as transaction_id'), // alias properly
+                'id', // don't alias
                 'patient_id',
                 'transaction_type',
                 'transaction_date',
                 'status'
             ])
-            ->get();
+            ->get()
+            ->map(function ($transaction) {
+                // flatten all fund_sources for this transaction
+                $fundSources = $transaction->assistances
+                    ->flatMap(function ($assistance) {
+                        return $assistance->funds->pluck('fund_source');
+                    })
+                    ->toArray();
+
+                $transaction->isMAIFIP_LGU = in_array('MAIFIP-LGU', $fundSources) ? 1 : 0;
+                $transaction->isMAIFIP_Congressman = in_array('MAIFIP-Congressman', $fundSources) ? 1 : 0;
+
+                // optionally rename id to transaction_id
+                $transaction->transaction_id = $transaction->id;
+
+                unset($transaction->assistances);
+
+                return $transaction;
+            });
+
 
         return response()->json($transactions);
     }
+
+    public function getMaxGLNumber()
+    {
+        // Get the max value from each column
+        $maxLgu = Assistances::max('gl_lgu');
+        $maxCong = Assistances::max('gl_cong');
+
+        // Determine which has the higher value
+        $maxGLNumber = max((int) $maxLgu, (int) $maxCong);
+
+        // If no records yet, start from 0
+        if (!$maxGLNumber) {
+            $maxGLNumber = 0;
+        }
+
+        // Add 1 and format as 5 digits (e.g., 00001, 00016, etc.)
+        $nextNumber = str_pad($maxGLNumber + 1, 5, '0', STR_PAD_LEFT);
+
+        return response()->json(['max_gl_number' => $nextNumber]);
+    }
+
 
     public function update(Request $request, $transaction_id)
     {
         // ✅ Validate inputs
         $validated = $request->validate([
-            'gl_number'   => 'required|string|unique:assistances,gl_number,' . $transaction_id . ',transaction_id',
-            'fund_source' => 'required|string',
-            'fund_amount' => 'required|numeric',
+            // 'gl_number'   => 'required|string|unique:assistances,gl_number,' . $transaction_id . ',transaction_id',
+            'gl_lgu'   => 'nullable|string',
+            'gl_cong'  => 'nullable|string',
+
+
             'transaction_id' => 'required|exists:transaction,id',
-
-
             'consultation_amount' => 'nullable|numeric',
 
             'medication_total' => 'nullable|numeric',
@@ -151,6 +208,12 @@ class GuaranteeLetterController extends Controller
             'examination_details.*.item_description' => 'nullable|string',
             'examination_details.*.total_amount' => 'nullable|numeric',
 
+            // ✅ Only validate array of funds
+            'funds' => 'required|array|min:1',
+            'funds.*.fund_source' => 'required|string',
+            'funds.*.fund_amount' => 'required|numeric',
+
+
         ]);
         // 🧹 Helper function for clean encoding
         $encodeIfNotEmpty = fn($arr) => (!empty($arr) && count(array_filter($arr, fn($v) => !empty($v))) > 0)
@@ -161,16 +224,17 @@ class GuaranteeLetterController extends Controller
         $assistance = Assistances::UpdateOrCreate(
             ['transaction_id' => $transaction_id],
             [
-                'gl_number'            => $validated['gl_number'],
-                'consultation_amount'  => $validated['consultation_amount'],
-                'mammogram_total'      => $validated['mammogram_total'],
-                'radiology_total'      => $validated['radiology_total'],
-                'examination_total'    => $validated['examination_total'],
-                'ultrasound_total'     => $validated['ultrasound_total'],
-                'medication_total'      => $validated['medication_total'],
-                'total_billing'        => $validated['total_billing'],
-                'discount'             => $validated['discount'],
-                'final_billing'        => $validated['final_billing'],
+                'gl_lgu' => $validated['gl_lgu'],
+                'gl_cong'            => $validated['gl_cong'],
+                'radiology_total' => $validated['radiology_total'] ?? 0,
+                'examination_total' => $validated['examination_total'] ?? 0,
+                'mammogram_total'   => $validated['mammogram_total'] ?? 0,
+                'ultrasound_total'  => $validated['ultrasound_total'] ?? 0,
+                'consultation_amount' => $validated['consultation_amount'] ?? 0,
+                'medication_total'  => $validated['medication_total'] ?? 0,
+                'total_billing'     => $validated['total_billing'] ?? 0,
+                'discount'          => $validated['discount'] ?? 0,
+                'final_billing'     => $validated['final_billing'] ?? 0,
 
                 'ultrasound_details'  => $encodeIfNotEmpty($validated['ultrasound_details'] ?? []),
                 'mammogram_details'   => $encodeIfNotEmpty($validated['mammogram_details'] ?? []),
@@ -183,15 +247,20 @@ class GuaranteeLetterController extends Controller
         // ✅ If the Assistance already exists, update gl_number
         if (!$assistance->wasRecentlyCreated) {
             $assistance->update([
-                'gl_number' => $validated['gl_number'],
+                // 'gl_number' => $validated['gl_number'],
+                'gl_lgu' => $validated['gl_lgu'],
+                'gl_cong' => $validated['gl_cong'],
             ]);
         }
-            // Create new fund if not exists
-            $assistance->funds()->create([
-                'fund_source' => $validated['fund_source'],
-                'fund_amount' => $validated['fund_amount'],
-
-            ]);
+        // Create new fund if not exists
+        if (!empty($request->funds) && is_array($request->funds)) {
+            foreach ($request->funds as $fund) {
+                $assistance->funds()->create([
+                    'fund_source' => $fund['fund_source'],
+                    'fund_amount' => $fund['fund_amount'],
+                ]);
+            }
+        }
 
         return response()->json([
             'message'    => 'Successfully created/updated assistance and fund source',

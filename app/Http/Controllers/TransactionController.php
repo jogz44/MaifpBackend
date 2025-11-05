@@ -225,6 +225,7 @@ class TransactionController extends Controller
         }
     }
 
+    // add transaction  and vitals
     public function addTransactionAndVitals(AddTransactionRequest $request)
     {
         try {
