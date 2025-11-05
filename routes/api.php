@@ -74,10 +74,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('billing')->group(function () {
-        Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
         Route::get('/', [BillingController::class, 'index']); // fetch the patient  already done for his transaction
         Route::get('/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
-        Route::post('/store', [BillingController::class, 'store']); // storing the patient and his transaction on the billing table  to deduc the total_amount of patient billing on the remaining funds
+        Route::post('/store', [BillingController::class, 'store']);
+        Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
     });
 
     Route::prefix('guarantee')->group(function () {
