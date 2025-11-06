@@ -49,7 +49,7 @@ class RoleSeeder extends Seeder
             'updated_at' => now(),
         ]);
         role::create([
-            'role_name' => 'assesor',
+            'role_name' => 'assessor',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
