@@ -166,7 +166,23 @@ class TransactionController extends Controller
         ]);
         $transaction = Transaction::with('patient')->findOrFail($id);
 
+
+        if (!empty($validated['transaction_id'])) {
+            $transaction = Transaction::find($validated['transaction_id']);
+            if ($transaction) {
+                $transaction->update(['maifip' => true]);
+            }
+        }
+
         $oldData = $transaction->toArray();
+
+
+        // ✅ Update maifip = true only if status is "Qualified"
+        if (strtolower($validated['status']) === 'qualified') {
+            $validated['maifip'] = true;
+        }
+
+
         $transaction->update($validated);
         $newData = $transaction->toArray();
 
@@ -299,7 +315,7 @@ class TransactionController extends Controller
             $patientName = $patient->firstname . ' ' . $patient->lastname;
 
 
-        
+
 
             activity($actorName)
                 ->causedBy($user)

@@ -41,6 +41,7 @@ VIEW `maifp`.`vw_patient_philhealth` AS
         ((`t`.`status` <> 'Funded')
             AND (((`t`.`status` <> 'Complete')
             AND (`t`.`status` <> 'Evaluation')
+            AND (`t`.`status` <> 'Billing')
             AND EXISTS( SELECT
                 1
             FROM

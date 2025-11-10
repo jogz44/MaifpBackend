@@ -262,12 +262,12 @@ class GuaranteeLetterController extends Controller
             }
         }
 
-        if (!empty($validated['transaction_id'])) {
-            $transaction = Transaction::find($validated['transaction_id']);
-            if ($transaction) {
-                $transaction->update(['maifip' => true]);
-            }
-        }
+        // if (!empty($validated['transaction_id'])) {
+        //     $transaction = Transaction::find($validated['transaction_id']);
+        //     if ($transaction) {
+        //         $transaction->update(['maifip' => true]);
+        //     }
+        // }
 
         return response()->json([
             'message'    => 'Successfully created/updated assistance and fund source',

@@ -41,7 +41,7 @@ return new class extends Migration
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN medication m ON m.transaction_id = t.id
            WHERE
-        ((`t`.`status` IN ('Qualified' , 'Pending'))
+           ((`t`.`status` IN ('Qualified' , 'Pending'))
             AND ((`t`.`transaction_type` = 'Medication')
             OR (`c`.`status` = 'Medication'))
             AND ((`m`.`id` IS NULL)

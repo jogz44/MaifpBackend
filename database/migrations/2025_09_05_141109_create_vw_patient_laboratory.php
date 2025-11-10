@@ -71,17 +71,16 @@ return new class extends Migration
             LEFT JOIN vital v ON v.transaction_id = t.id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN laboratory l ON l.transaction_id = t.id
-             WHERE
-        ((`t`.`status` IN ('Qualified' , 'Pending'))
-            AND ((`t`.`transaction_type` = 'Laboratory')
-            OR (`c`.`status` = 'Processing'))
-              AND NOT EXISTS (
+            WHERE
+            t.status IN ('Qualified', 'Pending')
+            AND (t.transaction_type = 'Laboratory' OR c.status = 'Processing')
+            AND NOT EXISTS (
                 SELECT 1
                 FROM laboratory l2
                 WHERE l2.transaction_id = t.id
-                  AND l2.status IN ('Done','Returned','Pending')
-              )
-            ORDER BY p.id;
+                AND l2.status IN ('Done','Returned','Pending')
+            )
+
         ");
     }
 

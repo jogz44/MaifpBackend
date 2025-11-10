@@ -60,16 +60,15 @@ return new class extends Migration
             INNER JOIN patient p ON p.id = t.patient_id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN vital v ON v.transaction_id = t.id
-        WHERE
-        ((`t`.`transaction_type` = 'Consultation')
-            AND (`t`.`status` IN ('Qualified' , 'Pending'))
+            WHERE  t.status IN ('Qualified', 'Pending')
+              AND t.transaction_type = 'Consultation'
               AND NOT EXISTS (
                     SELECT 1
                     FROM new_consultation c2
                     WHERE c2.transaction_id = t.id
                       AND c2.status IN ('Done','Processing','Returned','Medication')
               )
-            ORDER BY p.id
+
         ");
     }
 

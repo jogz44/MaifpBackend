@@ -321,6 +321,7 @@ class NewConsultationController extends Controller
             'patient.birthdate',
             'patient.age',
             'patient.barangay',
+            'patient.contact_number',
             'transactions.id as transaction_id'
         )
             ->join('transactions as transactions', 'transactions.patient_id', '=', 'patient.id')
