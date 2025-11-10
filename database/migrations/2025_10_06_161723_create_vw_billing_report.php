@@ -34,7 +34,7 @@ VIEW `vw_billing_report` AS
         (`transactions` `t`
         JOIN `patient` `p` ON ((`t`.`patient_id` = `p`.`id`)))
     WHERE
-        (`t`.`status` IN ('Complete' , 'Funded'))
+        (`t`.`status` IN ('Complete' , 'Funded', 'Paid'))
         "
     );
     }

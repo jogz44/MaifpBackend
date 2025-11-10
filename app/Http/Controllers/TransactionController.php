@@ -167,13 +167,6 @@ class TransactionController extends Controller
         $transaction = Transaction::with('patient')->findOrFail($id);
 
 
-        if (!empty($validated['transaction_id'])) {
-            $transaction = Transaction::find($validated['transaction_id']);
-            if ($transaction) {
-                $transaction->update(['maifip' => true]);
-            }
-        }
-
         $oldData = $transaction->toArray();
 
 

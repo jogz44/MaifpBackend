@@ -60,6 +60,7 @@ return new class extends Migration
             INNER JOIN patient p ON p.id = t.patient_id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN vital v ON v.transaction_id = t.id
+            
             WHERE  t.status IN ('Qualified', 'Pending')
               AND t.transaction_type = 'Consultation'
               AND NOT EXISTS (
