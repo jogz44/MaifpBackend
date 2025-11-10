@@ -32,45 +32,11 @@ return new class extends Migration
                 `t`.`purpose` AS `purpose`,
                 `t`.`created_at` AS `transaction_created_at`,
                 `t`.`updated_at` AS `transaction_updated_at`
-            FROM
-                `patient` `p`
-            JOIN `transaction` `t`
-                ON `t`.`patient_id` = `p`.`id`
-            WHERE
-                -- ✅ Exclude Funded transactions
-                `t`.`status` <> 'Funded'
-                AND (
-                    (
-                        `t`.`status` <> 'Complete'
-                        AND EXISTS (
-                            SELECT 1
-                            FROM `new_consultation` `c`
-                            WHERE `c`.`transaction_id` = `t`.`id`
-                              AND `c`.`status` = 'Done'
-                        )
-                    )
-                    OR (
-                        `t`.`status` <> 'Complete'
-                        AND NOT EXISTS (
-                            SELECT 1
-                            FROM `new_consultation` `c2`
-                            WHERE `c2`.`transaction_id` = `t`.`id`
-                        )
-                        AND EXISTS (
-                            SELECT 1
-                            FROM `laboratory` `l`
-                            WHERE `l`.`transaction_id` = `t`.`id`
-                              AND `l`.`status` = 'Done'
-                        )
-                    )
-                    OR EXISTS (
-                        SELECT 1
-                        FROM `medication` `m`
-                        WHERE `m`.`transaction_id` = `t`.`id`
-                          AND `m`.`status` = 'Done'
-                    )
-                )
-            ORDER BY `p`.`id`
+              FROM
+                (`maifp`.`transactions` `t`
+                     LEFT JOIN `maifp`.`patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
+                  WHERE
+                (`t`.`status` = 'Billing')
         ");
     }
 

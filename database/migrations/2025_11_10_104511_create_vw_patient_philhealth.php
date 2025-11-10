@@ -1,16 +1,20 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        DB::statement('DROP VIEW IF EXISTS vw_patient_philhealth');
 
-        DB::statement('DROP VIEW IF EXISTS vw_patient_billing');
-        DB::statement("
-            CREATE VIEW `vw_patient_billing` AS
+        DB::statement(
+            "
+           CREATE
+VIEW `maifp`.`vw_patient_philhealth` AS
     SELECT DISTINCT
         `p`.`id` AS `patient_id`,
         `p`.`firstname` AS `firstname`,
@@ -31,8 +35,8 @@ return new class extends Migration
         `t`.`created_at` AS `transaction_created_at`,
         `t`.`updated_at` AS `transaction_updated_at`
     FROM
-        (`patient` `p`
-        JOIN `transactions` `t` ON ((`t`.`patient_id` = `p`.`id`)))
+        (`maifp`.`patient` `p`
+        JOIN `maifp`.`transactions` `t` ON ((`t`.`patient_id` = `p`.`id`)))
     WHERE
         ((`t`.`status` <> 'Funded')
             AND (((`t`.`status` <> 'Complete')
@@ -40,7 +44,7 @@ return new class extends Migration
             AND EXISTS( SELECT
                 1
             FROM
-                `new_consultation` `c`
+                `maifp`.`new_consultation` `c`
             WHERE
                 ((`c`.`transaction_id` = `t`.`id`)
                     AND (`c`.`status` = 'Done'))))
@@ -48,14 +52,14 @@ return new class extends Migration
             AND EXISTS( SELECT
                 1
             FROM
-                `new_consultation` `c2`
+                `maifp`.`new_consultation` `c2`
             WHERE
                 (`c2`.`transaction_id` = `t`.`id`))
             IS FALSE
             AND EXISTS( SELECT
                 1
             FROM
-                `laboratory` `l`
+                `maifp`.`laboratory` `l`
             WHERE
                 ((`l`.`transaction_id` = `t`.`id`)
                     AND (`l`.`status` = 'Done'))))
@@ -63,16 +67,17 @@ return new class extends Migration
             AND EXISTS( SELECT
                 1
             FROM
-                `medication` `m`
+                `maifp`.`medication` `m`
             WHERE
                 ((`m`.`transaction_id` = `t`.`id`)
                     AND (`m`.`status` = 'Done'))))))
     ORDER BY `p`.`id`
-        ");
+        "
+        );
     }
 
     public function down(): void
     {
-        DB::statement("DROP VIEW IF EXISTS vw_patient_billing");
+        DB::statement("DROP VIEW IF EXISTS vw_patient_philhealth");
     }
 };

@@ -42,7 +42,7 @@ VIEW `vw_patient_assessment_philhealth` AS
         `t`.`transaction_mode` AS `transaction_mode`,
         `t`.`purpose` AS `purpose`
     FROM
-        (`transaction` `t`
+        (`transactions` `t`
         LEFT JOIN `patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
     WHERE
         ((`t`.`status` = 'assessment')

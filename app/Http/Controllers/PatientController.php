@@ -169,6 +169,10 @@ class PatientController extends Controller
                 "contact_number" => $patient->contact_number,
                 "age" => $patient->age,
                 "barangay" => $patient->barangay,
+                "transaction_id" => $patient->transaction_id,
+                "transaction_status" => $patient->status,
+                "maifip" => $patient->maifip,
+                "philhealth" => $patient->philhealth,
 
 
                 // "pernament_street" => $patient->pernament_street,
@@ -238,7 +242,7 @@ class PatientController extends Controller
     public function philhealth_assessment()
     {
         // Fetch data from the view
-        $rows = DB::table('vw_patient_assessment_philhealth')->get();
+        $rows = DB::table('vw_patient_philhealth')->get();
         // Log::info('Fetching patients from DB view...'); // debug log
 
         // Group by patient_id
@@ -249,6 +253,7 @@ class PatientController extends Controller
             $patient = $items->first(); // patient details (same for all rows)
 
             return [
+
                 "id" => $patient->patient_id,
                 "firstname" => $patient->firstname,
                 "lastname" => $patient->lastname,
@@ -258,6 +263,7 @@ class PatientController extends Controller
                 "contact_number" => $patient->contact_number,
                 "age" => $patient->age,
                 "barangay" => $patient->barangay,
+                "transaction_id" => $patient->transaction_id,
 
 
             ];
@@ -266,13 +272,174 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
+    // public function storeAll(PatientRequestAll $request)
+    // {
+    //     // $userId = Auth::id();
+    //     $user = Auth::user();
+
+    //     try {
+    //         // ✅ Patient data
+    //         $patientData = $request->only([
+    //             'firstname',
+    //             'lastname',
+    //             'middlename',
+    //             'ext',
+    //             'birthdate',
+    //             'contact_number',
+    //             'age',
+    //             'gender',
+    //             'is_not_tagum',
+    //             'street',
+    //             'purok',
+    //             'barangay',
+    //             'city',
+    //             'province',
+    //             'category',
+    //             'philsys_id',
+    //             'philhealth_id',
+    //             'place_of_birth',
+    //             'civil_status',
+    //             'religion',
+    //             'education',
+    //             'occupation',
+    //             'income',
+    //             'is_pwd',
+    //             'is_solo',
+
+    //             'permanent_street',
+    //             'permanent_purok',
+    //             'permanent_barangay',
+    //             'permanent_city',
+    //             'permanent_province',
+
+    //         ]);
+
+    //         // ✅ Check if patient already exists
+    //         $existingPatient = Patient::where('firstname', $patientData['firstname'])
+    //             ->where('lastname', $patientData['lastname'])
+    //             ->where('birthdate', $patientData['birthdate'])
+    //             ->first();
+
+    //         if ($existingPatient) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Patient already has a record. Please add a new transaction instead.',
+    //                 'patient' => $existingPatient
+    //             ], 409);
+    //         }
+
+    //         // ✅ Add logged-in user ID
+    //         // $patientData['user_id'] = $userId;
+
+    //         // ✅ Create new patient
+    //         $patient = Patient::create($patientData);
+
+    //         $representativeData  = $request->only([
+    //             'rep_name',
+    //             'rep_relationship',
+    //             'rep_contact',
+    //             'rep_barangay',
+    //             'rep_address',
+    //             'rep_purok',
+    //             'rep_street',
+    //             'rep_city',
+    //             'rep_province'
+    //         ]);
+
+    //         $representative = Representative::create($representativeData);
+
+    //         // ✅ Generate transaction number
+    //         $datePart = now()->format('Y-m-d');
+    //         $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
+    //         $transactionNumber = "{$datePart}-{$sequenceFormatted}";
+
+    //         // ✅ Determine assistance based on PhilHealth ID
+    //         if ($patient->philhealth_id) {
+    //             $philhealth = true;
+    //             $maifip = false;
+    //         } else {
+    //             $philhealth = false;
+    //             $maifip = true;
+    //         }
+
+    //         // ✅ Transaction data
+    //         $transactionData = $request->only([
+    //             'transaction_type',
+    //             'transaction_date',
+    //             'transaction_mode',
+    //             'purpose',
+
+    //         ]);
+
+    //         $transactionData['patient_id'] = $patient->id;
+    //         $transactionData['representative_id'] = $representative->id;
+    //         $transactionData['transaction_number'] = $transactionNumber;
+    //         $transactionData['philhealth'] = $philhealth;
+    //         $transactionData['maifip'] = $maifip;
+    //         $transaction = Transaction::create($transactionData);
+
+    //         // ✅ Vital signs
+    //         $vitalData = $request->only([
+    //             'height',
+    //             'weight',
+    //             'bmi',
+    //             'temperature',
+    //             'waist',
+    //             'pulse_rate',
+    //             'sp02',
+    //             'heart_rate',
+    //             'blood_pressure',
+    //             'respiratory_rate',
+    //             'medicine',
+    //             'LMP'
+    //         ]);
+
+    //         $vitalData['patient_id'] = $patient->id;
+    //         $vitalData['transaction_id'] = $transaction->id;
+    //         $vital = Vital::create($vitalData);
+
+
+    //         // 📝 Activity Log
+    //         activity($user->first_name . ' ' . $user->last_name)
+    //             ->causedBy($user)
+    //             ->performedOn($patient)
+    //             ->withProperties([
+    //                 'ip' => $request->ip(),
+    //                 'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+    //                 'patient' => $patient->toArray(),
+    //                 'representative' => $representative->toArray(),
+    //                 'transaction' => $transaction->toArray(),
+    //                 'vital' => $vital->toArray(),
+    //             ])
+    //             ->log(
+    //                 "Patient record {$patient->firstname} {$patient->lastname} was created "
+
+    //             );
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Patient, transaction, and vitals created successfully.',
+    //             'patient' => $patient,
+    //             'transaction' => $transaction,
+    //             'vital' => $vital,
+    //             'representative' => $representative,
+    //             'transaction_number' => $transactionNumber,
+
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'An unexpected error occurred',
+    //             'errors' => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
     public function storeAll(PatientRequestAll $request)
     {
-        // $userId = Auth::id();
         $user = Auth::user();
 
         try {
-            // ✅ Patient data
+            // ✅ 1. Prepare Patient Data
             $patientData = $request->only([
                 'firstname',
                 'lastname',
@@ -288,6 +455,11 @@ class PatientController extends Controller
                 'barangay',
                 'city',
                 'province',
+                'permanent_street',
+                'permanent_purok',
+                'permanent_barangay',
+                'permanent_city',
+                'permanent_province',
                 'category',
                 'philsys_id',
                 'philhealth_id',
@@ -298,17 +470,10 @@ class PatientController extends Controller
                 'occupation',
                 'income',
                 'is_pwd',
-                'is_solo',
-
-                'permanent_street',
-                'permanent_purok',
-                'permanent_barangay',
-                'permanent_city',
-                'permanent_province',
-
+                'is_solo'
             ]);
 
-            // ✅ Check if patient already exists
+            // ✅ 2. Check for Existing Patient
             $existingPatient = Patient::where('firstname', $patientData['firstname'])
                 ->where('lastname', $patientData['lastname'])
                 ->where('birthdate', $patientData['birthdate'])
@@ -317,18 +482,16 @@ class PatientController extends Controller
             if ($existingPatient) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Patient already has a record. Please add a new transaction instead.',
+                    'message' => 'Patient already exists. Please add a new transaction instead.',
                     'patient' => $existingPatient
                 ], 409);
             }
 
-            // ✅ Add logged-in user ID
-            // $patientData['user_id'] = $userId;
-
-            // ✅ Create new patient
+            // ✅ 3. Create Patient
             $patient = Patient::create($patientData);
 
-            $representativeData  = $request->only([
+            // ✅ 4. Create Representative
+            $representativeData = $request->only([
                 'rep_name',
                 'rep_relationship',
                 'rep_contact',
@@ -339,40 +502,34 @@ class PatientController extends Controller
                 'rep_city',
                 'rep_province'
             ]);
-
             $representative = Representative::create($representativeData);
 
-            // ✅ Generate transaction number
+            // ✅ 5. Generate Transaction Number
             $datePart = now()->format('Y-m-d');
             $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
             $transactionNumber = "{$datePart}-{$sequenceFormatted}";
 
-            // ✅ Determine assistance based on PhilHealth ID
-            if ($patient->philhealth_id) {
-                $philhealth = true;
-                $maifip = false;
-            } else {
-                $philhealth = false;
-                $maifip = true;
-            }
 
-            // ✅ Transaction data
+
+            // ✅ 7. Prepare Transaction Data
             $transactionData = $request->only([
                 'transaction_type',
                 'transaction_date',
                 'transaction_mode',
                 'purpose',
-
+                'status'
             ]);
+
+            $status = $transactionData['status'] ?? 'not started';
 
             $transactionData['patient_id'] = $patient->id;
             $transactionData['representative_id'] = $representative->id;
             $transactionData['transaction_number'] = $transactionNumber;
-            $transactionData['philhealth'] = $philhealth;
-            $transactionData['maifip'] = $maifip;
+            $transactionData['status'] = $status; // ✅ make sure "Pending" exists in enum
+
             $transaction = Transaction::create($transactionData);
 
-            // ✅ Vital signs
+            // ✅ 8. Create Vital Signs
             $vitalData = $request->only([
                 'height',
                 'weight',
@@ -387,49 +544,40 @@ class PatientController extends Controller
                 'medicine',
                 'LMP'
             ]);
-
             $vitalData['patient_id'] = $patient->id;
             $vitalData['transaction_id'] = $transaction->id;
             $vital = Vital::create($vitalData);
 
-            // ✅ Clear the old cache so index() fetches fresh data
-            // Cache::forget('patients'); // patients is the key cache
-            // Cache::forget('patients_assessment');
-
-            // Log::info('🗑️ Patients cache cleared after creating new patient: ' . $patient->firstname . ' ' . $patient->lastname);
-
-
-            // 📝 Activity Log
+            // ✅ 9. Log Activity
             activity($user->first_name . ' ' . $user->last_name)
                 ->causedBy($user)
                 ->performedOn($patient)
                 ->withProperties([
                     'ip' => $request->ip(),
-                    'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
                     'patient' => $patient->toArray(),
                     'representative' => $representative->toArray(),
                     'transaction' => $transaction->toArray(),
                     'vital' => $vital->toArray(),
                 ])
-                ->log(
-                    "Patient record {$patient->firstname} {$patient->lastname} was created "
+                ->log("Created patient record for {$patient->firstname} {$patient->lastname}");
 
-                );
+            // ✅ 10. Success Response
             return response()->json([
                 'success' => true,
                 'message' => 'Patient, transaction, and vitals created successfully.',
                 'patient' => $patient,
+                'transaction_id' => $transaction->id,
                 'transaction' => $transaction,
                 'vital' => $vital,
                 'representative' => $representative,
                 'transaction_number' => $transactionNumber,
-
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'An unexpected error occurred',
-                'errors' => $th->getMessage()
+                'errors' => $th->getMessage(),
             ], 500);
         }
     }
@@ -501,7 +649,7 @@ class PatientController extends Controller
         $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
 
 
-        $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
+        // $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
 
         $count_assessment_philhealth= vw_patient_assessment_philhealth::distinct('patient_id')->count('patient_id');
 
@@ -514,7 +662,7 @@ class PatientController extends Controller
             'totalReturnedCount'   => $count_return_consultation,
             'totalBillingCount'    => $count_billing,
             'totalGLCount'         => $count_guarantee,
-            'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
+            // 'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
             'totalphilhealth'         => $count_assessment_philhealth,
 
         ]);

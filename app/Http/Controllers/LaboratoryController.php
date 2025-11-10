@@ -117,7 +117,7 @@ class LaboratoryController extends Controller
         // validate request
         $validated = $request->validate([
             'status' => 'required|in:Done,Returned,',
-            'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transactions,id',
         ]);
 
         $transaction = \App\Models\Transaction::with('consultation')
@@ -280,7 +280,7 @@ class LaboratoryController extends Controller
 
         $user = Auth::user();
         $validated = $request->validate([
-            'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transactions,id',
             'type'           => 'required|string|in:radiology,examination,ultrasound,mammogram',
             'id'            => 'required|integer',
 

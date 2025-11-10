@@ -37,11 +37,10 @@ return new class extends Migration
                 t.transaction_date,
                 t.transaction_mode,
                 t.purpose
-            FROM transaction t
+            FROM transactions t
             LEFT JOIN patient p ON p.id = t.patient_id
            WHERE
-        ((`t`.`status` = 'assessment')
-            AND (`t`.`maifip` = TRUE))
+        (`t`.`status` IN ('Assessment' , 'Evaluation'))
         ");
     }
 

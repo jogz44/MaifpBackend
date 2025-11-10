@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('transaction_number')->nullable();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->string('transaction_type')->nullable();
             $table->boolean('maifip')->default(false);
             $table->boolean('philhealth')->default(false);
-            $table->enum('status', ['qualified', 'unqualified', 'assessment','Complete','Funded','evaluation'])->default('assessment');
+            $table->enum('status', ['Pending', 'Qualified', 'Unqualified', 'Assessment', 'Complete', 'Funded', 'Evaluation', 'Billing', 'not started'])->default('not started');
             $table->date('transaction_date')->nullable();
             $table->timestamps();
         });

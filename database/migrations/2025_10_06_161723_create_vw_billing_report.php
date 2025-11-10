@@ -31,7 +31,7 @@ VIEW `vw_billing_report` AS
         `p`.`contact_number` AS `contact_number`,
         `p`.`barangay` AS `barangay`
     FROM
-        (`transaction` `t`
+        (`transactions` `t`
         JOIN `patient` `p` ON ((`t`.`patient_id` = `p`.`id`)))
     WHERE
         (`t`.`status` IN ('Complete' , 'Funded'))

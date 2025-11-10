@@ -32,7 +32,7 @@ return new class extends Migration
                 p.age,
                 p.contact_number,
                 p.barangay
-            FROM transaction t
+            FROM transactions t
             JOIN patient p ON t.patient_id = p.id
             WHERE t.status = 'Funded'
         ");

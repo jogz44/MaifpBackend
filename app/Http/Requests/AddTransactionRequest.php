@@ -31,9 +31,7 @@ class AddTransactionRequest extends FormRequest
             'rep_city',
 
             // Transaction
-            'transaction_type',
             'transaction_mode',
-            'transaction_date',
             'purpose',
 
 
@@ -86,6 +84,7 @@ class AddTransactionRequest extends FormRequest
             'transaction_date' => 'required|string|max:255',
             'transaction_mode' => 'required|string|max:255',
             'purpose' => 'nullable|string|max:255',
+            'status' => 'required|string',
             'maifip' => 'sometimes|boolean',
             'philhealth' => 'sometimes|boolean',
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('lab_examination_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
             $table->foreignId('new_consultation_id')->nullable()->constrained('new_consultation')->onDelete('cascade');
             $table->string('item_id')->nullable();
             $table->string('item_description')->nullable();

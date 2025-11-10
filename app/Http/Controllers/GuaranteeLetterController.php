@@ -169,7 +169,7 @@ class GuaranteeLetterController extends Controller
             'gl_cong'  => 'nullable|string',
 
 
-            'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transactions,id',
             'consultation_amount' => 'nullable|numeric',
 
             'medication_total' => 'nullable|numeric',
@@ -259,6 +259,13 @@ class GuaranteeLetterController extends Controller
                     'fund_source' => $fund['fund_source'],
                     'fund_amount' => $fund['fund_amount'],
                 ]);
+            }
+        }
+
+        if (!empty($validated['transaction_id'])) {
+            $transaction = Transaction::find($validated['transaction_id']);
+            if ($transaction) {
+                $transaction->update(['maifip' => true]);
             }
         }
 

@@ -309,5 +309,25 @@ class NewConsultationController extends Controller
 
         return response()->json($doctor);
     }
+
+    public function patients_consultation_list()
+    {
+        $list = Patient::select(
+            'patient.id',
+            'patient.firstname',
+            'patient.lastname',
+            'patient.middlename',
+            'patient.ext',
+            'patient.birthdate',
+            'patient.age',
+            'patient.barangay',
+            'transactions.id as transaction_id'
+        )
+            ->join('transactions as transactions', 'transactions.patient_id', '=', 'patient.id')
+            ->where('transactions.transaction_type', 'Consultation')
+            ->get();
+
+        return response()->json($list);
+    }
 }
 

@@ -14,7 +14,7 @@ use App\Http\Controllers\ConfigurationsController;
 use App\Http\Controllers\GuaranteeLetterController;
 use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\UserCredentialsController;
-
+use App\Http\Requests\NewConsultationRequest;
 
 // this route is for v2 with cache
 // Route::get('/logs', function () {
@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [PatientController::class, 'show']); // patient information and his transaction
         Route::get('/philhealth/assessment', [PatientController::class, 'philhealth_assessment']); // fetch patient for assessment on the social if this qualified or unqualified
         Route::get('/philhealth/maifip/assessment', [PatientController::class, 'philhealth_to_maifip_assessment']); // phildhealth to maifip assessment
+        Route::get('/consultation/list', [NewConsultationController::class, 'patients_consultation_list']); // fetch patient consultation list
 
     });
 

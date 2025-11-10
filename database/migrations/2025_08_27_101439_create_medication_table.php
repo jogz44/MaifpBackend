@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('medication', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('cascade');
             $table->enum('status', ['Pending', 'Done'])->default('Pending');
             $table->timestamps();
         });

@@ -24,8 +24,8 @@ class PatientRequestAll extends FormRequest
         // All fields that should default to "NA" if empty
         $defaults = [
             // Patient
-            'firstname',
-            'lastname',
+            // 'firstname',
+            // 'lastname',
             'middlename',
             'ext',
             'birthdate',
@@ -68,9 +68,9 @@ class PatientRequestAll extends FormRequest
             'rep_city',
 
             // Transaction
-            'transaction_type',
-            'transaction_mode',
-            'transaction_date',
+            // 'transaction_type',
+            // 'transaction_mode',
+            // 'transaction_date',
             'purpose',
             // 'maifip',
             // 'philhealth',
@@ -153,6 +153,7 @@ class PatientRequestAll extends FormRequest
 
 
             //transaction
+
             'transaction_type' => 'required|string|max:255',
             'transaction_mode' => 'required|string|max:255',
             'transaction_date' => 'required|date',

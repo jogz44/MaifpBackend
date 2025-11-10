@@ -53,6 +53,13 @@ class AssistanceController extends Controller
             }
         }
 
+        if (!empty($validated['transaction_id'])) {
+            $transaction = Transaction::find($validated['transaction_id']);
+            if ($transaction) {
+                $transaction->update(['philhealth' => true]);
+            }
+        }
+
         // ✅ Activity Log
         activity($user->first_name . ' ' . $user->last_name)
             ->causedBy($user)

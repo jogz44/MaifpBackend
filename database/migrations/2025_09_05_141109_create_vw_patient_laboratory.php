@@ -66,16 +66,15 @@ return new class extends Migration
                 v.LMP
 
 
-            FROM transaction t
+            FROM transactions t
             JOIN patient p ON p.id = t.patient_id
             LEFT JOIN vital v ON v.transaction_id = t.id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN laboratory l ON l.transaction_id = t.id
-            WHERE t.status = 'qualified'
-              AND (
-                t.transaction_type = 'Laboratory'
-                OR c.status = 'Processing'
-              )
+             WHERE
+        ((`t`.`status` IN ('Qualified' , 'Pending'))
+            AND ((`t`.`transaction_type` = 'Laboratory')
+            OR (`c`.`status` = 'Processing'))
               AND NOT EXISTS (
                 SELECT 1
                 FROM laboratory l2

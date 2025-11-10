@@ -23,7 +23,7 @@ class LaboratoryRequest extends FormRequest
     {
 
         return [
-            'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transactions,id',
 
             // laboratories
             'laboratories' => 'nullable|array|min:1',

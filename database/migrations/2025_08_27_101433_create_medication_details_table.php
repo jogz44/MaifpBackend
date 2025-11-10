@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('unit')->nullable();
             $table->date('transaction_date')->nullable();
             $table->decimal('amount', 15, 2)->nullable();
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('cascade');
             // $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

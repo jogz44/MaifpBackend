@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('gl_lgu')->nullable();
             $table->string('gl_cong')->nullable();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('cascade');
             $table->json('medication')->nullable();
             $table->decimal('consultation_amount', 10, 2)->default(0);
             $table->decimal('medication_total', 10, 2)->default(0);

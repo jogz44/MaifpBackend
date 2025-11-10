@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('vital', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('cascade');
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
             $table->string('height')->nullable();
             $table->string('weight')->nullable();

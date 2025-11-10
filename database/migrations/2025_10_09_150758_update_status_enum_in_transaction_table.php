@@ -7,15 +7,15 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
-        DB::statement("
-            ALTER TABLE transaction
-            MODIFY COLUMN status
-            ENUM('qualified', 'unqualified', 'assessment', 'Complete', 'Funded', 'evaluation')
-            DEFAULT 'assessment'
-        ");
-    }
+    // public function up(): void
+    // {
+    //     DB::statement("
+    //         ALTER TABLE transactions
+    //         MODIFY COLUMN status
+    //         ENUM('qualified', 'unqualified', 'assessment', 'Complete', 'Funded', 'evaluation')
+    //         DEFAULT 'assessment'
+    //     ");
+    // }
 
     // public function down(): void
     // {

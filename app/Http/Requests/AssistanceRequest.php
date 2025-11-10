@@ -23,7 +23,7 @@ class AssistanceRequest extends FormRequest
     {
         return [
             'patient_id' => 'required|exists:patient,id',
-            'transaction_id' => 'required|exists:transaction,id',
+            'transaction_id' => 'required|exists:transactions,id',
 
             'consultation_amount' => 'nullable|numeric',
             // 'laboratory_total' => 'nullable|numeric',

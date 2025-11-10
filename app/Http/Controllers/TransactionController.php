@@ -162,7 +162,7 @@ class TransactionController extends Controller
         $user = Auth::user();
         // Logic to update a transaction
         $validated =  $request->validate([
-            'status' => 'sometimes|required|string|max:255',
+            'status' => 'required|string'
         ]);
         $transaction = Transaction::with('patient')->findOrFail($id);
 
@@ -260,13 +260,7 @@ class TransactionController extends Controller
             ]);
 
             // ✅ Determine assistance based on patient's PhilHealth ID
-            if ($patient->philhealth_id) {
-                $philhealth = true;
-                $maifip = false;
-            } else {
-                $philhealth = false;
-                $maifip = true;
-            }
+
 
             // ✅ Create transaction
             $transaction = Transaction::create([
@@ -276,9 +270,9 @@ class TransactionController extends Controller
                 'transaction_type' => $validated['transaction_type'],
                 'transaction_date' => $validated['transaction_date'],
                 'transaction_mode' => $validated['transaction_mode'],
+                'status' => $validated['status'],
                 'purpose' => $validated['purpose'],
-                'philhealth' => $philhealth,
-                'maifip' => $maifip,
+
             ]);
 
             // ✅ Create vitals
@@ -303,6 +297,9 @@ class TransactionController extends Controller
             $user = Auth::user();
             $actorName = $user ? $user->first_name . ' ' . $user->last_name : 'System';
             $patientName = $patient->firstname . ' ' . $patient->lastname;
+
+
+        
 
             activity($actorName)
                 ->causedBy($user)
@@ -386,4 +383,7 @@ class TransactionController extends Controller
             'transaction' => $transaction
         ]);
     }
+
+
+
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('new_consultation', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient')->onDelete('cascade');
-            $table->foreignId('transaction_id')->nullable()->constrained('transaction')->onDelete('cascade');
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('cascade');
             $table->date('consultation_date')->nullable();
             $table->time('consultation_time')->nullable();
             $table->enum('status', ['Done', 'Processing','Pending','Returned','Medication'])->default('pending');

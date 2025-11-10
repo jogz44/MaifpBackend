@@ -70,7 +70,7 @@ return new class extends Migration
                 l.created_at AS laboratory_created_at,
                 l.updated_at AS laboratory_updated_at
 
-            FROM transaction t
+            FROM transactions t
             JOIN patient p ON p.id = t.patient_id
             LEFT JOIN vital v ON v.transaction_id = t.id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id

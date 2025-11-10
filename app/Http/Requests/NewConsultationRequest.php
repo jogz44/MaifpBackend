@@ -25,7 +25,7 @@ class NewConsultationRequest extends FormRequest
             //
 
         'patient_id' => 'required|exists:patient,id',
-        'transaction_id'    => 'required|exists:transaction,id',
+        'transaction_id'    => 'required|exists:transactions,id',
         'consultation_time'=>'nullable',
         'consultation_date' => 'required|date',
         'status' => 'required|in:Done,Processing,Pending,Returned,Medication',

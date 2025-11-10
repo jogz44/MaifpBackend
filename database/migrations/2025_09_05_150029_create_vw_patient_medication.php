@@ -36,19 +36,16 @@ return new class extends Migration
                 t.transaction_date,
                 c.id AS consultation_id,
                 c.status AS consultation_status
-            FROM transaction t
+            FROM transactions t
             LEFT JOIN patient p ON p.id = t.patient_id
             LEFT JOIN new_consultation c ON c.transaction_id = t.id
             LEFT JOIN medication m ON m.transaction_id = t.id
-            WHERE t.status = 'qualified'
-              AND (
-                    t.transaction_type = 'Medication'
-                    OR c.status = 'Medication'
-              )
-              AND (
-                    m.id IS NULL
-                    OR m.status <> 'Done'
-              )
+           WHERE
+        ((`t`.`status` IN ('Qualified' , 'Pending'))
+            AND ((`t`.`transaction_type` = 'Medication')
+            OR (`c`.`status` = 'Medication'))
+            AND ((`m`.`id` IS NULL)
+            OR (`m`.`status` <> 'Done')))
         ");
     }
 
