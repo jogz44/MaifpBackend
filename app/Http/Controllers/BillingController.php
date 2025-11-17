@@ -27,6 +27,8 @@ class BillingController extends Controller
             'age',
             'barangay',
             'transaction_id',
+            'transaction_type',
+            'transaction_status',
         )->get();
 
         return response()->json($billing);

@@ -31,14 +31,18 @@ class Medication extends Model
                         $consultation = $transaction->consultation;
 
                         // Fetch doctor amount (adjust if you have doctor_id reference)
-                        $doctor = lib_doctor::first(); // or lib_doctor::find($consultation->doctor_id)
+                        // $doctor = lib_doctor::first(); // or lib_doctor::find($consultation->doctor_id)
 
-                        if ($doctor) {
-                            $consultation->update([
+                        // if ($doctor) {
+                        //     $consultation->update([
+                        //         'status' => 'Done',
+                        //         'amount' => ($consultation->amount ?? 0) + $doctor->doctor_amount,
+                        //     ]);
+                        // }
+                        $consultation->update( [
                                 'status' => 'Done',
-                                'amount' => ($consultation->amount ?? 0) + $doctor->doctor_amount,
                             ]);
-                        }
+
                     }
 
                     // ✅ If transaction has laboratories, update them too
