@@ -43,12 +43,12 @@ class UserSeeder extends Seeder
 
 
          User::create([
-            'first_name' => 'cliford',
-            'last_name' => 'millan',
+            'first_name' => 'test',
+            'last_name' => 'test',
             'position' => 'Janitor',
             'status' => 'Active',
             'office' => 'CICTMO',
-            'username' => 'millan',
+            'username' => 'test',
             'password' => 'admin',
             'role_id' => 1,
             'created_at' => now(),

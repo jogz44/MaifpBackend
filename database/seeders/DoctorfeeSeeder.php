@@ -17,7 +17,6 @@ class DoctorfeeSeeder extends Seeder
 
         // insert roles
         lib_doctor::create([
-            'doctor_amount' => 150,
-        ]);
+            'doctor_amount' => 0.00 ]);
     }
 }
