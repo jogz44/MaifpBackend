@@ -7,26 +7,26 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::table('assistances', function (Blueprint $table) {
-            //
-            $table->string('gl_lgu')->nullable()->after('gl_number');
-            $table->string('gl_cong')->nullable()->after('gl_lgu');
-        });
-    }
+    //  * Run the migrations.
+    //  */
+    // public function up(): void
+    // {
+    //     Schema::table('assistances', function (Blueprint $table) {
+    //         //
+    //         $table->string('gl_lgu')->nullable();
+    //         $table->string('gl_cong')->nullable();
+    //     });
+    // }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('assistances', function (Blueprint $table) {
-            //
-            $table->dropColumn('gl_lgu');
-            $table->dropColumn('gl_cong');
-        });
-    }
+    // /**
+    //  * Reverse the migrations.
+    //  */
+    // public function down(): void
+    // {
+    //     Schema::table('assistances', function (Blueprint $table) {
+    //         //
+    //         $table->dropColumn('gl_lgu');
+    //         $table->dropColumn('gl_cong');
+    //     });
+    // }
 };

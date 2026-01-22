@@ -12,7 +12,7 @@ return new class extends Migration
         // Create the view
         DB::statement("
           CREATE
-VIEW `maifp`.`vw_patient_billing` AS
+VIEW vw_patient_billing AS
     SELECT
         `p`.`id` AS `patient_id`,
         `p`.`firstname` AS `firstname`,
