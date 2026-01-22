@@ -407,7 +407,7 @@ class NewConsultationController extends Controller
     public function expiredTransactions()
     {
         try {
-            $expirationDate = Carbon::now()->subWeeks(2);
+            $expirationDate = Carbon::now()->subWeeks(3);
 
             // Process expired consultations
             $expiredConsultations = New_Consultation::whereIn('status', ['Processing','Returned','Medication'])
