@@ -14,7 +14,7 @@ class ExpireTransactions extends Command
      */
     protected $signature = 'expire:transactions';
 
-    protected $description = 'Auto-expire Processing transactions older than 5 minutes';
+    protected $description = 'Auto-expire Processing transactions older than 3 weeks';
 
     public function handle()
     {
