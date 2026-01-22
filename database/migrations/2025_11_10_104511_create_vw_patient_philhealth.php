@@ -35,8 +35,8 @@ VIEW vw_patient_philhealth AS
         `t`.`created_at` AS `transaction_created_at`,
         `t`.`updated_at` AS `transaction_updated_at`
     FROM
-        (`maifp`.`patient` `p`
-        JOIN `maifp`.`transactions` `t` ON ((`t`.`patient_id` = `p`.`id`)))
+        (`patient` `p`
+        JOIN `transactions` `t` ON ((`t`.`patient_id` = `p`.`id`)))
     WHERE
         ((`t`.`status` <> 'Funded')
             AND (((`t`.`status` <> 'Complete')
@@ -46,7 +46,7 @@ VIEW vw_patient_philhealth AS
             AND EXISTS( SELECT
                 1
             FROM
-                `maifp`.`new_consultation` `c`
+                `new_consultation` `c`
             WHERE
                 ((`c`.`transaction_id` = `t`.`id`)
                     AND (`c`.`status` = 'Done'))))
@@ -54,14 +54,14 @@ VIEW vw_patient_philhealth AS
             AND EXISTS( SELECT
                 1
             FROM
-                `maifp`.`new_consultation` `c2`
+                `new_consultation` `c2`
             WHERE
                 (`c2`.`transaction_id` = `t`.`id`))
             IS FALSE
             AND EXISTS( SELECT
                 1
             FROM
-                `maifp`.`laboratory` `l`
+                `laboratory` `l`
             WHERE
                 ((`l`.`transaction_id` = `t`.`id`)
                     AND (`l`.`status` = 'Done'))))
@@ -69,7 +69,7 @@ VIEW vw_patient_philhealth AS
             AND EXISTS( SELECT
                 1
             FROM
-                `maifp`.`medication` `m`
+                `medication` `m`
             WHERE
                 ((`m`.`transaction_id` = `t`.`id`)
                     AND (`m`.`status` = 'Done'))))))

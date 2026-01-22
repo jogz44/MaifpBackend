@@ -43,10 +43,10 @@ return new class extends Migration
         `c`.`created_at` AS `consultation_created_at`,
         `c`.`updated_at` AS `consultation_updated_at`
     FROM
-        (((`maifp`.`transactions` `t`
-        LEFT JOIN `maifp`.`patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
-        LEFT JOIN `maifp`.`new_consultation` `c` ON ((`c`.`transaction_id` = `t`.`id`)))
-        LEFT JOIN `maifp`.`medication` `m` ON ((`m`.`transaction_id` = `t`.`id`)))
+        (((`transactions` `t`
+        LEFT JOIN `patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
+        LEFT JOIN `new_consultation` `c` ON ((`c`.`transaction_id` = `t`.`id`)))
+        LEFT JOIN `medication` `m` ON ((`m`.`transaction_id` = `t`.`id`)))
     WHERE
         ((`t`.`status` IN ('Qualified' , 'Pending'))
             AND ((`t`.`transaction_type` = 'Medication')

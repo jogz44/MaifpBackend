@@ -42,40 +42,40 @@ VIEW vw_patient_billing AS
         `nc`.`status` AS `consultation_status`,
         `nc`.`amount` AS `consultation_amount`,
         (((((IFNULL(`nc`.`amount`, 0) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_examination_details`.`total_amount`)
+                        SUM(`lab_examination_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_examination_details`
+                        `lab_examination_details`
                     WHERE
-                        (`maifp`.`lab_examination_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_examination_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_mammogram_details`.`total_amount`)
+                        SUM(`lab_mammogram_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_mammogram_details`
+                        `lab_mammogram_details`
                     WHERE
-                        (`maifp`.`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_radiology_details`.`total_amount`)
+                        SUM(`lab_radiology_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_radiology_details`
+                        `lab_radiology_details`
                     WHERE
-                        (`maifp`.`lab_radiology_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_radiology_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_ultrasound_details`.`total_amount`)
+                        SUM(`lab_ultrasound_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_ultrasound_details`
+                        `lab_ultrasound_details`
                     WHERE
-                        (`maifp`.`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`medication_details`.`amount`)
+                        SUM(`medication_details`.`amount`)
                     FROM
-                        `maifp`.`medication_details`
+                        `medication_details`
                     WHERE
-                        (`maifp`.`medication_details`.`transaction_id` = `t`.`id`)),
+                        (`medication_details`.`transaction_id` = `t`.`id`)),
                 0)) AS `total_service_amount`
     FROM
-        ((`maifp`.`transactions` `t`
-        LEFT JOIN `maifp`.`patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
-        LEFT JOIN `maifp`.`new_consultation` `nc` ON ((`nc`.`transaction_id` = `t`.`id`)))
+        ((`transactions` `t`
+        LEFT JOIN `patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
+        LEFT JOIN `new_consultation` `nc` ON ((`nc`.`transaction_id` = `t`.`id`)))
     WHERE
         ((`t`.`status` NOT IN ('GL' , 'Funded',
             'Complete',
@@ -84,67 +84,67 @@ VIEW vw_patient_billing AS
             'Assessment'))
             AND (((`t`.`status` IN ('Billing' , 'Expired'))
             AND ((((((IFNULL(`nc`.`amount`, 0) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_examination_details`.`total_amount`)
+                        SUM(`lab_examination_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_examination_details`
+                        `lab_examination_details`
                     WHERE
-                        (`maifp`.`lab_examination_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_examination_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_mammogram_details`.`total_amount`)
+                        SUM(`lab_mammogram_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_mammogram_details`
+                        `lab_mammogram_details`
                     WHERE
-                        (`maifp`.`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_radiology_details`.`total_amount`)
+                        SUM(`lab_radiology_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_radiology_details`
+                        `lab_radiology_details`
                     WHERE
-                        (`maifp`.`lab_radiology_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_radiology_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_ultrasound_details`.`total_amount`)
+                        SUM(`lab_ultrasound_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_ultrasound_details`
+                        `lab_ultrasound_details`
                     WHERE
-                        (`maifp`.`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`medication_details`.`amount`)
+                        SUM(`medication_details`.`amount`)
                     FROM
-                        `maifp`.`medication_details`
+                        `medication_details`
                     WHERE
-                        (`maifp`.`medication_details`.`transaction_id` = `t`.`id`)),
+                        (`medication_details`.`transaction_id` = `t`.`id`)),
                 0)) > 0))
             OR ((`nc`.`status` IN ('Processing' , 'Returned', 'Medication', 'Done'))
             AND ((((((IFNULL(`nc`.`amount`, 0) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_examination_details`.`total_amount`)
+                        SUM(`lab_examination_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_examination_details`
+                        `lab_examination_details`
                     WHERE
-                        (`maifp`.`lab_examination_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_examination_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_mammogram_details`.`total_amount`)
+                        SUM(`lab_mammogram_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_mammogram_details`
+                        `lab_mammogram_details`
                     WHERE
-                        (`maifp`.`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_mammogram_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_radiology_details`.`total_amount`)
+                        SUM(`lab_radiology_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_radiology_details`
+                        `lab_radiology_details`
                     WHERE
-                        (`maifp`.`lab_radiology_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_radiology_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`lab_ultrasound_details`.`total_amount`)
+                        SUM(`lab_ultrasound_details`.`total_amount`)
                     FROM
-                        `maifp`.`lab_ultrasound_details`
+                        `lab_ultrasound_details`
                     WHERE
-                        (`maifp`.`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
+                        (`lab_ultrasound_details`.`transaction_id` = `t`.`id`)),
                 0)) + IFNULL((SELECT
-                        SUM(`maifp`.`medication_details`.`amount`)
+                        SUM(`medication_details`.`amount`)
                     FROM
-                        `maifp`.`medication_details`
+                        `medication_details`
                     WHERE
-                        (`maifp`.`medication_details`.`transaction_id` = `t`.`id`)),
+                        (`medication_details`.`transaction_id` = `t`.`id`)),
                 0)) > 0))))
         ");
     }

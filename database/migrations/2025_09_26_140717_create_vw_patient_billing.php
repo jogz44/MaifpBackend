@@ -33,8 +33,8 @@ return new class extends Migration
                 `t`.`created_at` AS `transaction_created_at`,
                 `t`.`updated_at` AS `transaction_updated_at`
               FROM
-                (`maifp`.`transactions` `t`
-                     LEFT JOIN `maifp`.`patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
+                (`transactions` `t`
+                     LEFT JOIN `patient` `p` ON ((`p`.`id` = `t`.`patient_id`)))
                   WHERE
                 (`t`.`status` = 'Billing')
         ");
