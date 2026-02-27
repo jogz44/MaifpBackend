@@ -17,7 +17,7 @@ class PatientAllSeeder extends Seeder
     public function run(): void
     {
         // Generate 10 random records
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 1; $i++) {
 
             $patient = Patient::factory()->create();
             $representative = Representative::factory()->create();
@@ -34,12 +34,14 @@ class PatientAllSeeder extends Seeder
                 'patient_id'          => $patient->id,
                 'representative_id'   => $representative->id,
                 'transaction_number'  => $transactionNumber,
-                'transaction_type'    => 'Consultation',
+                'transaction_type'    => 'Laboratory',
+                'status'    => 'Pending',
                 'transaction_date'    => now(),
                 'transaction_mode'    => 'Walk-in',
                 'purpose'             => 'Medical check-up',
                 'philhealth'          => $philhealth,
                 'maifip'              => $maifip,
+                // ''             => 'Medical check-up',
             ]);
 
             $vital = vital::factory()->create([

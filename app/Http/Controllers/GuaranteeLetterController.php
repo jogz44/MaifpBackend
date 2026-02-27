@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Budget;
-use App\Models\Patient;
-use App\Models\Assistances;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use App\Models\GuaranteeLetter;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Models\vw_guarantee_patients;
+use App\Events\BadgeUpdated;
 use App\Http\Requests\GuaranteeLetterRequest;
+use App\Models\Assistances;
+use App\Models\Budget;
+use App\Models\GuaranteeLetter;
+use App\Models\Patient;
+use App\Models\Transaction;
+use App\Models\vw_guarantee_patients;
+use App\Services\BadgeService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GuaranteeLetterController extends Controller
 {
@@ -261,6 +263,10 @@ class GuaranteeLetterController extends Controller
                 ]);
             }
         }
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         // if (!empty($validated['transaction_id'])) {
         //     $transaction = Transaction::find($validated['transaction_id']);

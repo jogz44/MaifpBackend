@@ -9,17 +9,38 @@ use Illuminate\Http\Request;
 use App\Models\Medication_details;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\MedicationRequest;
-
+use App\Services\MedicationService;
 
 class MedicationController extends Controller
 {
+
+
+    protected $medicationService;
+
+
+    public function __construct(MedicationService $medicationService)
+
+    {
+        $this->medicationService = $medicationService;
+    }
+
+
+    public function patientMedication()
+    {
+
+        $result = $this->medicationService->medication();
+
+        return $result;
+    }
+
+
 
     public function index_view()
     {
         $data = DB::table('vw_patient_medication')->get();
         return response()->json($data);
     }
-    
+
     // this method is for Medication will fetch the patient need to Medication
     public function qualifiedTransactionsMedication()
     {
@@ -111,5 +132,4 @@ class MedicationController extends Controller
             'data' => $transactionStatus
         ]);
     }
-
 }

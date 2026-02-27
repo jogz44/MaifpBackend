@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BadgeUpdated;
 use App\Models\Assistances;
 use App\Models\Patient;
 use App\Models\Transaction;
 use App\Models\vw_patient_billing;
+use App\Services\BadgeService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class BillingController extends Controller
@@ -113,6 +115,9 @@ class BillingController extends Controller
             $finalBilling = $totalBilling - $discount;
         }
 
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         //  Patient full name
         $patientName = $transaction->patient
@@ -131,6 +136,10 @@ class BillingController extends Controller
                 'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
             ])
             ->log("Viewed billing record for Transaction ID: {$transaction->id}, Patient: {$patientName}");
+
+
+
+
 
         return response()->json([
             'patient_id'          => $transaction->patient->id,
@@ -260,6 +269,10 @@ class BillingController extends Controller
         $oldData = $transaction->toArray();
         $transaction->update($validated);
         $newData = $transaction->toArray();
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         // Patient name for better logging
         $patientName = $transaction->patient

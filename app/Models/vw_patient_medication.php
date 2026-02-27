@@ -8,7 +8,7 @@ class vw_patient_medication extends Model
 {
     //
 
-    protected $table = 'vw_patient_medication';
+    protected $table = 'vw_patient_medication_new';
 
     
 }

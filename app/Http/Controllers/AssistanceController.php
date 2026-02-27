@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BadgeUpdated;
+use App\Http\Requests\AssistanceRequest;
 use App\Models\Assistances;
 use App\Models\Transaction;
-use Illuminate\Support\Facades\Auth;
 use App\Models\vw_fund_sources_summary;
-use App\Http\Requests\AssistanceRequest;
+use App\Services\BadgeService;
+use Illuminate\Support\Facades\Auth;
 
 
 class AssistanceController extends Controller
@@ -59,6 +61,10 @@ class AssistanceController extends Controller
                 $transaction->update(['philhealth' => true]);
             }
         }
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         // ✅ Activity Log
         activity($user->first_name . ' ' . $user->last_name)

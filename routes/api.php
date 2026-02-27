@@ -16,6 +16,14 @@ use App\Http\Controllers\NewConsultationController;
 use App\Http\Controllers\UserCredentialsController;
 use App\Http\Requests\NewConsultationRequest;
 
+Route::get('/test-broadcast', function () {
+    $counts = app(\App\Services\BadgeService::class)->getBadgeCounts();
+    broadcast(new \App\Events\BadgeUpdated($counts));
+    return response()->json(['message' => 'Broadcasted', 'data' => $counts]);
+});
+
+
+Route::get('/test', [PatientController::class, 'test_database']);
 // this route is for v2 with cache
 // Route::get('/logs', function () {
 //     $path = storage_path('logs/laravel.log');
@@ -49,7 +57,7 @@ use App\Http\Requests\NewConsultationRequest;
 
 // testing  route
 
-Route::get('/test', [GuaranteeLetterController::class, 'getMaxGLNumber']);
+// Route::get('/test', [GuaranteeLetterController::class, 'getMaxGLNumber']);
 
 
 //
@@ -97,16 +105,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
         Route::get('/qualified', [NewConsultationController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
         Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
-        Route::put('/{id}/update/status/', [TransactionController::class, 'status_update']);
+        Route::put('/{id}/update/status/', [TransactionController::class, 'updateTransaction']); // billing updating 
         Route::put('/{TransactionId}/update/philhealth', [TransactionController::class, 'status_to_maifip']);// updating the transaction to maifip
     });
 
     Route::prefix('laboratory')->group(function () {
+        // Route::get('v2/', [LaboratoryController::class, 'patientLaboratory']); // fetching the patient on the laboratory
+
         Route::post('/store', [LaboratoryController::class, 'store']); //
         Route::delete('/delete', [LaboratoryController::class, 'destroy']);
 
-        Route::post('/status', [LaboratoryController::class, 'laboratory_status']);
-        Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
+        Route::post('/status', [LaboratoryController::class, 'updateLaboratorystatus']);
+        // Route::get('/', [LaboratoryController::class, 'qualifiedTransactionsLaboratory']); // fetching the patient on the laboratory
+        Route::get('/', [LaboratoryController::class, 'patientLaboratory']); // fetching the patient on the laboratory
+
         Route::get('/index/lab_services', [LaboratoryController::class, 'lib_laboratory_index']);
         Route::post('/store/lab_services', [LaboratoryController::class, 'lib_laboratory_store']);
 
@@ -158,7 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [PatientController::class, 'index']); // list of patient
         Route::get('/master_list', [PatientController::class, 'getAllPatientsWithLatestTransaction']); // list of patient
         Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
-        Route::post('/store', [PatientController::class, 'storeAll']); // store the transaction and patient information and vital
+        Route::post('/store', [PatientController::class, 'storePatient']); // store the transaction and patient information and vital
         Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
         Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
 
@@ -195,6 +207,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('medications')->group(function () {
+        Route::get('/v2', [MedicationController::class, 'patientMedication']);
         Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
         Route::post('/store', [MedicationController::class, 'store']);
         Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital

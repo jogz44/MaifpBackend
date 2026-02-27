@@ -2,34 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Laboratory;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use App\Models\lib_laboratory;
-use App\Models\New_Consultation;
-use Illuminate\Support\Facades\DB;
-use App\Models\Laboratories_details;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\Events\Validated;
+use App\Events\BadgeUpdated;
 use App\Http\Requests\LaboratoryRequest;
 use App\Http\Requests\lib_laboratory_examinationRequest;
 use App\Http\Requests\lib_laboratoryRequest;
 use App\Http\Requests\lib_radiologyRequest;
 use App\Http\Requests\Mammogram_examination_Request;
 use App\Http\Requests\UltraSoundRequest;
+use App\Http\Resources\LaboratoryResource;
 use App\Models\lab_examination_details;
 use App\Models\lab_mammogram_details;
 use App\Models\lab_radiology_details;
 use App\Models\lab_ultrasound_details;
+use App\Models\Laboratories_details;
+use App\Models\Laboratory;
 use App\Models\Lib_lab_examination;
+use App\Models\lib_laboratory;
 use App\Models\lib_mammogram_examination;
 use App\Models\lib_radiology;
 use App\Models\lib_ultra_sound;
+use App\Models\New_Consultation;
+use App\Models\Patient;
+use App\Models\Transaction;
 use App\Models\vw_patient_consultation_return;
 use App\Models\vw_patient_laboratory;
+use App\Services\BadgeService;
+use App\Services\LaboratoryService;
+use Illuminate\Auth\Events\Validated;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LaboratoryController extends Controller
 {
+
+    protected $laboratoryService;
+
+    public function __construct(LaboratoryService $laboratoryService)
+        {
+            $this->laboratoryService = $laboratoryService;
+        }
+
+
+    // fetch patients on laboratory
+    public function patientLaboratory(){
+
+     $result = $this->laboratoryService->laboratory();
+
+
+     return LaboratoryResource::collection($result);
+
+    }
+
 
     public function qualifiedTransactionsLaboratory()
     {
@@ -112,50 +136,25 @@ class LaboratoryController extends Controller
     }
 
     // this method for updating the status on the laboratory that is connected to the consultation for the patient
-    public function Laboratory_status(Request $request)
+    public function updateLaboratorystatus(Request $request)
     {
         // validate request
         $validated = $request->validate([
             'status' => 'required|in:Done,Returned,',
             'transaction_id' => 'required|exists:transactions,id',
+            //  'transaction_type'
         ]);
 
-        $transaction = \App\Models\Transaction::with('consultation')
-            ->findOrFail($validated['transaction_id']);
-
-        $newConsultationId = $transaction->consultation
-            ? $transaction->consultation->id
-            : null;
+        $result = $this->laboratoryService->status($validated);
 
 
-        // Update or create the main laboratory record
-        $lab = Laboratory::updateOrCreate(
-            ['transaction_id' => $validated['transaction_id']], // condition
-            [
-                'status' => $validated['status'],
-                'new_consultation_id' => $newConsultationId
-            ]
-        );
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
-        // ✅ Also update all laboratory_details linked to this transaction
-        $labDetails = Laboratory::where('transaction_id', $validated['transaction_id'])->get();
 
-        foreach ($labDetails as $detail) {
-            // If Returned, update related consultation
-            if ($validated['status'] === 'Returned' && $detail->new_consultation_id) {
-                $consultation = New_Consultation::find($detail->new_consultation_id);
-                if ($consultation) {
-                    $consultation->status = 'Returned';
-                    $consultation->save();
-                }
-            }
-        }
+        return $result;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Laboratory status under this transaction updated successfully.',
-            'data' => $lab
-        ]);
     }
 
 
@@ -256,6 +255,9 @@ class LaboratoryController extends Controller
         }
 
         $labDetails = implode(', ', $logEntries);
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         // Log activity
         activity($user->first_name . ' ' . $user->last_name)

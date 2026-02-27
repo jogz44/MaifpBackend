@@ -2,40 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\vital;
-use App\Models\Patient;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use App\Models\Representative;
-use App\Http\Requests\VitalRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
-use App\Http\Requests\TransactionRequest;
+use App\Events\BadgeUpdated;
 use App\Http\Requests\AddTransactionRequest;
 use App\Http\Requests\RepresentativeRequest;
+use App\Http\Requests\TransactionRequest;
+use App\Http\Requests\VitalRequest;
+use App\Models\Patient;
+use App\Models\Representative;
+use App\Models\Transaction;
+use App\Models\vital;
+use App\Services\BadgeService;
+use App\Services\TransactionService;
+use Carbon\Carbon;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
+
 {
+
+    protected $transactionService;
+
+    public function __construct(TransactionService $transactionService)
+    {
+        $this->transactionService = $transactionService;
+    }
+
     // Add methods for handling transactions here
     // For example, you might have methods to create, update, delete, and fetch transactions
 
     public function index()
     {
 
-    $transaction = Transaction::with('laboratories')->get();
-    return response()->json($transaction);
-
-     }
+        $transaction = Transaction::with('laboratories')->get();
+        return response()->json($transaction);
+    }
 
     public function show($id, Request $request)
     {
         $user = Auth::user();
-        $transaction = Transaction::with(['vital','representative', 'patient',
-         'mammogram_details', 'medicationDetails', 'examination_details',
+        $transaction = Transaction::with([
+            'vital',
+            'representative',
+            'patient',
+            'mammogram_details',
+            'medicationDetails',
+            'examination_details',
             'radiologies_details',
-            'ultrasound_details'])
+            'ultrasound_details'
+        ])
             ->findOrFail($id);
 
         // ✅ Get patient name if linked
@@ -62,7 +79,7 @@ class TransactionController extends Controller
 
     public function rep_update(RepresentativeRequest $request, $id) // this function is for the updating or edit the Representative
     {
-         $user = Auth::user(); // Get the authenticated user
+        $user = Auth::user(); // Get the authenticated user
         // Logic to update a transaction
         $validated =  $request->validated();
 
@@ -93,7 +110,7 @@ class TransactionController extends Controller
     // this method is for updating transaction
     public function update(TransactionRequest $request, $id)
     {
-        $user= Auth::user(); // Get the authenticated user
+        $user = Auth::user(); // Get the authenticated user
         // Logic to update a transaction
         $validated =  $request->validated();
 
@@ -102,6 +119,10 @@ class TransactionController extends Controller
         $oldData = $transaction->toArray();
         $transaction->update($validated);
         $newData = $transaction->toArray();
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
         activity($user->first_name . ' ' . $user->last_name)
             ->causedBy($user)
@@ -118,7 +139,8 @@ class TransactionController extends Controller
 
         return response()->json([
             'message' => 'Transaction updated successfully.',
-            'transaction' => $transaction]);
+            'transaction' => $transaction
+        ]);
     }
 
     // // this method is for updating vital signs
@@ -157,51 +179,25 @@ class TransactionController extends Controller
     }
 
     // this method is for updating transaction status if the patient are qualified or unqualified
-    public function status_update(Request $request, $id)
+    public function updateTransaction(Request $request, $id)
     {
-        $user = Auth::user();
+        //args: id = transaction_id
+
         // Logic to update a transaction
         $validated =  $request->validate([
             'status' => 'required|string'
         ]);
-        $transaction = Transaction::with('patient')->findOrFail($id);
 
 
-        $oldData = $transaction->toArray();
+        $result = $this->transactionService->update($validated,$id,$request);
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
+
+        return $result;
 
 
-        // ✅ Update maifip = true only if status is "Qualified"
-        if (strtolower($validated['status']) === 'qualified') {
-            $validated['maifip'] = true;
-        }
-
-
-        $transaction->update($validated);
-        $newData = $transaction->toArray();
-
-
-        // ✅ Get patient name
-        $patientName = $transaction->patient
-            ? $transaction->patient->firstname . ' ' . $transaction->patient->lastname
-            : 'Unknown Patient';
-
-        // ✅ Log activity with patient name
-        activity($user->first_name . ' ' . $user->last_name)
-            ->causedBy($user)
-            ->performedOn($transaction)
-            ->withProperties([
-                'ip'      => $request->ip(),
-                'date'    => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                'old'     => $oldData,
-                'new'     => $newData,
-                'changes' => $validated,
-            ])
-            ->log("Updated patient transaction status to {$validated['status']} for Patient: {$patientName}");
-
-        return response()->json([
-            'message' => 'Transaction updated status successfully.',
-            'transaction' => $transaction
-        ]);
     }
 
     //deleting the AllTransactions Data
@@ -308,6 +304,9 @@ class TransactionController extends Controller
             $patientName = $patient->firstname . ' ' . $patient->lastname;
 
 
+            // ✅ Then broadcast the fresh counts AFTER the DB has changed
+            $counts = app(BadgeService::class)->getBadgeCounts();
+            broadcast(new BadgeUpdated($counts));
 
 
             activity($actorName)
@@ -367,6 +366,12 @@ class TransactionController extends Controller
 
         $oldData = $transaction->toArray();
         $transaction->update($validated);
+
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
+
         $newData = $transaction->toArray();
 
         // ✅ Get patient name
@@ -392,7 +397,4 @@ class TransactionController extends Controller
             'transaction' => $transaction
         ]);
     }
-
-
-
 }

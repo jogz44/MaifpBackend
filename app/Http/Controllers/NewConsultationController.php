@@ -2,25 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Patient;
-use App\Models\Laboratory;
-use App\Models\lib_doctor;
-use App\Models\Medication;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use PhpParser\Node\Expr\New_;
-use App\Models\New_Consultation;
-use App\Models\Medication_details;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use App\Models\vw_patient_consultation;
+use App\Events\BadgeUpdated;
 use App\Http\Requests\lib_doctorRequest;
 use App\Http\Requests\NewConsultationRequest;
+use App\Models\Laboratory;
+use App\Models\lib_doctor;
+use App\Models\Medication_details;
+use App\Models\Medication;
+use App\Models\New_Consultation;
+use App\Models\Patient;
+use App\Models\Transaction;
 use App\Models\vw_patient_consultation_return;
+use App\Models\vw_patient_consultation;
 use App\Models\vw_patient_laboratory;
 use App\Models\vw_patient_medication;
+use App\Services\BadgeService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Expr\New_;
 
 class NewConsultationController extends Controller
 {
@@ -184,62 +186,7 @@ class NewConsultationController extends Controller
         }
     }
 
-    // // this line of code  are need to revision
-    // public function store(NewConsultationRequest $request) // store and update status
-    // {
-
-    //     $user = Auth::user();
-    //     $validated = $request->validated();
-
-    //                 // lab  -  // done  -  // medicine
-    //     $status = ['Processing','Done','Medication'];
-
-    //     // If status is Done, fetch doctor_amount
-    //     if (isset($validated['status']) && $validated['status'] === 'Done') {
-    //         $doctor = lib_doctor::first();
-    //         if ($doctor) {
-    //             $validated['amount'] = $doctor->doctor_amount;
-    //         }
-    //     }
-
-    //     // Update if transaction_id exists, otherwise create
-    //     $NewConsultation = New_Consultation::updateOrCreate(
-    //         ['transaction_id' => $validated['transaction_id']], // match condition
-    //         $validated                                          // values to update
-    //     );
-
-
-    //     if ($NewConsultation && isset($validated['status'])) {
-    //         $statusToSet = ($validated['status'] === 'Medication') ? 'Done' : $validated['status'];
-
-    //         // Update laboratory by transaction_id
-    //         Laboratory::where('transaction_id', $validated['transaction_id'])
-    //             ->update(['status' => $statusToSet]);
-
-    //         // Update laboratory by new_consultation_id
-    //         Laboratory::where('new_consultation_id', $NewConsultation->id)
-    //             ->update(['status' => $statusToSet]);
-    //     }
-
-    //     // 📝 Activity Log
-    //     $patient = $NewConsultation->patient ?? null;
-
-    //     activity($user->first_name . ' ' . $user->last_name)
-    //         ->causedBy($user)
-    //         ->performedOn($NewConsultation)
-    //         ->withProperties([
-    //             'ip' => $request->ip(),
-    //             'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //             'consultation' => $NewConsultation->toArray(),
-    //         ])
-    //         ->log("Consultation record for patient " . ($patient ? "{$patient->firstname} {$patient->lastname}" : "Unknown Patient") . " was updated " );
-
-    //     return response()->json([
-    //         'message' => 'Successfully Saved',
-    //         'consultation' => $NewConsultation,
-    //     ]);
-    // }
-
+    // patient on consulatation
     public function store(NewConsultationRequest $request)
     {
         $user = Auth::user();
@@ -284,6 +231,11 @@ class NewConsultationController extends Controller
                 ->update(['status' => $labStatus]);
         }
 
+
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
+
+        // return response()->json(['message' => 'Updated']);
         /** Activity Log */
         $patient = $NewConsultation->patient ?? null;
 

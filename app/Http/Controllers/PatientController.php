@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BadgeUpdated;
 use Exception;
 use Carbon\Carbon;
 use App\Models\vital;
@@ -19,29 +20,37 @@ use App\Models\vw_patient_medication;
 use App\Models\vw_patient_consultation;
 use App\Models\vw_transaction_complete;
 use App\Http\Requests\PatientRequestAll;
-use App\Models\vw_patient_assessment_maifip_maifip;
+
 use App\Models\vw_patient_assessment_philhealth;
-use App\Models\vw_patient_assessment_philhealth_to_maifip;
+
 use App\Models\vw_patient_consultation_return;
-
-
+use App\Services\BadgeService;
+use App\Services\PatientService;
 
 class PatientController extends Controller
 {
+        protected $badgeService;
+    protected $patientService;
 
-    public function  test ()
+     public function __construct(BadgeService $badgeService,PatientService $patientService)
+         {
 
-{
-    return response()->json(['message' => 'ngrok Test successful']);
-}
+            $this->badgeService = $badgeService;
+             $this->patientService = $patientService;
 
-    //fetch all patients
-    // public function index()
-    // {
-    //     $patients = Patient::all();
+         }
 
-    //     return response()->json($patients);
-    // }
+         public function test_database(){
+
+
+        $data = DB::connection('mysql_second_database')
+            ->table('tbl_customers')->get();
+
+
+            return $data;
+
+         }
+
 
     public function index()
     {
@@ -272,314 +281,91 @@ class PatientController extends Controller
         return response()->json($patients);
     }
 
-    // public function storeAll(PatientRequestAll $request)
-    // {
-    //     // $userId = Auth::id();
-    //     $user = Auth::user();
 
-    //     try {
-    //         // ✅ Patient data
-    //         $patientData = $request->only([
-    //             'firstname',
-    //             'lastname',
-    //             'middlename',
-    //             'ext',
-    //             'birthdate',
-    //             'contact_number',
-    //             'age',
-    //             'gender',
-    //             'is_not_tagum',
-    //             'street',
-    //             'purok',
-    //             'barangay',
-    //             'city',
-    //             'province',
-    //             'category',
-    //             'philsys_id',
-    //             'philhealth_id',
-    //             'place_of_birth',
-    //             'civil_status',
-    //             'religion',
-    //             'education',
-    //             'occupation',
-    //             'income',
-    //             'is_pwd',
-    //             'is_solo',
-
-    //             'permanent_street',
-    //             'permanent_purok',
-    //             'permanent_barangay',
-    //             'permanent_city',
-    //             'permanent_province',
-
-    //         ]);
-
-    //         // ✅ Check if patient already exists
-    //         $existingPatient = Patient::where('firstname', $patientData['firstname'])
-    //             ->where('lastname', $patientData['lastname'])
-    //             ->where('birthdate', $patientData['birthdate'])
-    //             ->first();
-
-    //         if ($existingPatient) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Patient already has a record. Please add a new transaction instead.',
-    //                 'patient' => $existingPatient
-    //             ], 409);
-    //         }
-
-    //         // ✅ Add logged-in user ID
-    //         // $patientData['user_id'] = $userId;
-
-    //         // ✅ Create new patient
-    //         $patient = Patient::create($patientData);
-
-    //         $representativeData  = $request->only([
-    //             'rep_name',
-    //             'rep_relationship',
-    //             'rep_contact',
-    //             'rep_barangay',
-    //             'rep_address',
-    //             'rep_purok',
-    //             'rep_street',
-    //             'rep_city',
-    //             'rep_province'
-    //         ]);
-
-    //         $representative = Representative::create($representativeData);
-
-    //         // ✅ Generate transaction number
-    //         $datePart = now()->format('Y-m-d');
-    //         $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
-    //         $transactionNumber = "{$datePart}-{$sequenceFormatted}";
-
-    //         // ✅ Determine assistance based on PhilHealth ID
-    //         if ($patient->philhealth_id) {
-    //             $philhealth = true;
-    //             $maifip = false;
-    //         } else {
-    //             $philhealth = false;
-    //             $maifip = true;
-    //         }
-
-    //         // ✅ Transaction data
-    //         $transactionData = $request->only([
-    //             'transaction_type',
-    //             'transaction_date',
-    //             'transaction_mode',
-    //             'purpose',
-
-    //         ]);
-
-    //         $transactionData['patient_id'] = $patient->id;
-    //         $transactionData['representative_id'] = $representative->id;
-    //         $transactionData['transaction_number'] = $transactionNumber;
-    //         $transactionData['philhealth'] = $philhealth;
-    //         $transactionData['maifip'] = $maifip;
-    //         $transaction = Transaction::create($transactionData);
-
-    //         // ✅ Vital signs
-    //         $vitalData = $request->only([
-    //             'height',
-    //             'weight',
-    //             'bmi',
-    //             'temperature',
-    //             'waist',
-    //             'pulse_rate',
-    //             'sp02',
-    //             'heart_rate',
-    //             'blood_pressure',
-    //             'respiratory_rate',
-    //             'medicine',
-    //             'LMP'
-    //         ]);
-
-    //         $vitalData['patient_id'] = $patient->id;
-    //         $vitalData['transaction_id'] = $transaction->id;
-    //         $vital = Vital::create($vitalData);
-
-
-    //         // 📝 Activity Log
-    //         activity($user->first_name . ' ' . $user->last_name)
-    //             ->causedBy($user)
-    //             ->performedOn($patient)
-    //             ->withProperties([
-    //                 'ip' => $request->ip(),
-    //                 'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
-    //                 'patient' => $patient->toArray(),
-    //                 'representative' => $representative->toArray(),
-    //                 'transaction' => $transaction->toArray(),
-    //                 'vital' => $vital->toArray(),
-    //             ])
-    //             ->log(
-    //                 "Patient record {$patient->firstname} {$patient->lastname} was created "
-
-    //             );
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Patient, transaction, and vitals created successfully.',
-    //             'patient' => $patient,
-    //             'transaction' => $transaction,
-    //             'vital' => $vital,
-    //             'representative' => $representative,
-    //             'transaction_number' => $transactionNumber,
-
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'An unexpected error occurred',
-    //             'errors' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-    public function storeAll(PatientRequestAll $request)
+    public function storePatient(PatientRequestAll $request)
     {
-        $user = Auth::user();
+        // ✅ 1. Prepare Patient Data
+        $patientData = $request->only([
+            'firstname',
+            'lastname',
+            'middlename',
+            'ext',
+            'birthdate',
+            'contact_number',
+            'age',
+            'gender',
+            'is_not_tagum',
+            'street',
+            'purok',
+            'barangay',
+            'city',
+            'province',
+            'permanent_street',
+            'permanent_purok',
+            'permanent_barangay',
+            'permanent_city',
+            'permanent_province',
+            'category',
+            'philsys_id',
+            'philhealth_id',
+            'place_of_birth',
+            'civil_status',
+            'religion',
+            'education',
+            'occupation',
+            'income',
+            'is_pwd',
+            'is_solo'
+        ]);
 
-        try {
-            // ✅ 1. Prepare Patient Data
-            $patientData = $request->only([
-                'firstname',
-                'lastname',
-                'middlename',
-                'ext',
-                'birthdate',
-                'contact_number',
-                'age',
-                'gender',
-                'is_not_tagum',
-                'street',
-                'purok',
-                'barangay',
-                'city',
-                'province',
-                'permanent_street',
-                'permanent_purok',
-                'permanent_barangay',
-                'permanent_city',
-                'permanent_province',
-                'category',
-                'philsys_id',
-                'philhealth_id',
-                'place_of_birth',
-                'civil_status',
-                'religion',
-                'education',
-                'occupation',
-                'income',
-                'is_pwd',
-                'is_solo'
-            ]);
-
-            // ✅ 2. Check for Existing Patient
-            $existingPatient = Patient::where('firstname', $patientData['firstname'])
-                ->where('lastname', $patientData['lastname'])
-                ->where('birthdate', $patientData['birthdate'])
-                ->first();
-
-            if ($existingPatient) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Patient already exists. Please add a new transaction instead.',
-                    'patient' => $existingPatient
-                ], 409);
-            }
-
-            // ✅ 3. Create Patient
-            $patient = Patient::create($patientData);
-
-            // ✅ 4. Create Representative
-            $representativeData = $request->only([
-                'rep_name',
-                'rep_relationship',
-                'rep_contact',
-                'rep_barangay',
-                'rep_address',
-                'rep_purok',
-                'rep_street',
-                'rep_city',
-                'rep_province'
-            ]);
-            $representative = Representative::create($representativeData);
-
-            // ✅ 5. Generate Transaction Number
-            $datePart = now()->format('Y-m-d');
-            $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
-            $transactionNumber = "{$datePart}-{$sequenceFormatted}";
+        $representativeData = $request->only([
+            'rep_name',
+            'rep_relationship',
+            'rep_contact',
+            'rep_barangay',
+            'rep_address',
+            'rep_purok',
+            'rep_street',
+            'rep_city',
+            'rep_province'
+        ]);
 
 
+        $transactionData = $request->only([
+            'transaction_type',
+            'transaction_date',
+            'transaction_mode',
+            'purpose',
+            'status'
+        ]);
 
-            // ✅ 7. Prepare Transaction Data
-            $transactionData = $request->only([
-                'transaction_type',
-                'transaction_date',
-                'transaction_mode',
-                'purpose',
-                'status'
-            ]);
 
-            $status = $transactionData['status'] ?? 'not started';
+        $vitalData = $request->only([
+            'height',
+            'weight',
+            'bmi',
+            'temperature',
+            'waist',
+            'pulse_rate',
+            'sp02',
+            'heart_rate',
+            'blood_pressure',
+            'respiratory_rate',
+            'medicine',
+            'LMP'
+        ]);
 
-            $transactionData['patient_id'] = $patient->id;
-            $transactionData['representative_id'] = $representative->id;
-            $transactionData['transaction_number'] = $transactionNumber;
-            $transactionData['status'] = $status; // ✅ make sure "Pending" exists in enum
+        $result = $this->patientService->store($patientData,$representativeData,$transactionData,$vitalData,$request);
 
-            $transaction = Transaction::create($transactionData);
 
-            // ✅ 8. Create Vital Signs
-            $vitalData = $request->only([
-                'height',
-                'weight',
-                'bmi',
-                'temperature',
-                'waist',
-                'pulse_rate',
-                'sp02',
-                'heart_rate',
-                'blood_pressure',
-                'respiratory_rate',
-                'medicine',
-                'LMP'
-            ]);
-            $vitalData['patient_id'] = $patient->id;
-            $vitalData['transaction_id'] = $transaction->id;
-            $vital = Vital::create($vitalData);
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
 
-            // ✅ 9. Log Activity
-            activity($user->first_name . ' ' . $user->last_name)
-                ->causedBy($user)
-                ->performedOn($patient)
-                ->withProperties([
-                    'ip' => $request->ip(),
-                    'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                    'patient' => $patient->toArray(),
-                    'representative' => $representative->toArray(),
-                    'transaction' => $transaction->toArray(),
-                    'vital' => $vital->toArray(),
-                ])
-                ->log("Created patient record for {$patient->firstname} {$patient->lastname}");
 
-            // ✅ 10. Success Response
-            return response()->json([
-                'success' => true,
-                'message' => 'Patient, transaction, and vitals created successfully.',
-                'patient' => $patient,
-                'transaction_id' => $transaction->id,
-                'transaction' => $transaction,
-                'vital' => $vital,
-                'representative' => $representative,
-                'transaction_number' => $transactionNumber,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An unexpected error occurred',
-                'errors' => $th->getMessage(),
-            ], 500);
-        }
+        return $result;
+
+
     }
 
 
@@ -594,6 +380,12 @@ class PatientController extends Controller
 
         // Perform update
         $patient->update($validated);
+
+
+        // ✅ Then broadcast the fresh counts AFTER the DB has changed
+        $counts = app(BadgeService::class)->getBadgeCounts();
+        broadcast(new BadgeUpdated($counts));
+
 
         // 🗑️ Clear cache so next index() fetch is fresh
         // Cache::forget('patients');
@@ -625,46 +417,55 @@ class PatientController extends Controller
         ]);
     }
 
+    // public function total_count_badge()
+    // {
+    //     // ✅ Count of assessed patients (unique)
+    //     $count_assessment = vw_patient_assessment_maifip::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Count of qualified consultations (unique patients)
+    //     $count_consultation = vw_patient_consultation::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Laboratory count (unique patients)
+    //     $count_laboratory = vw_patient_laboratory::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Medication count (unique patients)
+    //     $count_medication = vw_patient_medication::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Returned consultations (unique patients)
+    //     $count_return_consultation = vw_patient_consultation_return::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Billing patients (unique)
+    //     $count_billing = vw_patient_billing::distinct('patient_id')->count('patient_id');
+
+    //     // ✅ Guarantee letter patients (unique)
+    //     $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
+
+
+    //     // $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
+
+    //     $count_assessment_philhealth= vw_patient_assessment_philhealth::distinct('patient_id')->count('patient_id');
+
+
+    //     return response()->json([
+    //         'totalAssessedCount'   => $count_assessment,
+    //         'totalQualifiedCount'  => $count_consultation,
+    //         'totalLaboratoryCount' => $count_laboratory,
+    //         'totalMedicationCount' => $count_medication,
+    //         'totalReturnedCount'   => $count_return_consultation,
+    //         'totalBillingCount'    => $count_billing,
+    //         'totalGLCount'         => $count_guarantee,
+    //         // 'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
+    //         'totalphilhealth'         => $count_assessment_philhealth,
+
+    //     ]);
+    // }
+
     public function total_count_badge()
     {
-        // ✅ Count of assessed patients (unique)
-        $count_assessment = vw_patient_assessment_maifip::distinct('patient_id')->count('patient_id');
+        $result = $this->badgeService->getBadgeCounts();
 
-        // ✅ Count of qualified consultations (unique patients)
-        $count_consultation = vw_patient_consultation::distinct('patient_id')->count('patient_id');
+        broadcast(new BadgeUpdated($result)); // remove toOthers() so sender also gets it
 
-        // ✅ Laboratory count (unique patients)
-        $count_laboratory = vw_patient_laboratory::distinct('patient_id')->count('patient_id');
-
-        // ✅ Medication count (unique patients)
-        $count_medication = vw_patient_medication::distinct('patient_id')->count('patient_id');
-
-        // ✅ Returned consultations (unique patients)
-        $count_return_consultation = vw_patient_consultation_return::distinct('patient_id')->count('patient_id');
-
-        // ✅ Billing patients (unique)
-        $count_billing = vw_patient_billing::distinct('patient_id')->count('patient_id');
-
-        // ✅ Guarantee letter patients (unique)
-        $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
-
-
-        // $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
-
-        $count_assessment_philhealth= vw_patient_assessment_philhealth::distinct('patient_id')->count('patient_id');
-
-
-        return response()->json([
-            'totalAssessedCount'   => $count_assessment,
-            'totalQualifiedCount'  => $count_consultation,
-            'totalLaboratoryCount' => $count_laboratory,
-            'totalMedicationCount' => $count_medication,
-            'totalReturnedCount'   => $count_return_consultation,
-            'totalBillingCount'    => $count_billing,
-            'totalGLCount'         => $count_guarantee,
-            // 'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
-            'totalphilhealth'         => $count_assessment_philhealth,
-
-        ]);
+        return response()->json($result);
     }
 }
