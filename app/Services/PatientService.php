@@ -46,6 +46,9 @@ class PatientService
             $patient = Patient::create($patientData);
 
 
+            // if the  customer existing check if the patient have  maifp_id if he already maifp_id no need to take account just  send an  'Patient already exists. Please add a new transaction instead.',
+            // else if the customer exist but he dont have maifp_id just update him on the customer table add his maifp_id and origin = MAIFP
+
             $firstname = $patientData['firstname'] ?? null;
             $lastname = $patientData['lastname'] ?? null;
             $birthdate = $patientData['birthdate'] ?? null;
@@ -58,39 +61,53 @@ class PatientService
                 ->first();
 
             if ($existingCustomers) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Patient already exists. Please add a new transaction instead.',
-                    'patient' => $existingCustomers
-                ], 409);
+                // Customer exists in second DB
+                if ($existingCustomers->maifp_id === null) {
+                    // No maifp_id yet — just update it
+                $data =   DB::connection('mysql_second_database')
+                        ->table('tbl_customers')
+                        ->where('id', $existingCustomers->id) // ✅ scoped to this customer only
+                        ->update([
+                            'maifp_id' => $patient->id,
+                            'origin'   => 'MAIFP',
+                        ]);
+                } else {
+                    // Already has a maifp_id — block the request
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Patient already exists. Please add a new transaction instead.',
+                        'patient' => $existingCustomers,
+                    ], 409);
+                }
+            } else {
+                // Customer does not exist in second DB — insert new record
+                $data =   DB::connection('mysql_second_database')
+                    ->table('tbl_customers')
+                    ->insert([
+                        'firstname'      => $firstname,
+                        'lastname'       => $lastname,
+                        'middlename'     => $patientData['middlename'] ?? null,
+                        'ext'            => $patientData['ext'] ?? null,
+                        'birthdate'      => $birthdate,
+                        'contact_number' => $patientData['contact_number'] ?? null,
+                        'age'            => $patientData['age'] ?? null,
+                        'gender'         => $patientData['gender'] ?? null,
+                        'is_not_tagum'   => $patientData['is_not_tagum'] ?? 0,
+                        'street'         => $patientData['street'] ?? null,
+                        'purok'          => $patientData['purok'] ?? null,
+                        'barangay'       => $patientData['barangay'] ?? null,
+                        'city'           => $patientData['city'] ?? null,
+                        'province'       => $patientData['province'] ?? null,
+                        'category'       => $patientData['category'] ?? null,
+                        'is_pwd'         => $patientData['is_pwd'] ?? 0,
+                        'is_solo'        => $patientData['is_solo'] ?? 0,
+                        'origin'         => 'MAIFP',
+                        'maifp_id'       => $patient->id,
+                        'user_id'        => 0,
+                        'created_at'     => now(),
+                        'updated_at'     => now(),
+                    ]);
             }
-
-           $data = DB::connection('mysql_second_database')
-                ->table('tbl_customers')
-                ->insert([
-                    'firstname' => $firstname,
-                    'lastname' => $lastname,
-                    'middlename' => $patientData['middlename'] ?? null,
-                    'ext' => $patientData['ext'] ?? null,
-                    'birthdate' => $birthdate,
-                    'contact_number' => $patientData['contact_number'] ?? null,
-                    'age' => $patientData['age'] ?? null,
-                    'gender' => $patientData['gender'] ?? null,
-                    'is_not_tagum' => $patientData['is_not_tagum'] ?? 0,
-                    'street' => $patientData['street'] ?? null,
-                    'purok' => $patientData['purok'] ?? null,
-                    'barangay' => $patientData['barangay'] ?? null,
-                    'city' => $patientData['city'] ?? null,
-                    'province' => $patientData['province'] ?? null,
-                    'category' => $patientData['category'] ?? null,
-                    'is_pwd' => $patientData['is_pwd'] ?? 0,
-                    'is_solo' => $patientData['is_solo'] ?? 0,
-                    'origin' => 'MAIFP',
-                    'maifp_id' => $patient->id,
-                    'user_id' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
 
 
 
