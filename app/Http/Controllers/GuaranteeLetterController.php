@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 
 use App\Events\BadgeUpdated;
 use App\Http\Requests\GuaranteeLetterRequest;
-use App\Http\Requests\GuaranteeLetterUpdateRequest;
 use App\Models\Assistances;
 use App\Models\Budget;
 use App\Models\GuaranteeLetter;
@@ -13,7 +12,6 @@ use App\Models\Patient;
 use App\Models\Transaction;
 use App\Models\vw_guarantee_patients;
 use App\Services\BadgeService;
-use App\Services\GuaranteeLetterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +19,6 @@ use Illuminate\Support\Facades\DB;
 class GuaranteeLetterController extends Controller
 {
 
-    protected $guaranteeLetterService;
-    public function __construct(GuaranteeLetterService $guaranteeLetterService)
-    {
-        $this->guaranteeLetterService = $guaranteeLetterService;
-    }
 
     public function guaranteeLetter($transactionId)
     {
@@ -83,6 +76,34 @@ class GuaranteeLetterController extends Controller
         return response()->json($transaction);
     }
 
+    // public function index()
+    // {
+    //     $transactions = Transaction::where('status', 'Complete')
+    //         ->with(['patient' => function ($query) {
+    //             // Only fetch the patient fields you need
+    //             $query->select(
+    //                 'id', // important! primary key for relationship
+    //                 'firstname',
+    //                 'lastname',
+    //                 'middlename',
+    //                 'ext',
+    //                 'birthdate',
+    //                 'age',
+    //                 'contact_number',
+    //                 'barangay'
+    //             );
+    //         }])
+    //         ->select([
+    //             DB::raw('id as transaction_id'), // alias properly
+    //             'patient_id',
+    //             'transaction_type',
+    //             'transaction_date',
+    //             'status'
+    //         ])
+    //         ->get();
+
+    //     return response()->json($transactions);
+    // }
 
     public function index()
     {
@@ -120,44 +141,171 @@ class GuaranteeLetterController extends Controller
         return response()->json($transactions);
     }
 
-    // get the max gl number
     public function getMaxGLNumber()
     {
-        $result = $this->guaranteeLetterService->getGLNumber();
+        // Get the max value from each column
+        $maxLgu = Assistances::max('gl_lgu');
+        $maxCong = Assistances::max('gl_cong');
 
-        return $result;
+        // Determine which has the higher value
+        $maxGLNumber = max((int) $maxLgu, (int) $maxCong);
 
+        // If no records yet, start from 0
+        if (!$maxGLNumber) {
+            $maxGLNumber = 0;
+        }
+
+        // Add 1 and format as 5 digits (e.g., 00001, 00016, etc.)
+        $nextNumber = str_pad($maxGLNumber + 1, 5, '0', STR_PAD_LEFT);
+
+        return response()->json(['max_gl_number' => $nextNumber]);
     }
 
-    // updating the assistance
-    public function updateAssistance(GuaranteeLetterUpdateRequest $request, $transaction_id)
+
+    public function update(Request $request, $transaction_id)
     {
         // ✅ Validate inputs
-        $validated = $request->validated();
+        $validated = $request->validate([
+            // 'gl_number'   => 'required|string|unique:assistances,gl_number,' . $transaction_id . ',transaction_id',
+            'gl_lgu'   => 'nullable|string',
+            'gl_cong'  => 'nullable|string',
 
-        $result = $this->guaranteeLetterService->update($validated,$transaction_id);
+
+            'transaction_id' => 'required|exists:transactions,id',
+            'consultation_amount' => 'nullable|numeric',
+
+            'medication_total' => 'nullable|numeric',
+            'total_billing' => 'nullable|numeric',
+            'discount' => 'nullable|numeric',
+            'final_billing' => 'nullable|numeric',
+
+
+            'radiology_total' => 'nullable|numeric',
+            'examination_total' => '|nullable|numeric',
+            'ultrasound_total' => 'nullable|numeric',
+            'mammogram_total' => 'nullable|numeric',
+
+
+            'medication' => 'nullable|array',
+            'medication.*.item_description' => 'nullable|string',
+            'medication.*.quantity' => 'nullable|integer',
+            'medication.*.unit' => 'nullable|string',
+            'medication.*.amount' => 'nullable|numeric',
+            'medication.*.total' => 'nullable|numeric',
+            'medication.*.transaction_date' => 'nullable|date',
+
+            'ultrasound_details' => 'nullable|array',
+            'ultrasound_details.*.body_parts' => 'nullable|string',
+            'ultrasound_details.*.total_amount' => 'nullable|numeric',
+
+            'mammogram_details' => 'nullable|array',
+            'mammogram_details.*.procedure' => 'nullable|string',
+            'mammogram_details.*.total_amount' => 'nullable|numeric',
+
+            'radiology_details' => 'nullable|array',
+            'radiology_details.*.item_description' => 'nullable|string',
+            'radiology_details.*.total_amount' => 'nullable|numeric',
+
+            'examination_details' => 'nullable|array',
+            'examination_details.*.item_description' => 'nullable|string',
+            'examination_details.*.total_amount' => 'nullable|numeric',
+
+            // ✅ Only validate array of funds
+            'funds' => 'required|array|min:1',
+            'funds.*.fund_source' => 'required|string',
+            'funds.*.fund_amount' => 'required|numeric',
+
+
+        ]);
+        // 🧹 Helper function for clean encoding
+        $encodeIfNotEmpty = fn($arr) => (!empty($arr) && count(array_filter($arr, fn($v) => !empty($v))) > 0)
+            ? json_encode($arr)
+            : null;
+
+        // ✅ Find Assistance record by transaction_id or create a new one
+        $assistance = Assistances::UpdateOrCreate(
+            ['transaction_id' => $transaction_id],
+            [
+                'gl_lgu' => $validated['gl_lgu'],
+                'gl_cong'            => $validated['gl_cong'],
+                'radiology_total' => $validated['radiology_total'] ?? 0,
+                'examination_total' => $validated['examination_total'] ?? 0,
+                'mammogram_total'   => $validated['mammogram_total'] ?? 0,
+                'ultrasound_total'  => $validated['ultrasound_total'] ?? 0,
+                'consultation_amount' => $validated['consultation_amount'] ?? 0,
+                'medication_total'  => $validated['medication_total'] ?? 0,
+                'total_billing'     => $validated['total_billing'] ?? 0,
+                'discount'          => $validated['discount'] ?? 0,
+                'final_billing'     => $validated['final_billing'] ?? 0,
+
+                'ultrasound_details'  => $encodeIfNotEmpty($validated['ultrasound_details'] ?? []),
+                'mammogram_details'   => $encodeIfNotEmpty($validated['mammogram_details'] ?? []),
+                'radiology_details'   => $encodeIfNotEmpty($validated['radiology_details'] ?? []),
+                'examination_details' => $encodeIfNotEmpty($validated['examination_details'] ?? []),
+                'medication'          => $encodeIfNotEmpty($validated['medication'] ?? []),
+            ] // if creating new, set GL number
+        );
+
+        // ✅ If the Assistance already exists, update gl_number
+        if (!$assistance->wasRecentlyCreated) {
+            $assistance->update([
+                // 'gl_number' => $validated['gl_number'],
+                'gl_lgu' => $validated['gl_lgu'],
+                'gl_cong' => $validated['gl_cong'],
+            ]);
+        }
+        // Create new fund if not exists
+        if (!empty($request->funds) && is_array($request->funds)) {
+            foreach ($request->funds as $fund) {
+                $assistance->funds()->create([
+                    'fund_source' => $fund['fund_source'],
+                    'fund_amount' => $fund['fund_amount'],
+                ]);
+            }
+        }
 
         // ✅ Then broadcast the fresh counts AFTER the DB has changed
         $counts = app(BadgeService::class)->getBadgeCounts();
         broadcast(new BadgeUpdated($counts));
 
-        return $result;
+        // if (!empty($validated['transaction_id'])) {
+        //     $transaction = Transaction::find($validated['transaction_id']);
+        //     if ($transaction) {
+        //         $transaction->update(['maifip' => true]);
+        //     }
+        // }
+
+        return response()->json([
+            'message'    => 'Successfully created/updated assistance and fund source',
+            'assistance' => $assistance->load('funds'),
+        ]);
     }
 
-    // updating the transaction status to Funded
-    public function updateFunded(Request $request,$transactionId)
+    public function update_status(Request $request, $transaction_id) // updating the transaction status to Funded
     {
         // ✅ Validation
         $validated = $request->validate([
             'status' => 'required|in:Funded'
         ]);
 
-        $result = $this->guaranteeLetterService->updateStatus($transactionId,$validated);
+        // ✅ Find Assistance record by transaction_id
+        $transaction = Transaction::where('id', $transaction_id)->first();
 
-        // ✅ Then broadcast the fresh counts AFTER the DB has changed
-        $counts = app(BadgeService::class)->getBadgeCounts();
-        broadcast(new BadgeUpdated($counts));
+        if (!$transaction) {
+            return response()->json([
+                'message' => "No Assistance record found for transaction_id {$transaction_id}"
+            ], 404);
+        }
 
-        return $result;
+        // ✅ Update gl_number (already validated as unique)
+        $transaction->update([
+            'status' => $validated['status'],
+        ]);
+
+
+        return response()->json([
+            'message'    => 'Successfully updated status',
+            'transaction' => $transaction,
+        ]);
     }
 }

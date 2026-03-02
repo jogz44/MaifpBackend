@@ -55,85 +55,85 @@ class LaboratoryController extends Controller
     }
 
 
-    public function qualifiedTransactionsLaboratory()
-    {
-        try {
-            $records = vw_patient_laboratory::all();
+    // public function qualifiedTransactionsLaboratory()
+    // {
+    //     try {
+    //         $records = vw_patient_laboratory::all();
 
-            $grouped = $records->groupBy('patient_id')->map(function ($items) {
-                $first = $items->first();
+    //         $grouped = $records->groupBy('patient_id')->map(function ($items) {
+    //             $first = $items->first();
 
-                return [
-                    'id'             => $first->patient_id,
-                    'firstname'      => $first->firstname,
-                    'lastname'       => $first->lastname,
-                    'middlename'     => $first->middlename,
-                    'ext'            => $first->ext,
-                    'birthdate'      => $first->birthdate,
-                    'contact_number' => $first->contact_number,
-                    'age'            => $first->age,
-                    'gender'         => $first->gender,
-                    'is_not_tagum'   => $first->is_not_tagum,
-                    'street'         => $first->street,
-                    'purok'          => $first->purok,
-                    'barangay'       => $first->barangay,
-                    'city'           => $first->city,
-                    'province'       => $first->province,
-                    'category'       => $first->category,
-                    'is_pwd'         => $first->is_pwd,
-                    'is_solo'        => $first->is_solo,
-                    'user_id'        => $first->user_id,
-                    'created_at'     => $first->patient_created_at,
-                    'updated_at'     => $first->patient_updated_at,
+    //             return [
+    //                 'id'             => $first->patient_id,
+    //                 'firstname'      => $first->firstname,
+    //                 'lastname'       => $first->lastname,
+    //                 'middlename'     => $first->middlename,
+    //                 'ext'            => $first->ext,
+    //                 'birthdate'      => $first->birthdate,
+    //                 'contact_number' => $first->contact_number,
+    //                 'age'            => $first->age,
+    //                 'gender'         => $first->gender,
+    //                 'is_not_tagum'   => $first->is_not_tagum,
+    //                 'street'         => $first->street,
+    //                 'purok'          => $first->purok,
+    //                 'barangay'       => $first->barangay,
+    //                 'city'           => $first->city,
+    //                 'province'       => $first->province,
+    //                 'category'       => $first->category,
+    //                 'is_pwd'         => $first->is_pwd,
+    //                 'is_solo'        => $first->is_solo,
+    //                 'user_id'        => $first->user_id,
+    //                 'created_at'     => $first->patient_created_at,
+    //                 'updated_at'     => $first->patient_updated_at,
 
-                    'transaction'    => $items->map(function ($row) {
-                        return [
-                            'id'                 => $row->transaction_id,
-                            'transaction_number' => $row->transaction_number,
-                            'transaction_type'   => $row->transaction_type,
-                            'status'             => $row->transaction_status,
-                            'transaction_date'   => $row->transaction_date,
-                            'transaction_mode'   => $row->transaction_mode,
-                            'purpose'            => $row->purpose,
-                            'created_at'         => $row->transaction_created_at,
-                            'updated_at'         => $row->transaction_updated_at,
-                            'representative_id'  => $row->representative_id,
+    //                 'transaction'    => $items->map(function ($row) {
+    //                     return [
+    //                         'id'                 => $row->transaction_id,
+    //                         'transaction_number' => $row->transaction_number,
+    //                         'transaction_type'   => $row->transaction_type,
+    //                         'status'             => $row->transaction_status,
+    //                         'transaction_date'   => $row->transaction_date,
+    //                         'transaction_mode'   => $row->transaction_mode,
+    //                         'purpose'            => $row->purpose,
+    //                         'created_at'         => $row->transaction_created_at,
+    //                         'updated_at'         => $row->transaction_updated_at,
+    //                         'representative_id'  => $row->representative_id,
 
-                            'consultation' => $row->consultation_id ? [
-                                'id'     => $row->consultation_id,
-                                'status' => $row->consultation_status,
-                            ] : null,
+    //                         'consultation' => $row->consultation_id ? [
+    //                             'id'     => $row->consultation_id,
+    //                             'status' => $row->consultation_status,
+    //                         ] : null,
 
-                            'vital' => $row->vital_id ? [
-                                'id'               => $row->vital_id,
-                                'height'           => $row->height,
-                                'weight'           => $row->weight,
-                                'bmi'              => $row->bmi,
-                                'pulse_rate'       => $row->pulse_rate,
-                                'temperature'      => $row->temperature,
-                                'sp02'             => $row->sp02,
-                                'heart_rate'       => $row->heart_rate,
-                                'blood_pressure'   => $row->blood_pressure,
-                                'respiratory_rate' => $row->respiratory_rate,
-                                'medicine'         => $row->medicine,
-                                'LMP'              => $row->LMP,
-                            ] : null,
+    //                         'vital' => $row->vital_id ? [
+    //                             'id'               => $row->vital_id,
+    //                             'height'           => $row->height,
+    //                             'weight'           => $row->weight,
+    //                             'bmi'              => $row->bmi,
+    //                             'pulse_rate'       => $row->pulse_rate,
+    //                             'temperature'      => $row->temperature,
+    //                             'sp02'             => $row->sp02,
+    //                             'heart_rate'       => $row->heart_rate,
+    //                             'blood_pressure'   => $row->blood_pressure,
+    //                             'respiratory_rate' => $row->respiratory_rate,
+    //                             'medicine'         => $row->medicine,
+    //                             'LMP'              => $row->LMP,
+    //                         ] : null,
 
-                            'laboratory' => null, // you can extend view if you need lab details
-                        ];
-                    })->values()
-                ];
-            })->values();
+    //                         'laboratory' => null, // you can extend view if you need lab details
+    //                     ];
+    //                 })->values()
+    //             ];
+    //         })->values();
 
-            return response()->json($grouped);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch laboratory records.',
-                'error'   => $th->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json($grouped);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to fetch laboratory records.',
+    //             'error'   => $th->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     // this method for updating the status on the laboratory that is connected to the consultation for the patient
     public function updateLaboratorystatus(Request $request)
@@ -152,129 +152,23 @@ class LaboratoryController extends Controller
         $counts = app(BadgeService::class)->getBadgeCounts();
         broadcast(new BadgeUpdated($counts));
 
-
         return $result;
 
     }
 
-
-    public function store(LaboratoryRequest $request)
+    // storing the laboratory of patient
+    public function storeLaboratory(LaboratoryRequest $request)
     {
-        $user = Auth::user();
-        $validated = $request->validated();
 
-        $transaction = \App\Models\Transaction::with('consultation')
-            ->findOrFail($validated['transaction_id']);
+     $validated = $request->validated();
 
-        $newConsultationId = $transaction->consultation
-            ? $transaction->consultation->id
-            : null;
+      $result = $this->laboratoryService->store($validated,$request);
 
-        $savedRecords = [];
-
-        // ✅ Save Radiologies
-        if (!empty($validated['radiologies'])) {
-            foreach ($validated['radiologies'] as $radData) {
-                $savedRecords['radiologies'][] = lab_radiology_details::create([
-                    'transaction_id'      => $validated['transaction_id'],
-                    'new_consultation_id' => $newConsultationId,
-                    'item_description'    => $radData['item_description'],
-                    'selling_price'       => $radData['selling_price'],
-                    'service_fee'         => $radData['service_fee'],
-                    'total_amount'        => $radData['total_amount'],
-                ]);
-            }
-        }
-
-        // ✅ Save Examinations
-        if (!empty($validated['examination'])) {
-            foreach ($validated['examination'] as $examData) {
-                $savedRecords['examination'][] = lab_examination_details::create([
-                    'transaction_id'      => $validated['transaction_id'],
-                    'new_consultation_id' => $newConsultationId,
-                    'item_id'             => $examData['item_id'],
-                    'item_description'    => $examData['item_description'],
-                    'selling_price'       => $examData['selling_price'],
-                    'service_fee'         => $examData['service_fee'],
-                    'total_amount'        => $examData['total_amount'],
-                ]);
-            }
-        }
-
-        // ✅ Save ultrasound
-        if (!empty($validated['ultrasound'])) {
-            foreach ($validated['ultrasound'] as $ultraData) {
-                $savedRecords['ultrasound'][] = lab_ultrasound_details::create([
-                    'transaction_id'      => $validated['transaction_id'],
-                    'new_consultation_id' => $newConsultationId,
-                    'body_parts'    => $ultraData['body_parts'],
-                    'rate'       => $ultraData['rate'],
-                    'service_fee'         => $ultraData['service_fee'],
-                    'total_amount'        => $ultraData['total_amount'],
-                ]);
-            }
-        }
-
-        // ✅ Save mammogram
-        if (!empty($validated['mammogram'])) {
-            foreach ($validated['mammogram'] as $mammogramData) {
-                $savedRecords['mammogram'][] = lab_mammogram_details::create([
-                    'transaction_id'      => $validated['transaction_id'],
-                    'new_consultation_id' => $newConsultationId,
-                    'procedure'    => $mammogramData['procedure'],
-                    'rate'       => $mammogramData['rate'],
-                    'service_fee'         => $mammogramData['service_fee'],
-                    'total_amount'        => $mammogramData['total_amount'],
-                ]);
-            }
-        }
-
-        // Prepare log details
-        // Prepare log details
-        $logEntries = [];
-
-        foreach ($savedRecords as $type => $records) {
-            foreach ($records as $record) {
-                switch ($type) {
-                    case 'radiologies':
-                        $logEntries[] = "Radiology: {$record->item_description} (₱{$record->total_amount})";
-                        break;
-                    case 'examination':
-                        $logEntries[] = "Examination: {$record->item_description} (₱{$record->total_amount})";
-                        break;
-                    case 'ultrasound':
-                        $logEntries[] = "Ultrasound: {$record->body_parts} (₱{$record->total_amount})";
-                        break;
-                    case 'mammogram':
-                        $logEntries[] = "Mammogram: {$record->procedure} (₱{$record->total_amount})";
-                        break;
-                    default:
-                        $logEntries[] = "Unknown Service (₱{$record->total_amount})";
-                }
-            }
-        }
-
-        $labDetails = implode(', ', $logEntries);
         // ✅ Then broadcast the fresh counts AFTER the DB has changed
         $counts = app(BadgeService::class)->getBadgeCounts();
         broadcast(new BadgeUpdated($counts));
 
-        // Log activity
-        activity($user->first_name . ' ' . $user->last_name)
-            ->causedBy($user)
-            ->performedOn($transaction) // better to log on the transaction
-            ->withProperties([
-                'ip'   => $request->ip(),
-                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
-                'labs' => $savedRecords
-            ])
-            ->log("Added new services: {$labDetails}");
-
-
-        return response()->json([
-            'message' => 'Records stored successfully',
-            'data'    => $savedRecords,
-        ]);
+        return $result;
     }
 
     public function destroy(Request $request)

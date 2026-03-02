@@ -55,11 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('guarantee')->group(function () {
         Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter
         Route::get('/{transactionId}', [GuaranteeLetterController::class, 'guaranteeLetter']); //  fetch the patient on the guarantee letter
-        Route::post('/{transactionId}', [GuaranteeLetterController::class, 'updateAssistance']); //  fetch the patient on the guarantee letter
-        Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'updateFunded']); //  fetch the patient on the guarantee letter
+        Route::post('/{transactionId}', [GuaranteeLetterController::class, 'update']); //  fetch the patient on the guarantee letter
+        Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'update_status']); //  fetch the patient on the guarantee letter
         Route::get('/max/number', [GuaranteeLetterController::class, 'getMaxGLNumber']);
     });
-
+    
     Route::prefix('transactions')->group(function () {
         Route::get('/', [TransactionController::class, 'index']);
         Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']); // the all data on the transaction table
@@ -76,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('laboratory')->group(function () {
         // Route::get('v2/', [LaboratoryController::class, 'patientLaboratory']); // fetching the patient on the laboratory
 
-        Route::post('/store', [LaboratoryController::class, 'store']); //
+        Route::post('/store', [LaboratoryController::class, 'storeLaboratory']); //
         Route::delete('/delete', [LaboratoryController::class, 'destroy']);
 
         Route::post('/status', [LaboratoryController::class, 'updateLaboratorystatus']);

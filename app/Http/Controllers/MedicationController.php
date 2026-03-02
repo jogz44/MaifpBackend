@@ -85,7 +85,8 @@ class MedicationController extends Controller
     }
 
 
-    public function store(MedicationRequest $request) // store the medations of the patient with his transaction id
+    // store the medations of the patient with his transaction id
+    public function store(MedicationRequest $request)
     {
         $validated = $request->validated();
 
