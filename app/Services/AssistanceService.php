@@ -2,13 +2,89 @@
 
 namespace App\Services;
 
+use App\Models\Assistances;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;
+
 class AssistanceService
 {
     /**
      * Create a new class instance.
      */
-    public function __construct()
+    // public function __construct()
+    // {
+    //     //
+    // }
+
+    // store assistance
+    public function store($validated,$request)
     {
-        //
+
+        $user = Auth::user();
+        // Encode arrays as JSON or set null if missing/empty
+        $medication = !empty($validated['medication']) ? json_encode($validated['medication']) : null;
+        $radiology = !empty($validated['radiology_details']) ? json_encode($validated['radiology_details']) : null;
+        $ultrasound = !empty($validated['ultrasound_details']) ? json_encode($validated['ultrasound_details']) : null;
+        $mammogram = !empty($validated['mammogram_details']) ? json_encode($validated['mammogram_details']) : null;
+        $examination = !empty($validated['examination_details']) ? json_encode($validated['examination_details']) : null;
+
+        // Create the main assistance record
+        $assistance = Assistances::create([
+            'patient_id'          => $validated['patient_id'] ?? null,
+            'transaction_id'      => $validated['transaction_id'] ?? null,
+            'consultation_amount' => $validated['consultation_amount'] ?? null,
+            'radiology_total'     => $validated['radiology_total'] ?? null,
+            'examination_total'   => $validated['examination_total'] ?? null,
+            'ultrasound_total'    => $validated['ultrasound_total'] ?? null,
+            'mammogram_total'     => $validated['mammogram_total'] ?? null,
+            'medication_total'    => $validated['medication_total'] ?? null,
+            'total_billing'       => $validated['total_billing'] ?? null,
+            'discount'            => $validated['discount'] ?? null,
+            'final_billing'       => $validated['final_billing'] ?? null,
+            'medication'          => $medication,
+            'ultrasound_details'  => $ultrasound,
+            'mammogram_details'   => $mammogram,
+            'radiology_details'   => $radiology,
+            'examination_details' => $examination,
+        ]);
+
+        // ✅ Attach funds only if there are any
+        if (!empty($validated['assistances']) && is_array($validated['assistances'])) {
+            foreach ($validated['assistances'] as $fund) {
+                $assistance->funds()->create([
+                    'fund_source' => $fund['fund_source'] ?? null,
+                    'fund_amount' => $fund['fund_amount'] ?? null,
+                ]);
+            }
+        }
+
+        if (!empty($validated['transaction_id'])) {
+            $transaction = Transaction::find($validated['transaction_id']);
+            if ($transaction) {
+                $transaction->update(['philhealth' => true]);
+            }
+        }
+
+
+
+        // ✅ Activity Log
+        activity($user->first_name . ' ' . $user->last_name)
+            ->causedBy($user)
+            ->performedOn($assistance)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'patient_id' => $validated['patient_id'] ?? null,
+                'transaction_id' => $validated['transaction_id'] ?? null,
+                'total_billing' => $validated['total_billing'] ?? null,
+                'final_billing' => $validated['final_billing'] ?? null,
+                'funds' => $validated['assistances'] ?? [],
+            ])
+            ->log("Created a new Assistance record for Patient ID: {$validated['patient_id']} (Transaction: {$validated['transaction_id']})");
+
+        return response()->json([
+            'message'    => 'Successfully created assistance with funds, labs, and medications',
+            'assistance' => $assistance->load('funds'),
+        ]);
     }
 }

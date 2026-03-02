@@ -24,43 +24,7 @@ Route::get('/test-broadcast', function () {
 
 
 Route::get('/test', [PatientController::class, 'test_database']);
-// this route is for v2 with cache
-// Route::get('/logs', function () {
-//     $path = storage_path('logs/laravel.log');
 
-//     if (!File::exists($path)) {
-//         return response()->json(['message' => 'Log file not found'], 404);
-//     }
-
-//     $lines = collect(explode("\n", File::get($path)))
-//         ->filter()
-//         ->take(-200) // last 200 lines
-//         ->values();
-
-//     // Count how many times our debug log appeared
-//     $fetchCount = $lines->filter(fn($line) => str_contains($line, 'Fetching patients from DB view...'))
-//         ->count();
-
-//     return response()->json([
-//         'count_fetching_patients' => $fetchCount,
-//         'lines' => $lines,
-//     ]);
-// });
-
-
-// Route::prefix('medications')->group(function () {
-//     Route::get('/', [MedicationController::class, 'index_view']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
-//     Route::post('/store', [MedicationController::class, 'store']);
-//     Route::post('/update', [MedicationController::class, 'status']); // fetching the transaction on his vital
-
-// });
-
-// testing  route
-
-// Route::get('/test', [GuaranteeLetterController::class, 'getMaxGLNumber']);
-
-
-//
 
 
 Route::post('/user/login', [SystemUserController::class, 'login_User']);
@@ -72,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('assistance')->group(function () { // guarantee
         Route::get('/', [AssistanceController::class, 'index']);
-        Route::post('/store', [AssistanceController::class, 'store']);
+        Route::post('/store', [AssistanceController::class, 'storeAssistance']);
         Route::get('/funds', [AssistanceController::class, 'funds']);
     });
 
@@ -84,15 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('billing')->group(function () {
         Route::get('/', [BillingController::class, 'index']); // fetch the patient  already done for his transaction
         Route::get('/report', [BillingController::class, 'billing_report']); // fetching the patient need to go on the medication  base on the transaction_type and consultation
-        Route::post('/store', [BillingController::class, 'store']);
-        Route::get('/{transactionId}', [BillingController::class, 'billing']); // billing of the patient per transaction
+        // Route::post('/store', [BillingController::class, 'store']);
+        Route::get('/{transactionId}', [BillingController::class, 'billingPatient']); // billing of the patient per transaction
     });
 
     Route::prefix('guarantee')->group(function () {
         Route::get('/', [GuaranteeLetterController::class, 'index']); //  fetch the patient on the guarantee letter
         Route::get('/{transactionId}', [GuaranteeLetterController::class, 'guaranteeLetter']); //  fetch the patient on the guarantee letter
-        Route::post('/{transactionId}', [GuaranteeLetterController::class, 'update']); //  fetch the patient on the guarantee letter
-        Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'update_status']); //  fetch the patient on the guarantee letter
+        Route::post('/{transactionId}', [GuaranteeLetterController::class, 'updateAssistance']); //  fetch the patient on the guarantee letter
+        Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'updateFunded']); //  fetch the patient on the guarantee letter
         Route::get('/max/number', [GuaranteeLetterController::class, 'getMaxGLNumber']);
     });
 
@@ -100,13 +64,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [TransactionController::class, 'index']);
         Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']); // the all data on the transaction table
         Route::post('/add', [TransactionController::class, 'addTransactionAndVitals']); // adding the patient transaction and vital
-        Route::put('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
-        Route::put('/representative/{id}', [TransactionController::class, 'rep_update']); //  updating the transaction of the patient
-        Route::put('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
+        Route::post('/update/{id}', [TransactionController::class, 'update']); //  updating the transaction of the patient
+        Route::post('/representative/{id}', [TransactionController::class, 'rep_update']); //  updating the transaction of the patient
+        Route::post('/vital/update/{id}', [TransactionController::class, 'vital_update']); // updating patient vital
         Route::get('/qualified', [NewConsultationController::class, 'qualifiedTransactionsConsultation']);  // fetch all patient was qualified for the consulatation
         Route::get('/{id}', [TransactionController::class, 'show']); // fetching the transaction on his vital
-        Route::put('/{id}/update/status/', [TransactionController::class, 'updateTransaction']); // billing updating 
-        Route::put('/{TransactionId}/update/philhealth', [TransactionController::class, 'status_to_maifip']);// updating the transaction to maifip
+        Route::post('/{id}/update/status/', [TransactionController::class, 'updateTransaction']); // billing updating
+        Route::post('/{TransactionId}/update/philhealth', [TransactionController::class, 'status_to_maifip']);// updating the transaction to maifip
     });
 
     Route::prefix('laboratory')->group(function () {
@@ -169,7 +133,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('patients')->group(function () {
         Route::get('/', [PatientController::class, 'index']); // list of patient
         Route::get('/master_list', [PatientController::class, 'getAllPatientsWithLatestTransaction']); // list of patient
-        Route::put('/update/{id}', [PatientController::class, 'update']); // updating patient information
+        Route::post('/update/{id}', [PatientController::class, 'updatePatient']); // updating patient information
         Route::post('/store', [PatientController::class, 'storePatient']); // store the transaction and patient information and vital
         Route::get('/consultation/return', [NewConsultationController::class, 'ReturnConsultation']); // fetch the patient return on the consultation galing sa laboratory
         Route::get('/assessment', [PatientController::class, 'assessment']); // fetch patient for assessment on the social if this qualified or unqualified
@@ -188,20 +152,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users', [SystemUserController::class, 'index']);              // Get all users
         Route::get('/user/profile/{id}', [SystemUserController::class, 'show']);          // Get a specific user
         Route::post('/user/new', [SystemUserController::class, 'store']);           // Create a new user
-        Route::put('/user/profile-update/{id}', [SystemUserController::class, 'update']);      // Update an existing user
+        Route::post('/user/profile-update/{id}', [SystemUserController::class, 'update']);      // Update an existing user
         Route::delete('/user/profile-remove/{id}', [SystemUserController::class, 'destroy']);               // Delete a user
-        Route::put('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
-        Route::put('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
+        Route::post('/user/profile-deactivate/{id}', [SystemUserController::class, 'deactivateUser']); // deactivate user
+        Route::post('/user/profile-activate/{id}', [SystemUserController::class, 'activateUser']); // deactivate user
         Route::post('/user/credentials', [SystemUserController::class, 'GetMyModule']); // Get user credentials
         Route::get('/user/credentials', [UserCredentialsController::class, 'index']);
         Route::get('/user/{id}/credentials', [UserCredentialsController::class, 'showByUserId']); // Get user credentials
-        // Route::put('/user/{user_id}/credentials/{credential_id}', [UserCredentialsController::class, 'update']); // update user credentials
+        // Route::post('/user/{user_id}/credentials/{credential_id}', [UserCredentialsController::class, 'update']); // update user credentials
         Route::post('/user/credentials', [UserCredentialsController::class, 'store']); // store user credentials
         Route::delete('/user/credentials/{id}', [UserCredentialsController::class, 'destroy']); // delete user credentials
         // Route::get('/user/credentials/user/{user_id}', [UserCredentialsController::class, 'showByUserId']); // Get user credentials by user ID
         Route::get('/configuration/{id}', [ConfigurationsController::class, 'show']); // Get all config
         Route::post('/configuration', [ConfigurationsController::class, 'store']); // Insert new config
-        Route::put('/configuration/{id}/config', [ConfigurationsController::class, 'updateConfig']); // Update config
+        Route::post('/configuration/{id}/config', [ConfigurationsController::class, 'updateConfig']); // Update config
         Route::delete('/configuration/{id}', [ConfigurationsController::class, 'destroy']); // Delete config
 
     });

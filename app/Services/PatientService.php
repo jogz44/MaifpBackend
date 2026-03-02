@@ -6,8 +6,9 @@ use App\Models\Patient;
 use App\Models\Representative;
 use App\Models\Transaction;
 use App\Models\vital;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PatientService
 {
@@ -19,7 +20,7 @@ class PatientService
     //     //
     // }
 
-
+    // store patient
     public function store($patientData, $representativeData, $transactionData, $vitalData,$request)
     {
         $user = Auth::user();
@@ -180,6 +181,44 @@ class PatientService
                 'errors' => $th->getMessage(),
             ], 500);
         }
+    }
+
+    // updating credentials of patient
+    public function updateCredential($validated,$id,$request)
+    {
+
+        $patient = Patient::findOrFail($id);
+
+        // Save old values before update
+        $oldValues = $patient->getOriginal();
+
+        // Perform update
+        $patient->update($validated);
+
+
+        $user = Auth::user();
+
+        // 📝 Add activity log
+        activity($user->username)
+            ->causedBy($user) // who updated
+            ->performedOn($patient)  // which patient
+            ->withProperties([
+                'ip' => $request->ip(),
+                'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
+                'edited_by' => $user
+                    ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
+                    : ($user->username ?? 'N/A'),
+
+                'old' => $oldValues,
+                'new' => $patient->getChanges(),
+            ])
+            ->log("Patient record {$patient->firstname} {$patient->lastname} was updated");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient updated successfully',
+            'patient' => $patient
+        ]);
     }
 
 

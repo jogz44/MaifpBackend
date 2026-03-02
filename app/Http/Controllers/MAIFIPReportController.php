@@ -76,38 +76,4 @@ class MAIFIPReportController extends Controller
         return response()->json($result);
     }
 
-
-    // public function report_index()
-    // {
-
-    //     $query = Transaction::where('status', 'Funded')
-    //         ->with(['assistance.funds', 'patient:id,firstname,lastname,middlename']);
-
-
-    //     $transactions = $query->get();
-
-    //     $result = $transactions->map(function ($t) {
-    //         return [
-    //             'transaction_id'   => $t->id,
-    //             'gl_lgu'        => $t->assistance->gl_lgu ?? null,
-    //             'gl_cong'        => $t->assistance->gl_cong ?? null,
-
-    //             'transaction_date' => $t->transaction_date,
-    //             'patient_name'     => trim($t->patient->firstname . ' ' . $t->patient->middlename . ' ' . $t->patient->lastname),
-    //             // only MAIFIP funds
-    //             'maifip_LGU'     => $t->assistance
-    //                 ? $t->assistance->funds->where('fund_source', 'MAIFIP-LGU')
-
-    //                 ->values()
-    //                 : [],
-    //             'maifip_Congressman'     => $t->assistance
-    //                 ? $t->assistance->funds->where('fund_source', 'MAIFIP-Congressman')
-
-    //                 ->values()
-    //                 : [],
-    //         ];
-    //     });
-
-    //     return response()->json($result);
-    // }
 }

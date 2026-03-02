@@ -29,27 +29,26 @@ use App\Services\PatientService;
 
 class PatientController extends Controller
 {
-        protected $badgeService;
+    protected $badgeService;
     protected $patientService;
 
-     public function __construct(BadgeService $badgeService,PatientService $patientService)
-         {
+    public function __construct(BadgeService $badgeService, PatientService $patientService)
+    {
 
-            $this->badgeService = $badgeService;
-             $this->patientService = $patientService;
+        $this->badgeService = $badgeService;
+        $this->patientService = $patientService;
+    }
 
-         }
-
-         public function test_database(){
+    public function test_database()
+    {
 
 
         $data = DB::connection('mysql_second_database')
             ->table('tbl_customers')->get();
 
 
-            return $data;
-
-         }
+        return $data;
+    }
 
 
     public function index()
@@ -80,12 +79,12 @@ class PatientController extends Controller
 
     public function getAllPatientsWithLatestTransaction()
     {
-        $patients = Patient::select('id', 'firstname', 'middlename', 'lastname', 'ext', 'gender', 'age','contact_number')
+        $patients = Patient::select('id', 'firstname', 'middlename', 'lastname', 'ext', 'gender', 'age', 'contact_number')
             ->with([
                 'latestTransaction.consultation:id,transaction_id,status',
                 'latestTransaction.laboratories:id,transaction_id,status',
                 'latestTransaction.medication:id,transaction_id,status',
-            // 'latestTransaction.guaranteeLetter:id,transaction_id,status',
+                // 'latestTransaction.guaranteeLetter:id,transaction_id,status',
 
             ])
             ->get();
@@ -133,7 +132,7 @@ class PatientController extends Controller
             'is_solo',
             'user_id'
         ])
-        ->with('transaction')->find($id);
+            ->with('transaction')->find($id);
 
         // ✅ Patient full name
         $patientName = trim("{$patient->firstname} {$patient->middlename} {$patient->lastname} {$patient->ext}");
@@ -159,7 +158,7 @@ class PatientController extends Controller
     {
         // Fetch data from the view
         $rows = vw_patient_assessment_maifip::all();
-            // Log::info('Fetching patients from DB view...'); // debug log
+        // Log::info('Fetching patients from DB view...'); // debug log
 
         // Group by patient_id
         $grouped = $rows->groupBy('patient_id');
@@ -282,6 +281,8 @@ class PatientController extends Controller
     }
 
 
+
+    // store patient credential
     public function storePatient(PatientRequestAll $request)
     {
         // ✅ 1. Prepare Patient Data
@@ -355,8 +356,7 @@ class PatientController extends Controller
             'LMP'
         ]);
 
-        $result = $this->patientService->store($patientData,$representativeData,$transactionData,$vitalData,$request);
-
+        $result = $this->patientService->store($patientData, $representativeData, $transactionData, $vitalData, $request);
 
         // ✅ Then broadcast the fresh counts AFTER the DB has changed
         $counts = app(BadgeService::class)->getBadgeCounts();
@@ -364,101 +364,23 @@ class PatientController extends Controller
 
 
         return $result;
-
-
     }
 
-
-    public function update(PatientRequest $request, $id)
+    // updating patient credentials
+    public function updatePatient(PatientRequest $request, $id)
     {
         $validated = $request->validated();
 
-        $patient = Patient::findOrFail($id);
 
-        // Save old values before update
-        $oldValues = $patient->getOriginal();
-
-        // Perform update
-        $patient->update($validated);
-
+        $result = $this->patientService->updateCredential($validated, $id, $request);
 
         // ✅ Then broadcast the fresh counts AFTER the DB has changed
         $counts = app(BadgeService::class)->getBadgeCounts();
         broadcast(new BadgeUpdated($counts));
 
-
-        // 🗑️ Clear cache so next index() fetch is fresh
-        // Cache::forget('patients');
-        // Cache::forget('patients_assessment');
-        // Log::info("🗑️ Cache cleared after updating patient ID {$id}");
-
-        $user = Auth::user();
-
-        // 📝 Add activity log
-        activity($user->username)
-            ->causedBy($user) // who updated
-            ->performedOn($patient)  // which patient
-            ->withProperties([
-                'ip' => $request->ip(),
-            'date' => Carbon::now('Asia/Manila')->format('Y-m-d h:i:s A'),
-            'edited_by' => $user
-                ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
-                : ($user->username ?? 'N/A'),
-
-            'old' => $oldValues,
-                'new' => $patient->getChanges(),
-            ])
-            ->log("Patient record {$patient->firstname} {$patient->lastname} was updated");
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Patient updated successfully',
-            'patient' => $patient
-        ]);
+        return $result;
     }
 
-    // public function total_count_badge()
-    // {
-    //     // ✅ Count of assessed patients (unique)
-    //     $count_assessment = vw_patient_assessment_maifip::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Count of qualified consultations (unique patients)
-    //     $count_consultation = vw_patient_consultation::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Laboratory count (unique patients)
-    //     $count_laboratory = vw_patient_laboratory::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Medication count (unique patients)
-    //     $count_medication = vw_patient_medication::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Returned consultations (unique patients)
-    //     $count_return_consultation = vw_patient_consultation_return::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Billing patients (unique)
-    //     $count_billing = vw_patient_billing::distinct('patient_id')->count('patient_id');
-
-    //     // ✅ Guarantee letter patients (unique)
-    //     $count_guarantee = vw_transaction_complete::distinct('patient_id')->count('patient_id');
-
-
-    //     // $count_assessment_philhealth_to_maifip = vw_patient_assessment_philhealth_to_maifip::distinct('patient_id')->count('patient_id');
-
-    //     $count_assessment_philhealth= vw_patient_assessment_philhealth::distinct('patient_id')->count('patient_id');
-
-
-    //     return response()->json([
-    //         'totalAssessedCount'   => $count_assessment,
-    //         'totalQualifiedCount'  => $count_consultation,
-    //         'totalLaboratoryCount' => $count_laboratory,
-    //         'totalMedicationCount' => $count_medication,
-    //         'totalReturnedCount'   => $count_return_consultation,
-    //         'totalBillingCount'    => $count_billing,
-    //         'totalGLCount'         => $count_guarantee,
-    //         // 'totalphilhealth_to_maifip'         => $count_assessment_philhealth_to_maifip,
-    //         'totalphilhealth'         => $count_assessment_philhealth,
-
-    //     ]);
-    // }
 
     public function total_count_badge()
     {
