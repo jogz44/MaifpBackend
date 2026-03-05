@@ -230,7 +230,6 @@ class TransactionController extends Controller
         }
     }
 
-
     // add transaction  and vitals
     public function addTransactionAndVitals(AddTransactionRequest $request)
     {
@@ -270,15 +269,15 @@ class TransactionController extends Controller
             // Before the can add transaction here check first if he have transaction_date exisitng today it must 1 transaction per day
 
             // Check if patient already has transaction today
-            // $hasTransactionToday = Transaction::where('patient_id', $patient->id)
-            //     ->whereDate('transaction_date', Carbon::today())
-            //     ->exists();
+            $hasTransactionToday = Transaction::where('patient_id', $patient->id)
+                ->whereDate('transaction_date', Carbon::today())
+                ->exists();
 
-            // if ($hasTransactionToday) {
-            //     return response()->json([
-            //         'message' => 'Patient already has a transaction today.'
-            //     ], 400);
-            // }
+            if ($hasTransactionToday) {
+                return response()->json([
+                    'message' => 'Patient already has a transaction today.'
+                ], 400);
+            }
 
 
             // ✅ Create transaction
