@@ -247,9 +247,26 @@ class TransactionController extends Controller
             }
 
             // ✅ Generate transaction number
-            $datePart = now()->format('Y-m-d');
-            $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
-            $transactionNumber = "{$datePart}-{$sequenceFormatted}";
+            // $datePart = now()->format('Y-m-d');
+            // $sequenceFormatted = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
+            // $transactionNumber = "{$datePart}-{$sequenceFormatted}";
+
+            // ✅ Generate transaction number (duplicate-safe)
+            $transactionNumber = \Illuminate\Support\Facades\DB::transaction(function () use ($patient) {
+                $datePart = now()->format('Y-m-d');
+                $patientPadded = str_pad($patient->id, 4, '0', STR_PAD_LEFT); // 0615
+
+                // Count how many transactions this patient already has today
+                $todayCount = Transaction::where('patient_id', $patient->id)
+                    ->whereDate('created_at', today())
+                    ->lockForUpdate()
+                    ->count();
+
+                $sequence = $todayCount + 1; // 1, 2, 3...
+
+                return "{$datePart}-{$patientPadded}{$sequence}";
+                // e.g. 2026-03-25-06151
+            });
 
             // ✅ Create representative
             $representative = Representative::create([
