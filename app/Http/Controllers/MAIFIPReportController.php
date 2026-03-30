@@ -71,7 +71,14 @@ class MAIFIPReportController extends Controller
                     ? $t->assistance->funds->where('fund_source', 'MAIFIP-Congressman')->values()
                     : [],
             ];
-        });
+        })
+        ->sortBy([
+            ['gl_cong', 'asc'], // ✅ sort gl_cong lowest to highest first
+            ['gl_lgu',  'asc'], // ✅ then gl_lgu lowest to highest
+        ])
+            ->values(); // ✅ reindex array keys after sorting
+
+
 
         return response()->json($result);
     }
