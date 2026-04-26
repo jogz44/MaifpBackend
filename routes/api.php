@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('report')->group(function () { // report
         Route::post('/store', [MAIFIPReportController::class, 'report']);
         Route::get('/', [MAIFIPReportController::class, 'report_index']);
+        Route::get('/medical-assistance', [MAIFIPReportController::class, 'medicalAssistanceReport']);
+        Route::get('/generate-doh', [MAIFIPReportController::class, 'dohReport']);
     });
 
     Route::prefix('billing')->group(function () {
@@ -59,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('update/status/{transactionId}', [GuaranteeLetterController::class, 'update_status']); //  fetch the patient on the guarantee letter
         Route::get('/max/number', [GuaranteeLetterController::class, 'getMaxGLNumber']);
     });
-    
+
     Route::prefix('transactions')->group(function () {
         Route::get('/', [TransactionController::class, 'index']);
         Route::delete('/delete', [TransactionController::class, 'deleteAllTransactions']); // the all data on the transaction table

@@ -2,12 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MedicalAssistanceResource;
 use App\Models\Transaction;
+use App\Services\ReportService;
 use Illuminate\Http\Request;
 
 class MAIFIPReportController extends Controller
 {
     //
+
+      protected $reportService;
+
+      public function __construct(ReportService $reportService)
+      {
+            $this->reportService = $reportService;
+      }
+
+
     public function report(Request $request)
     {
         $request->validate([
@@ -81,6 +92,29 @@ class MAIFIPReportController extends Controller
 
 
         return response()->json($result);
+    }
+
+    // DOH report maifp
+    public function medicalAssistanceReport(){
+
+     $result =  $this->reportService->medicalAssistanceReportMaip();
+
+        return MedicalAssistanceResource::collection($result);
+
+    }
+
+
+
+    // DOH report maifp
+    public function dohReport(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array'
+        ]);
+
+        $result =  $this->reportService->exportExcelReport($request,$validated);
+
+        return $result;
     }
 
 }
