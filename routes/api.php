@@ -42,9 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('report')->group(function () { // report
         Route::post('/store', [MAIFIPReportController::class, 'report']);
-        Route::get('/', [MAIFIPReportController::class, 'report_index']);
-        Route::get('/medical-assistance', [MAIFIPReportController::class, 'medicalAssistanceReport']);
-        Route::get('/generate-doh', [MAIFIPReportController::class, 'dohReport']);
+        Route::get('/', [MAIFIPReportController::class, 'report_index']);// list of patient have gl number 
+        // Route::get('/list-of-patient', [MAIFIPReportController::class, 'medicalAssistanceReport']); // list of patient have gl number  v2 
+        Route::post('/generate-doh', [MAIFIPReportController::class, 'dohReport']);
     });
 
     Route::prefix('billing')->group(function () {

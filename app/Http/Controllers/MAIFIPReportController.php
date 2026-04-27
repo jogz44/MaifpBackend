@@ -6,7 +6,7 @@ use App\Http\Resources\MedicalAssistanceResource;
 use App\Models\Transaction;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
 class MAIFIPReportController extends Controller
 {
     //
@@ -94,7 +94,7 @@ class MAIFIPReportController extends Controller
         return response()->json($result);
     }
 
-    // DOH report maifp
+    // list of patient have gl number 
     public function medicalAssistanceReport(){
 
      $result =  $this->reportService->medicalAssistanceReportMaip();
@@ -103,18 +103,30 @@ class MAIFIPReportController extends Controller
 
     }
 
-
-
-    // DOH report maifp
+        // generate report excel doh 
     public function dohReport(Request $request)
     {
         $validated = $request->validate([
-            'ids' => 'required|array'
+            'fromDate' => 'required|date',
+            'toDate'   => 'nullable|date|after_or_equal:fromDate',
         ]);
 
-        $result =  $this->reportService->exportExcelReport($request,$validated);
+        // ✅ validate same year
+        if (isset($validated['toDate'])) {
+            $fromYear = Carbon::parse($validated['fromDate'])->year;
+            $toYear   = Carbon::parse($validated['toDate'])->year;
 
-        return $result;
+            if ($fromYear !== $toYear) {
+                return response()->json([
+                    'message' => 'Validation failed.',
+                    'errors'  => [
+                        'toDate' => ["The to date must be in the same year as from date ({$fromYear})."]
+                    ]
+                ], 422);
+            }
+        }
+
+        return $this->reportService->exportExcelReport($validated);
     }
 
 }

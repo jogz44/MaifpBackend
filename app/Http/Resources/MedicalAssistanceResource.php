@@ -18,13 +18,13 @@ class MedicalAssistanceResource extends JsonResource
         $patient    = $this->whenLoaded('patient');
 
         return [
-            'id'               => $this->id,
+            'transaction_id'               => $this->id,
             'transaction_type' => $this->transaction_type,
             'transaction_date' => $this->transaction_date,
 
             // ✅ Use optional() to avoid null error
             // 'patient' => $this->when($patient, [
-                'id'         => optional($patient)->id,
+                'patient_id'         => optional($patient)->id,
                 'firstname'  => optional($patient)->firstname,
                 'middlename' => optional($patient)->middlename,
                 'lastname'   => optional($patient)->lastname,
@@ -54,7 +54,7 @@ class MedicalAssistanceResource extends JsonResource
                 }
 
                 return [
-                    'id'                  => optional($assistance)->id,
+                    'assistance_id'                  => optional($assistance)->id,
                     'gl_lgu'              => optional($assistance)->gl_lgu,
                     'type_of_medical'     => implode('/', $types), // e.g. "CONSULTATION/LABORATORY/MEDICINE"
                     'radiology_total'     => number_format(optional($assistance)->radiology_total, 2),
@@ -68,7 +68,7 @@ class MedicalAssistanceResource extends JsonResource
                     'final_billing'       => number_format(optional($assistance)->final_billing, 2),
 
                     'funds' => optional($assistance)->funds?->map(fn($fund) => [
-                        'id'          => $fund->id,
+                        'fund_id'          => $fund->id,
                         'fund_source' => $fund->fund_source,
                         'fund_amount' => number_format($fund->fund_amount, 2),
                     ]),
