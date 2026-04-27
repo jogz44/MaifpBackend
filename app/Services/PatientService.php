@@ -28,11 +28,15 @@ class PatientService
         try {
 
 
+        // ✅ Normalize helper — trim + lowercase for comparison
+            $firstname = strtolower(trim($patientData['firstname']));
+            $lastname  = strtolower(trim($patientData['lastname']));
+            $birthdate = $patientData['birthdate'];
 
             // ✅ 2. Check for Existing Patient
-            $existingPatient = Patient::where('firstname', $patientData['firstname'])
-                ->where('lastname', $patientData['lastname'])
-                ->where('birthdate', $patientData['birthdate'])
+         $existingPatient = Patient::whereRaw('LOWER(firstname) = ?', [$firstname])
+                ->whereRaw('LOWER(lastname) = ?', [$lastname])
+                ->where('birthdate', $birthdate)
                 ->first();
 
             if ($existingPatient) {
@@ -50,16 +54,16 @@ class PatientService
             // if the  customer existing check if the patient have  maifp_id if he already maifp_id no need to take account just  send an  'Patient already exists. Please add a new transaction instead.',
             // else if the customer exist but he dont have maifp_id just update him on the customer table add his maifp_id and origin = MAIFP
 
-            $firstname = $patientData['firstname'] ?? null;
-            $lastname = $patientData['lastname'] ?? null;
-            $birthdate = $patientData['birthdate'] ?? null;
+            // $firstname = $patientData['firstname'] ?? null;
+            // $lastname = $patientData['lastname'] ?? null;
+            // $birthdate = $patientData['birthdate'] ?? null;
 
             $existingCustomers = DB::connection('mysql_second_database')
-                ->table('tbl_customers')
-                ->where('firstname', $firstname)
-                ->where('lastname', $lastname)
-                ->where('birthdate', $birthdate)
-                ->first();
+            ->table('tbl_customers')
+            ->whereRaw('LOWER(firstname) = ?', [$firstname])
+            ->whereRaw('LOWER(lastname) = ?', [$lastname])
+            ->where('birthdate', $birthdate)
+            ->first();
 
             if ($existingCustomers) {
                 // Customer exists in second DB
