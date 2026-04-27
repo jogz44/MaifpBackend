@@ -73,7 +73,7 @@ class ReportService
             // ]);
 
             if (!file_exists($templatePath)) {
-                Log::error('Template file not found', ['path' => $templatePath]);
+                // Log::error('Template file not found', ['path' => $templatePath]);
                 return response()->json(['message' => 'Template file not found.'], 500);
             }
 
@@ -87,7 +87,8 @@ class ReportService
                 $spreadsheet->setMacrosCode($spreadsheet->getMacrosCode());
             }
 
-            $sheet = $spreadsheet->getActiveSheet();
+            // $sheet = $spreadsheet->getActiveSheet();
+            $sheet = $spreadsheet->getSheetByName('OUT-PATIENT'); // change if there is specific sheet need to fill out data
 
             $transactions = Transaction::select('id', 'transaction_type', 'transaction_date', 'patient_id')
                 ->when(
@@ -127,11 +128,10 @@ class ReportService
 
             $extraRows = count($transactions) - 5;
             if ($extraRows > 0) {
-                $sheet->insertNewRowBefore(262, $extraRows);
+                $sheet->insertNewRowBefore(240, $extraRows);
                 // Log::info('Extra rows inserted', ['extraRows' => $extraRows]);
             }
-
-            $row = 257;
+            $row = 39;
             $no  = 1;
 
             $fromCarbon = Carbon::parse($fromDate);
@@ -147,7 +147,6 @@ class ReportService
 
 
             $sheet->setCellValue("C9", "For the Month of " . $monthLabel);
-
 
             foreach ($transactions as $transaction) {
                 $patient    = $transaction->patient;
@@ -169,9 +168,29 @@ class ReportService
                 //     'discount'      => $assistance->discount       ?? null,
                 // ]);
 
+                   $types = [];
+
+                $laboratoryTotal = optional($assistance)->radiology_total
+                    + optional($assistance)->examination_total
+                    + optional($assistance)->mammogram_total
+                    + optional($assistance)->ultrasound_total;
+
+                if (optional($assistance)->consultation_amount > 0) {
+                    $types[] = 'CONSULTATION';
+                }
+
+                if ($laboratoryTotal > 0) {
+                    $types[] = 'LABORATORY';
+                }
+
+                if (optional($assistance)->medication_total > 0) {
+                    $types[] = 'MEDICINE';
+                }
+
                 $sheet->setCellValue("B{$row}", $no);
                 $sheet->setCellValue("C{$row}", $this->upper($fullName));
                 $sheet->setCellValue("D{$row}", $assistance->gl_lgu        ?? '');
+                $sheet->setCellValue("E{$row}", implode('/', $types)); // e.g. "CONSULTATION/LABORATORY/MEDICINE"     
                 $sheet->setCellValue("F{$row}", $assistance->final_billing  ?? '');
                 $sheet->setCellValue("G{$row}", $assistance->discount       ?? '');
                 $sheet->setCellValue("P{$row}", $fund->fund_amount          ?? '');
