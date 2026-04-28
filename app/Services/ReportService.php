@@ -385,7 +385,7 @@ class ReportService
 
                 $sheet->setCellValue("B{$row}", $no);
                 $sheet->setCellValue("C{$row}", $this->upper($fullName));
-                $sheet->setCellValue("D{$row}", $assistance->gl_lgu ?? '');
+                // $sheet->setCellValue("D{$row}", $assistance->gl_lgu ?? '');
                 $sheet->setCellValue("E{$row}", implode('/', $types));
                 $sheet->setCellValue("F{$row}", $finalBilling);
                 $sheet->setCellValue("P{$row}", $fundAmount);
