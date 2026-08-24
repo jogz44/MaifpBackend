@@ -20,7 +20,7 @@ class BillingService
     {
         $user = Auth::user();
         $transaction = Transaction::with([
-            'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,birthdate,is_pwd,is_solo,category,philhealth_id',
+            'patient:id,firstname,lastname,age,gender,contact_number,street,purok,barangay,middlename,ext,birthdate,is_pwd,is_solo,category,philhealth_id',
             'consultation:id,transaction_id,amount',
             // 'laboratories_details:id,transaction_id,laboratory_type,total_amount',
             'radiologies_details:id,transaction_id,item_description,selling_price,total_amount',
@@ -103,7 +103,7 @@ class BillingService
             'firstname'           => $transaction->patient->firstname,
             'lastname'            => $transaction->patient->lastname,
             'middlename'          => $transaction->patient->middlename,
-
+            'ext'          => $transaction->patient->ext,
             'birthdate'           => $transaction->patient->birthdate,
             'age'                 => $transaction->patient->age,
             'gender'              => $transaction->patient->gender,
